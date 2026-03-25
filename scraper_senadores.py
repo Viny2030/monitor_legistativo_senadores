@@ -187,7 +187,7 @@ def obtener_nomina() -> pd.DataFrame:
     FIX Bug 1+2: Filtra SOLO los senadores con periodoLegal.fin > HOY_ISO
     para no incluir mandatos ya vencidos en el CSV de salida ni en los reportes.
     """
-    url = f"{BASE_API}/congreso/senadores"
+    url = f"{BASE_API}/senado/senadores"
     try:
         resp = requests.get(url, headers=HEADERS, timeout=30)
         resp.raise_for_status()
@@ -252,7 +252,7 @@ def obtener_nomina() -> pd.DataFrame:
 # ── 2. Actas de Votación ──────────────────────────────────────────────────────
 def obtener_actas(anio: int) -> pd.DataFrame:
     """Obtiene las actas de votación del año indicado."""
-    url = f"{BASE_API}/congreso/votaciones/senado/{anio}"
+    url = f"{BASE_API}/senado/actas/{anio}"
     try:
         resp = requests.get(url, headers=HEADERS, timeout=30)
         resp.raise_for_status()
@@ -301,15 +301,16 @@ def calcular_kpis(df_nomina: pd.DataFrame, df_actas: pd.DataFrame) -> pd.DataFra
         .unstack(fill_value=0)
         .reset_index()
     )
-    for col in ["AFIRMATIVO", "NEGATIVO", "ABSTENCIÓN", "AUSENTE"]:
+    # La API devuelve votos en minúsculas: "si", "no", "abstencion", "ausente"
+    for col in ["si", "no", "abstencion", "ausente"]:
         if col not in resumen.columns:
             resumen[col] = 0
 
     resumen = resumen.rename(columns={
-        "AFIRMATIVO": "votos_afirmativos",
-        "NEGATIVO":   "votos_negativos",
-        "ABSTENCIÓN": "abstenciones",
-        "AUSENTE":    "ausencias",
+        "si":         "votos_afirmativos",
+        "no":         "votos_negativos",
+        "abstencion": "abstenciones",
+        "ausente":    "ausencias",
     })
     resumen["votos_total"] = (
         resumen["votos_afirmativos"]
