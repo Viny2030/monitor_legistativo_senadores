@@ -22,6 +22,11 @@ FIXES 2026-03-25:
     el titular se fue a otro cargo (gobernador, etc.) y luego volvió.
     deduplicar_provincia() resuelve: si un partido tiene >2 senadores en
     la misma provincia, descarta al(los) de periodoLegal.inicio más antiguo.
+  - Bug 5: Buenos Aires y Río Negro tenían solo 2 senadores porque
+    ArgentinaDatos no tenía cargados los faltantes del período 2025-2031.
+    Se agrega scraping de senado.gob.ar/senadores/listados/listaSenadoRes
+    como fuente secundaria de enriquecimiento: después de traer la API,
+    se cruza con el sitio oficial y se incorporan los registros que falten.
 """
 
 import ast
@@ -155,37 +160,201 @@ def deduplicar_provincia(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ── 1. Nómina de Senadores ────────────────────────────────────────────────────
-def obtener_nomina_fallback():
-    """Fallback: scraping directo de senado.gob.ar."""
+SENADO_URL = "https://www.senado.gob.ar/senadores/listados/listaSenadoRes"
+SENADO_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; MonitorLegislativo/1.0)"}
+
+
+def _fecha_iso(txt: str) -> str:
+    """Convierte DD/MM/YYYY → YYYY-MM-DD. Devuelve '' si no puede."""
     try:
-        resp = requests.get(
-            "https://www.senado.gob.ar/senadores/listadoPorApellido",
-            headers={"User-Agent": "Mozilla/5.0"}, timeout=20
-        )
+        dd, mm, yy = txt.strip().split("/")
+        return f"{yy}-{mm.zfill(2)}-{dd.zfill(2)}"
+    except Exception:
+        return ""
+
+
+def scraping_senado_oficial() -> pd.DataFrame:
+    """
+    Scraping de senado.gob.ar/senadores/listados/listaSenadoRes.
+    Devuelve DataFrame con columnas:
+      nombre, provincia, partido, inicio, fin, email
+    Contiene siempre los 72 senadores vigentes según el sitio oficial.
+    """
+    try:
+        resp = requests.get(SENADO_URL, headers=SENADO_HEADERS, timeout=30)
+        resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
-        senadores = []
-        tabla = soup.find("table")
-        if tabla:
-            for fila in tabla.find_all("tr")[1:]:
-                cols = fila.find_all("td")
-                if len(cols) >= 3:
-                    senadores.append({
-                        "nombre":    cols[0].get_text(strip=True),
-                        "provincia": cols[1].get_text(strip=True),
-                        "partido":   cols[2].get_text(strip=True),
-                    })
-        return pd.DataFrame(senadores)
+
+        # Buscar la tabla con más de 10 filas (la de senadores)
+        tabla = next(
+            (t for t in soup.find_all("table")
+             if len(t.find_all("tr")) > 10),
+            None
+        )
+        if not tabla:
+            print("⚠️  senado.gob.ar: no se encontró la tabla de senadores")
+            return pd.DataFrame()
+
+        registros = []
+        for fila in tabla.find_all("tr")[1:]:
+            cols = fila.find_all("td")
+            if len(cols) < 5:
+                continue
+            periodo_txt = cols[4].get_text(separator="\n", strip=True)
+            partes = [p for p in periodo_txt.split("\n") if p.strip()]
+            inicio = _fecha_iso(partes[0]) if len(partes) > 0 else ""
+            fin    = _fecha_iso(partes[1]) if len(partes) > 1 else ""
+            contacto = cols[5].get_text(separator="\n", strip=True) if len(cols) > 5 else ""
+            email = next(
+                (l.strip() for l in contacto.split("\n") if "@" in l),
+                ""
+            )
+            registros.append({
+                "nombre":   cols[1].get_text(strip=True),
+                "provincia": cols[2].get_text(strip=True),
+                "partido":  cols[3].get_text(strip=True),
+                "inicio":   inicio,
+                "fin":      fin,
+                "email":    email,
+            })
+
+        df = pd.DataFrame(registros)
+        # Filtrar solo los vigentes (por si acaso el sitio incluye algún histórico)
+        df = df[df["fin"] > HOY_ISO].reset_index(drop=True)
+        print(f"✅ senado.gob.ar: {len(df)} senadores vigentes")
+        return df
+
     except Exception as e:
-        print(f"⚠️  Fallback senado.gob.ar falló: {e}")
+        print(f"⚠️  senado.gob.ar scraping falló: {e}")
         return pd.DataFrame()
+
+
+def enriquecer_desde_senado(df_api: pd.DataFrame) -> pd.DataFrame:
+    """
+    FIX Bug 5: cruza df_api con el listado oficial de senado.gob.ar.
+    Para cada provincia que tenga < 3 senadores en la API, busca los
+    faltantes en el sitio oficial y los incorpora al DataFrame.
+
+    Estrategia de matching: normaliza apellido (primer token antes de la coma)
+    para evitar falsos duplicados por diferencias de tilde o inicial.
+    """
+    provincias_incompletas = (
+        df_api.groupby("provincia").size()
+        .pipe(lambda s: s[s < 3])
+        .index.tolist()
+    )
+    if not provincias_incompletas:
+        return df_api  # Todo completo, nada que hacer
+
+    print(f"\n🔄 Enriqueciendo desde senado.gob.ar "
+          f"({len(provincias_incompletas)} provincia(s) incompleta(s))...")
+    df_oficial = scraping_senado_oficial()
+    if df_oficial.empty:
+        print("⚠️  No se pudo obtener datos del sitio oficial. Continuando con lo disponible.")
+        return df_api
+
+    # Apellidos ya presentes en la API (normalizados a minúsculas)
+    apellidos_api = set(
+        df_api["nombre"].str.split(",").str[0].str.strip().str.lower()
+    )
+
+    nuevos = []
+    for prov in provincias_incompletas:
+        candidatos = df_oficial[df_oficial["provincia"] == prov]
+        for _, row in candidatos.iterrows():
+            apellido = row["nombre"].split(",")[0].strip().lower()
+            if apellido not in apellidos_api:
+                partido_norm = normalizar_partido(row["partido"])
+                nuevos.append({
+                    "id":                  None,
+                    "nombre":              row["nombre"],
+                    "provincia":           row["provincia"],
+                    "partido":             row["partido"],
+                    "periodoLegal":        str({"inicio": row["inicio"], "fin": row["fin"]}),
+                    "periodoReal":         str({}),
+                    "reemplazo":           None,
+                    "observaciones":       "Incorporado desde senado.gob.ar (ausente en API)",
+                    "foto":                None,
+                    "email":               row["email"],
+                    "telefono":            None,
+                    "redes":               None,
+                    "partido_normalizado": partido_norm,
+                    "rol_provincial":      None,   # se recalcula después
+                })
+                apellidos_api.add(apellido)  # evitar doble incorporación
+                print(f"   ➕ {row['nombre']} ({prov}) — fuente: senado.gob.ar")
+
+    if nuevos:
+        df_nuevos = pd.DataFrame(nuevos)
+        df_api = pd.concat([df_api, df_nuevos], ignore_index=True)
+        print(f"   Total tras enriquecimiento: {len(df_api)} senadores")
+    else:
+        print("   ℹ️  No se encontraron registros adicionales en senado.gob.ar")
+
+    return df_api
+
+
+def asignar_roles(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Recalcula rol_provincial para todo el DataFrame.
+    Regla: dentro de cada provincia, el partido con más bancas
+    obtiene 'Mayoría' (máx. 2 senadores); el siguiente obtiene
+    'Primera Minoría' (1 senador).
+    """
+    df = df.copy()
+    df["rol_provincial"] = None
+    for provincia, grupo in df.groupby("provincia"):
+        conteo  = grupo["partido_normalizado"].value_counts()
+        mayoria = conteo.index[0] if len(conteo) >= 1 else None
+        minoria = conteo.index[1] if len(conteo) >= 2 else None
+        asignados = {}
+        for idx, row in grupo.iterrows():
+            p = row["partido_normalizado"]
+            asignados[p] = asignados.get(p, 0) + 1
+            if p == mayoria and asignados[p] <= 2:
+                df.at[idx, "rol_provincial"] = "Mayoría"
+            elif p == minoria:
+                df.at[idx, "rol_provincial"] = "Primera Minoría"
+            else:
+                df.at[idx, "rol_provincial"] = "Mayoría"
+    return df
+
+
+def obtener_nomina_fallback():
+    """Fallback total: si tanto la API como el enriquecimiento fallan,
+    intenta construir la nómina completa desde senado.gob.ar."""
+    print("🔄 Usando senado.gob.ar como fuente primaria (fallback total)...")
+    df = scraping_senado_oficial()
+    if df.empty:
+        return pd.DataFrame()
+    # Mapear columnas al esquema estándar
+    df_std = pd.DataFrame({
+        "id":                  None,
+        "nombre":              df["nombre"],
+        "provincia":           df["provincia"],
+        "partido":             df["partido"],
+        "periodoLegal":        df.apply(
+            lambda r: str({"inicio": r["inicio"], "fin": r["fin"]}), axis=1),
+        "periodoReal":         str({}),
+        "reemplazo":           None,
+        "observaciones":       "Fuente: senado.gob.ar (fallback total)",
+        "foto":                None,
+        "email":               df["email"],
+        "telefono":            None,
+        "redes":               None,
+        "partido_normalizado": df["partido"].apply(normalizar_partido),
+        "rol_provincial":      None,
+    })
+    return df_std
 
 
 def obtener_nomina() -> pd.DataFrame:
     """
-    Obtiene la nómina completa desde ArgentinaDatos API.
-
-    FIX Bug 1+2: Filtra SOLO los senadores con periodoLegal.fin > HOY_ISO
-    para no incluir mandatos ya vencidos en el CSV de salida ni en los reportes.
+    Obtiene la nómina completa.
+    Flujo:
+      1. ArgentinaDatos API  → filtra activos, deduplica
+      2. senado.gob.ar       → incorpora los que falten (Bug 5)
+      3. asignar_roles()     → recalcula Mayoría / Primera Minoría
     """
     url = f"{BASE_API}/senado/senadores"
     try:
@@ -193,8 +362,11 @@ def obtener_nomina() -> pd.DataFrame:
         resp.raise_for_status()
         data = resp.json()
     except Exception as e:
-        print(f"⚠️  API ArgentinaDatos falló ({e}), usando fallback...")
-        return obtener_nomina_fallback()
+        print(f"⚠️  API ArgentinaDatos falló ({e}), usando fallback total...")
+        df = obtener_nomina_fallback()
+        if not df.empty:
+            df = asignar_roles(df)
+        return df
 
     registros = []
     descartados = 0
@@ -202,14 +374,12 @@ def obtener_nomina() -> pd.DataFrame:
         periodo_legal = s.get("periodoLegal", {})
         fin_legal     = periodo_legal.get("fin", "")
 
-        # ── FIX: descartar mandatos ya vencidos ─────────────────────────────
+        # ── Descartar mandatos ya vencidos ───────────────────────────────────
         if not fin_legal or fin_legal <= HOY_ISO:
             descartados += 1
             continue
-        # ────────────────────────────────────────────────────────────────────
 
         periodo_real = s.get("periodoReal", {})
-
         registros.append({
             "id":                  s.get("id"),
             "nombre":              s.get("nombre"),
@@ -224,26 +394,36 @@ def obtener_nomina() -> pd.DataFrame:
             "telefono":            s.get("telefono"),
             "redes":               str(s.get("redesSociales")) if s.get("redesSociales") else None,
             "partido_normalizado": normalizar_partido(s.get("partido", "")),
-            "rol_provincial":      s.get("rolProvincial"),
+            "rol_provincial":      None,   # se asigna al final con asignar_roles()
         })
 
     df = pd.DataFrame(registros)
-    print(f"✅ Nómina: {len(df)} activos | {descartados} mandatos vencidos descartados")
+    print(f"✅ API ArgentinaDatos: {len(df)} activos | {descartados} vencidos descartados")
 
     if df.empty:
-        print("⚠️  0 registros activos en la API, usando fallback...")
-        return obtener_nomina_fallback()
+        print("⚠️  0 registros activos en la API, usando fallback total...")
+        df = obtener_nomina_fallback()
+        if not df.empty:
+            df = asignar_roles(df)
+        return df
 
-    # ── FIX Bug 4: deduplicar provincias con >3 senadores ────────────────────
+    # ── Bug 4: deduplicar provincias con >3 senadores ────────────────────────
     df = deduplicar_provincia(df)
-    print(f"   Senadores tras deduplicación: {len(df)}  (esperado: 72)")
 
-    # ── Validar por provincia ─────────────────────────────────────────────────
-    por_prov = df.groupby("provincia").size()
-    anomalias = por_prov[por_prov != 3]
-    if not anomalias.empty:
-        print("⚠️  Provincias con ≠ 3 senadores activos (dato faltante en la API):")
-        for prov, n in anomalias.items():
+    # ── Bug 5: enriquecer con senado.gob.ar para completar provincias ────────
+    df = enriquecer_desde_senado(df)
+
+    # ── Recalcular roles con el conjunto completo ─────────────────────────────
+    df = asignar_roles(df)
+
+    # ── Validación final ──────────────────────────────────────────────────────
+    total = len(df)
+    print(f"\n✅ Nómina final: {total} senadores  (esperado: 72)")
+    if total != 72:
+        por_prov = df.groupby("provincia").size()
+        anom = por_prov[por_prov != 3]
+        print(f"⚠️  Faltan {72 - total} senadores. Provincias con ≠ 3:")
+        for prov, n in anom.items():
             print(f"   • {prov}: {n}  (faltan {3 - n})")
 
     return df
