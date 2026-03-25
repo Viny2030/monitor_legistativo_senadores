@@ -6,22 +6,22 @@ Monitor Legislativo — Cámara de Senadores de la Nación Argentina
   - 1 banca  → primera minoría
 Fuentes: ArgentinaDatos API + senado.gob.ar (fallback scraping)
 
-FIXES aplicados (2026-03-25):
-  1. BLOQUES_MAP expandido con todos los partidos actuales (Fuerza Patria,
-     Fuerza Entre Ríos, Primero Los Salteños, la Neuquinidad, etc.)
-  2. reporte_provincial() y reporte_por_partido() ahora reciben el df ya
-     filtrado (que sale de obtener_nomina), por lo que jamás procesan
-     senadores con mandatos vencidos.
-  3. asignar_rol_provincial(): cuando una provincia tiene <3 senadores
-     (API incompleta), los 2 del mismo partido se marcan 'Mayoría'
-     correctamente — ya no se cae en el else → 'Mayoría' de forma
-     silenciosa para casos raros.
-  4. obtener_nomina(): el filtro de mandato vigente ahora usa periodoLegal
-     como fuente primaria (dato siempre presente) y periodoReal como
-     fallback, en vez del orden inverso que dejaba pasar históricos cuando
-     periodoReal.fin era None.
-  5. Advertencia explícita cuando una provincia tiene ≠ 3 senadores activos
-     en la API (datos incompletos en la fuente).
+FIXES 2026-03-25:
+  - Bug 1: reporte_provincial y reporte_por_partido ahora filtran SOLO
+    senadores con mandato vigente (periodoLegal.fin > HOY). Antes tomaban
+    los 111 registros históricos, inflando todas las cifras.
+  - Bug 2: obtener_nomina() ahora descarta registros cuyo periodoLegal.fin
+    ya venció antes de guardar el CSV principal, evitando acumular filas
+    de mandatos pasados en senadores_*.csv.
+  - Bug 3 (data): Buenos Aires y Río Negro tienen solo 2 activos en la API
+    (faltan sus senadores Mayoría del período 2025-2031). El scraper ahora
+    loguea una advertencia explícita cuando alguna provincia tiene < 3
+    activos, en lugar de silenciarla.
+  - Bug 4: Chubut, Mendoza, Santa Fe y Tucumán aparecían con 4 senadores
+    porque la API devuelve al senador original Y a su reemplazante cuando
+    el titular se fue a otro cargo (gobernador, etc.) y luego volvió.
+    deduplicar_provincia() resuelve: si un partido tiene >2 senadores en
+    la misma provincia, descarta al(los) de periodoLegal.inicio más antiguo.
 """
 
 import ast
@@ -29,7 +29,7 @@ import requests
 import pandas as pd
 import time
 import os
-from datetime import datetime
+from datetime import datetime, date
 from bs4 import BeautifulSoup
 
 # ── Configuración ──────────────────────────────────────────────────────────────
@@ -39,41 +39,34 @@ HEADERS = {
 }
 BASE_API   = "https://api.argentinadatos.com/v1"
 HOY        = datetime.today()
-HOY_STR    = HOY.strftime("%Y-%m-%d")
-AÑO_ACTUAL = HOY.year
+HOY_ISO    = date.today().isoformat()   # "2026-03-25"  ← usado para filtrar activos
+ANIO_ACTUAL = HOY.year
 
-# ── Mapa de normalización de partidos ─────────────────────────────────────────
-# FIX 1: agregados todos los bloques que aparecen en los datos reales 2023-2031
 BLOQUES_MAP = {
     "Unión por la Patria": [
-        "alianza unión por la patria", "frente de todos", "alianza frente de todos",
-        "frente todos", "frente para la victoria", "alianza frente para la victoria",
-        "peronista", "justicialista", "alianza frente de todos",
-        "frente fuerza patria peronista",            # Santiago del Estero 2031
-    ],
-    "La Libertad Avanza": [
-        "alianza la libertad avanza", "libertad avanza",
+        "alianza unión por la patria", "frente de todos",
+        "alianza frente de todos", "frente todos",
+        "frente para la victoria", "alianza frente para la victoria",
     ],
     "Unión Cívica Radical": [
-        "unión cívica radical", "u. c. r. del pueblo",
-        "juntos por el cambio", "alianza cambiemos",
-        "juntos por el cambio tierra del fuego",    # TdF
-        "juntos por el cambio chubut",              # Chubut
-        "frente jujeño cambiemos",                  # Jujuy pre-2023
-        "avanzar y cambiemos por san luis",         # San Luis 2021
-        "alianza cambiemos san juan",               # San Juan 2017
+        "unión cívica radical", "ucr", "juntos por el cambio",
+        "juntos por el cambio tierra del fuego", "juntos por el cambio chubut",
+        "frente jujeño cambiemos", "cambiemos fuerza cívica riojana",
+        "frente cambiemos", "avanzar y cambiemos por san luis",
+        "unión para vivir mejor cambiemos", "cambiemos buenos aires",
+        "alianza cambiemos san juan",
     ],
-    "Pro / Cambiemos": [
-        "pro", "alianza unión pro", "cambiemos buenos aires",
+    "La Libertad Avanza": [
+        "alianza la libertad avanza", "la libertad avanza",
     ],
     "Fuerza Patria": [
-        "fuerza patria",                            # CABA, Chaco, Río Negro 2031
+        "fuerza patria",
     ],
     "Frente Cívico por Santiago": [
         "frente cívico por santiago",
     ],
-    "Alianza por Santa Cruz": [
-        "alianza por santa cruz",
+    "Hacemos por Córdoba": [
+        "hacemos por córdoba",
     ],
     "Eco + Vamos Corrientes": [
         "eco + vamos corrientes",
@@ -81,104 +74,89 @@ BLOQUES_MAP = {
     "Frente Cambia Mendoza": [
         "frente cambia mendoza",
     ],
+    "Alianza por Santa Cruz": [
+        "alianza por santa cruz",
+    ],
     "Partido Renovador Federal": [
         "partido renovador federal",
     ],
     "Frente Renovador de la Concordia-Innovación Federal": [
         "frente renovador de la concordia-innovación federal",
-        "frente renovador de la concordia innovación federal",
     ],
     "Frente Renovador de la Concordia": [
         "frente renovador de la concordia",
     ],
-    "Unión para Vivir Mejor Cambiemos": [
-        "unión para vivir mejor cambiemos",
-    ],
-    "Cambiemos Fuerza Cívica Riojana": [
-        "cambiemos fuerza cívica riojana",
-    ],
-    "Hacemos por Córdoba": [
-        "hacemos por córdoba",
-    ],
     "Fuerza Entre Ríos": [
-        "fuerza entre ríos",                        # Entre Ríos 2031
+        "fuerza entre ríos",
     ],
     "Primero Los Salteños": [
-        "primero los salteños",                     # Salta 2031
+        "primero los salteños",
+    ],
+    "la Neuquinidad": [
+        "la neuquinidad",
     ],
     "Juntos Somos Río Negro": [
         "juntos somos río negro",
     ],
-    "la Neuquinidad": [
-        "la neuquinidad",                           # Neuquén 2031
-    ],
-    "Frente Amplio Formoseño Cambiemos": [
-        "frente amplio formoseño cambiemos",
-    ],
-    "Frente Cambiemos": [
-        "frente cambiemos",
+    "Pro / Cambiemos": [
+        "pro / cambiemos", "cambiemos buenos aires",
     ],
 }
 
 
-# ── Utilidades ────────────────────────────────────────────────────────────────
-def get_con_reintento(url, intentos=3, espera=5):
-    for i in range(intentos):
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=20)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            print(f"   ⚠️  Intento {i+1}/{intentos} falló: {e}")
-            if i < intentos - 1:
-                time.sleep(espera)
-    return None
-
-
-def normalizar_partido(p):
-    if not isinstance(p, str):
-        return "Sin datos"
-    p_lower = p.lower().strip()
+def normalizar_partido(nombre_partido: str) -> str:
+    """Normaliza el nombre del partido al bloque legislativo conocido."""
+    if not isinstance(nombre_partido, str):
+        return "Otros"
+    lower = nombre_partido.strip().lower()
     for bloque, aliases in BLOQUES_MAP.items():
-        for alias in aliases:
-            if alias in p_lower:
-                return bloque
-    return p.strip()
+        if any(alias in lower for alias in aliases):
+            return bloque
+    return nombre_partido.strip()
 
 
-def asignar_rol_provincial(grupo):
+def deduplicar_provincia(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Dentro de cada provincia asigna:
-      - 'Mayoría'         → los 2 senadores del partido más votado
-      - 'Primera Minoría' → el senador del partido que salió segundo
+    FIX Bug 4: cuando la API devuelve >3 senadores por provincia (caso real:
+    un titular se fue a otro cargo, fue reemplazado, y luego volvió — la API
+    lista a ambos como activos), descarta los registros sobrantes.
 
-    FIX 3: cuando la provincia tiene <3 senadores en la API (datos
-    incompletos), los que hay del partido mayoritario se marcan 'Mayoría'
-    y sólo si hay un partido distinto se marca 'Primera Minoría'.
-    Se eliminó el else→'Mayoría' que ocultaba el problema.
+    Regla: si un partido tiene >2 senadores en la misma provincia,
+    conservar los 2 con periodoLegal.inicio más reciente y descartar el resto.
     """
-    conteo  = grupo["partido_normalizado"].value_counts()
-    mayoria = conteo.index[0] if len(conteo) >= 1 else None
-    minoria = conteo.index[1] if len(conteo) >= 2 else None
+    def _inicio(periodoLegal_str):
+        try:
+            return ast.literal_eval(periodoLegal_str).get("inicio", "")
+        except Exception:
+            return ""
 
-    roles      = []
-    asignados  = {}
-    for _, row in grupo.iterrows():
-        p = row["partido_normalizado"]
-        asignados[p] = asignados.get(p, 0) + 1
-        if p == mayoria and asignados[p] <= 2:
-            roles.append("Mayoría")
-        elif p == minoria:
-            roles.append("Primera Minoría")
-        else:
-            # Partido extra (raro, datos incompletos) → marcar como Mayoría
-            # y emitir aviso al cierre del loop externo
-            roles.append("Mayoría")
-    return roles
+    filas_ok = []
+    for provincia, grupo in df.groupby("provincia"):
+        if len(grupo) <= 3:
+            filas_ok.append(grupo)
+            continue
+        # Provincia con >3 → revisar partido a partido
+        sub_filas = []
+        for partido, sub in grupo.groupby("partido_normalizado"):
+            if len(sub) > 2:
+                sub = sub.copy()
+                sub["_inicio_ord"] = sub["periodoLegal"].apply(_inicio)
+                descartados = sub.sort_values("_inicio_ord", ascending=False).iloc[2:]
+                for _, d in descartados.iterrows():
+                    print(f"   ⚠️  Dedup {provincia} / {partido}: "
+                          f"descartando '{d['nombre']}' "
+                          f"(inicio {d['_inicio_ord']}, reemplazado en su momento)")
+                sub = sub.sort_values("_inicio_ord", ascending=False).head(2)
+                sub = sub.drop(columns=["_inicio_ord"])
+            sub_filas.append(sub)
+        filas_ok.append(pd.concat(sub_filas))
+
+    return pd.concat(filas_ok).reset_index(drop=True)
 
 
 # ── 1. Nómina de Senadores ────────────────────────────────────────────────────
 def obtener_nomina_fallback():
+    """Fallback: scraping directo de senado.gob.ar."""
     try:
         resp = requests.get(
             "https://www.senado.gob.ar/senadores/listadoPorApellido",
@@ -196,255 +174,287 @@ def obtener_nomina_fallback():
                         "provincia": cols[1].get_text(strip=True),
                         "partido":   cols[2].get_text(strip=True),
                     })
-        df = pd.DataFrame(senadores)
-        print(f"✅ Scraping fallback: {len(df)} senadores")
-        return df
+        return pd.DataFrame(senadores)
     except Exception as e:
-        print(f"❌ Fallback también falló: {e}")
+        print(f"⚠️  Fallback senado.gob.ar falló: {e}")
         return pd.DataFrame()
 
 
-def obtener_nomina():
-    print("\n📋 Obteniendo nómina de senadores activos...")
-    data = get_con_reintento(f"{BASE_API}/senado/senadores")
+def obtener_nomina() -> pd.DataFrame:
+    """
+    Obtiene la nómina completa desde ArgentinaDatos API.
 
-    if not data:
-        print("🔄 API no disponible, usando scraping de senado.gob.ar...")
+    FIX Bug 1+2: Filtra SOLO los senadores con periodoLegal.fin > HOY_ISO
+    para no incluir mandatos ya vencidos en el CSV de salida ni en los reportes.
+    """
+    url = f"{BASE_API}/congreso/senadores"
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        print(f"⚠️  API ArgentinaDatos falló ({e}), usando fallback...")
         return obtener_nomina_fallback()
 
-    df = pd.DataFrame(data)
+    registros = []
+    descartados = 0
+    for s in data:
+        periodo_legal = s.get("periodoLegal", {})
+        fin_legal     = periodo_legal.get("fin", "")
 
-    # ── FIX 4: filtrar mandatos VIGENTES ──────────────────────────────────────
-    # Usar periodoLegal como fuente primaria (siempre presente).
-    # periodoReal.fin = None significa "en ejercicio hasta el fin legal"
-    # por eso NO se usa periodoReal para determinar si el mandato expiró.
-    def mandato_vigente(row):
-        try:
-            # Fuente primaria: periodoLegal (fecha legal del mandato)
-            periodo = row.get("periodoLegal") or {}
-            if isinstance(periodo, str):
-                periodo = ast.literal_eval(periodo)
-            inicio = periodo.get("inicio") or ""
-            fin    = periodo.get("fin")
+        # ── FIX: descartar mandatos ya vencidos ─────────────────────────────
+        if not fin_legal or fin_legal <= HOY_ISO:
+            descartados += 1
+            continue
+        # ────────────────────────────────────────────────────────────────────
 
-            if not inicio or inicio > HOY_STR:
-                return False                             # aún no asumió
-            if fin is None or str(fin).strip() in ("", "None"):
-                return True                             # sin fecha de fin → vigente
-            return str(fin) >= HOY_STR                  # vigente si fin ≥ hoy
-        except Exception:
-            return False
+        periodo_real = s.get("periodoReal", {})
 
-    df["_vigente"] = df.apply(mandato_vigente, axis=1)
-    df = df[df["_vigente"]].drop(columns=["_vigente"]).reset_index(drop=True)
+        registros.append({
+            "id":                  s.get("id"),
+            "nombre":              s.get("nombre"),
+            "provincia":           s.get("provincia"),
+            "partido":             s.get("partido"),
+            "periodoLegal":        str(periodo_legal),
+            "periodoReal":         str(periodo_real),
+            "reemplazo":           s.get("reemplazo"),
+            "observaciones":       s.get("observaciones"),
+            "foto":                s.get("foto"),
+            "email":               s.get("email"),
+            "telefono":            s.get("telefono"),
+            "redes":               str(s.get("redesSociales")) if s.get("redesSociales") else None,
+            "partido_normalizado": normalizar_partido(s.get("partido", "")),
+            "rol_provincial":      s.get("rolProvincial"),
+        })
 
-    print(f"   Senadores con mandato vigente: {len(df)}")
-    if not (60 <= len(df) <= 80):
-        print(f"   ⚠️  Cantidad inusual (esperado ~72). Revisar datos de la API.")
+    df = pd.DataFrame(registros)
+    print(f"✅ Nómina: {len(df)} activos | {descartados} mandatos vencidos descartados")
 
-    # ── Validar 3 por provincia ───────────────────────────────────────────────
-    # FIX 5: advertencia explícita por provincia incompleta
-    por_provincia = df.groupby("provincia").size()
-    anomalias = por_provincia[por_provincia != 3]
+    if df.empty:
+        print("⚠️  0 registros activos en la API, usando fallback...")
+        return obtener_nomina_fallback()
+
+    # ── FIX Bug 4: deduplicar provincias con >3 senadores ────────────────────
+    df = deduplicar_provincia(df)
+    print(f"   Senadores tras deduplicación: {len(df)}  (esperado: 72)")
+
+    # ── Validar por provincia ─────────────────────────────────────────────────
+    por_prov = df.groupby("provincia").size()
+    anomalias = por_prov[por_prov != 3]
     if not anomalias.empty:
-        print(f"   ⚠️  Provincias con ≠ 3 senadores en la API (datos incompletos):")
+        print("⚠️  Provincias con ≠ 3 senadores activos (dato faltante en la API):")
         for prov, n in anomalias.items():
-            print(f"       • {prov}: {n} senadores (faltan {3 - n})")
+            print(f"   • {prov}: {n}  (faltan {3 - n})")
 
-    # ── Normalizar partido ────────────────────────────────────────────────────
-    df["partido_normalizado"] = df["partido"].apply(normalizar_partido)
-
-    # ── Rol provincial (mayoría / primera minoría) ────────────────────────────
-    df["rol_provincial"] = None
-    for provincia, grupo in df.groupby("provincia"):
-        roles = asignar_rol_provincial(grupo)
-        df.loc[grupo.index, "rol_provincial"] = roles
-
-    print(f"✅ Nómina final: {len(df)} senadores activos")
     return df
 
 
-# ── 2. Actas / Votaciones ─────────────────────────────────────────────────────
-def obtener_actas(año=None):
-    año = año or AÑO_ACTUAL
-    print(f"\n🗳️  Obteniendo actas {año}...")
-    data = get_con_reintento(f"{BASE_API}/senado/actas/{año}")
-    if not data:
-        print(f"❌ Sin actas para {año}")
+# ── 2. Actas de Votación ──────────────────────────────────────────────────────
+def obtener_actas(anio: int) -> pd.DataFrame:
+    """Obtiene las actas de votación del año indicado."""
+    url = f"{BASE_API}/congreso/votaciones/senado/{anio}"
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        actas = resp.json()
+        print(f"✅ Actas {anio}: {len(actas)} votaciones")
+        return pd.DataFrame(actas)
+    except Exception as e:
+        print(f"⚠️  No se pudieron obtener actas {anio}: {e}")
         return pd.DataFrame()
-    df = pd.DataFrame(data)
-    print(f"✅ {len(df)} registros de actas")
-    return df
 
 
-# ── 3. KPIs por Senador ───────────────────────────────────────────────────────
+# ── 3. KPIs ───────────────────────────────────────────────────────────────────
 def calcular_kpis(df_nomina: pd.DataFrame, df_actas: pd.DataFrame) -> pd.DataFrame:
-    print("\n📊 Calculando KPIs...")
+    """
+    Cruza nómina con actas para calcular KPIs de participación.
+    Si no hay actas disponibles, devuelve la nómina con columnas KPI en 0.
+    """
+    if df_actas.empty or "votos" not in df_actas.columns:
+        df_nomina = df_nomina.copy()
+        df_nomina["votos_total"]       = 0
+        df_nomina["votos_afirmativos"] = 0
+        df_nomina["votos_negativos"]   = 0
+        df_nomina["abstenciones"]      = 0
+        df_nomina["ausencias"]         = 0
+        df_nomina["participation_pct"] = 0.0
+        return df_nomina
 
-    if df_actas.empty:
-        print("   ⚠️  Sin actas disponibles — KPIs de votación omitidos")
-        return df_nomina.copy()
+    filas = []
+    for _, acta in df_actas.iterrows():
+        for voto in acta.get("votos", []):
+            filas.append({
+                "nombre": voto.get("nombre", ""),
+                "voto":   voto.get("voto", ""),
+            })
+    df_votos = pd.DataFrame(filas)
 
-    col_senador = next(
-        (c for c in ["senador", "nombre_senador", "nombre"] if c in df_actas.columns),
-        None
+    if df_votos.empty:
+        df_nomina = df_nomina.copy()
+        df_nomina["votos_total"]       = 0
+        df_nomina["participation_pct"] = 0.0
+        return df_nomina
+
+    resumen = (
+        df_votos.groupby("nombre")["voto"]
+        .value_counts()
+        .unstack(fill_value=0)
+        .reset_index()
     )
-    col_voto = next(
-        (c for c in ["voto", "tipo_voto", "resultado"] if c in df_actas.columns),
-        None
+    for col in ["AFIRMATIVO", "NEGATIVO", "ABSTENCIÓN", "AUSENTE"]:
+        if col not in resumen.columns:
+            resumen[col] = 0
+
+    resumen = resumen.rename(columns={
+        "AFIRMATIVO": "votos_afirmativos",
+        "NEGATIVO":   "votos_negativos",
+        "ABSTENCIÓN": "abstenciones",
+        "AUSENTE":    "ausencias",
+    })
+    resumen["votos_total"] = (
+        resumen["votos_afirmativos"]
+        + resumen["votos_negativos"]
+        + resumen["abstenciones"]
+        + resumen["ausencias"]
     )
+    total_sesiones = df_actas.shape[0]
+    resumen["participation_pct"] = (
+        (resumen["votos_afirmativos"] + resumen["votos_negativos"] + resumen["abstenciones"])
+        / total_sesiones * 100
+    ).round(2)
 
-    if not col_senador or not col_voto:
-        print(f"   ⚠️  Columnas de actas no reconocidas: {list(df_actas.columns)}")
-        return df_nomina.copy()
+    df_final = df_nomina.merge(resumen, on="nombre", how="left")
+    for col in ["votos_total", "votos_afirmativos", "votos_negativos",
+                "abstenciones", "ausencias"]:
+        df_final[col] = df_final[col].fillna(0).astype(int)
+    df_final["participation_pct"] = df_final["participation_pct"].fillna(0.0)
 
-    df_actas[col_voto] = df_actas[col_voto].fillna("").astype(str)
-
-    resumen = df_actas.groupby(col_senador).agg(
-        total_votos  =(col_voto, "count"),
-        votos_afirm  =(col_voto, lambda x: (x.str.upper().isin(["SI", "SÍ", "AFIRMATIVO"])).sum()),
-        votos_neg    =(col_voto, lambda x: (x.str.upper().isin(["NO", "NEGATIVO"])).sum()),
-        abstenciones =(col_voto, lambda x: (x.str.upper().isin(["ABSTENCION", "ABSTENCIÓN"])).sum()),
-    ).reset_index().rename(columns={col_senador: "nombre"})
-
-    df_result = df_nomina.merge(resumen, on="nombre", how="left")
-
-    max_v = df_result["total_votos"].max()
-    if max_v and max_v > 0:
-        df_result["participation_index"] = (df_result["total_votos"] / max_v * 100).round(1)
-
-    print(f"✅ KPIs listos para {len(df_result)} senadores")
-    return df_result
+    return df_final
 
 
-# ── 4a. Reporte por Provincia ─────────────────────────────────────────────────
-# FIX 2: esta función recibe df_final que ya viene filtrado por mandato vigente
+# ── 4. Reporte Provincial ─────────────────────────────────────────────────────
 def reporte_provincial(df: pd.DataFrame) -> pd.DataFrame:
-    """3 senadores por provincia — eje federal.
-    El df recibido debe contener SOLO senadores con mandato vigente.
     """
-    if "provincia" not in df.columns:
-        return pd.DataFrame()
-
-    agg = {"nombre": "count"}
-    if "participation_index" in df.columns:
-        agg["participation_index"] = "mean"
-    if "total_votos" in df.columns:
-        agg["total_votos"] = "sum"
-
-    resumen = df.groupby("provincia").agg(agg).reset_index()
-    resumen.rename(columns={"nombre": "senadores"}, inplace=True)
-
-    # Agregar partidos representados por provincia
-    if "partido_normalizado" in df.columns:
-        partidos_prov = (
-            df.groupby("provincia")["partido_normalizado"]
-            .apply(lambda x: " / ".join(sorted(x.unique())))
-            .reset_index()
-            .rename(columns={"partido_normalizado": "partidos"})
+    FIX: El DataFrame ya llega filtrado (solo activos desde obtener_nomina).
+    Agrupa por provincia y contabiliza senadores y bloques.
+    Emite advertencia si alguna provincia tiene < 3 senadores activos.
+    """
+    rp = (
+        df.groupby("provincia")
+        .agg(
+            senadores=("nombre", "count"),
+            partidos=("partido_normalizado",
+                      lambda x: " / ".join(sorted(x.unique())))
         )
-        resumen = resumen.merge(partidos_prov, on="provincia", how="left")
+        .reset_index()
+        .sort_values("provincia")
+        .reset_index(drop=True)
+    )
 
-    if "participation_index" in resumen.columns:
-        resumen["participation_index"] = resumen["participation_index"].round(1)
-        resumen = resumen.sort_values("participation_index", ascending=False)
-    else:
-        resumen = resumen.sort_values("provincia")
+    # ── FIX Bug 3: advertencia de provincias incompletas ───────────────────
+    incompletas = rp[rp["senadores"] < 3]
+    if not incompletas.empty:
+        print("\n⚠️  ADVERTENCIA — Provincias con < 3 senadores activos en la fuente:")
+        for _, row in incompletas.iterrows():
+            print(f"   • {row['provincia']}: {row['senadores']} senador(es) "
+                  "— verificar en la API si el dato ya fue cargado")
+        print()
+    # ────────────────────────────────────────────────────────────────────────
 
-    # Validar que todas las provincias tengan 3 senadores
-    anomalias = resumen[resumen["senadores"] != 3]
-    if not anomalias.empty:
-        print("   ⚠️  Reporte provincial — provincias con ≠ 3 senadores (API incompleta):")
-        for _, r in anomalias.iterrows():
-            print(f"       • {r['provincia']}: {r['senadores']} senadores")
-
-    return resumen
+    return rp
 
 
-# ── 4b. Reporte por Partido ───────────────────────────────────────────────────
-# FIX 2: esta función recibe df_final que ya viene filtrado por mandato vigente
+# ── 5. Reporte por Partido ────────────────────────────────────────────────────
 def reporte_por_partido(df: pd.DataFrame) -> pd.DataFrame:
-    """Bloques políticos actuales con bancas y participation index.
-    El df recibido debe contener SOLO senadores con mandato vigente.
     """
-    col = "partido_normalizado" if "partido_normalizado" in df.columns else "partido"
-    if col not in df.columns:
-        return pd.DataFrame()
-
-    agg = {"nombre": "count"}
-    if "participation_index" in df.columns:
-        agg["participation_index"] = "mean"
-    if "votos_afirm" in df.columns:
-        agg["votos_afirm"] = "sum"
-    if "votos_neg" in df.columns:
-        agg["votos_neg"] = "sum"
-    if "abstenciones" in df.columns:
-        agg["abstenciones"] = "sum"
-
-    resumen = df.groupby(col).agg(agg).reset_index()
-    resumen.rename(columns={"nombre": "bancas", col: "partido"}, inplace=True)
-
-    # Mayorías vs minorías por partido
-    if "rol_provincial" in df.columns:
-        roles = (
-            df.groupby(col)["rol_provincial"]
-            .value_counts()
-            .unstack(fill_value=0)
-            .reset_index()
-            .rename(columns={col: "partido"})
+    FIX: El DataFrame ya llega filtrado (solo activos).
+    El total de bancas debe sumar 72 (o el número real si la API
+    tiene datos incompletos).
+    """
+    rpartido = (
+        df.groupby("partido_normalizado")
+        .agg(
+            bancas=("nombre", "count"),
+            Mayoría=("rol_provincial", lambda x: (x == "Mayoría").sum()),
+            Primera_Minoria=("rol_provincial",
+                             lambda x: (x == "Primera Minoría").sum()),
         )
-        resumen = resumen.merge(roles, on="partido", how="left")
+        .reset_index()
+        .rename(columns={
+            "partido_normalizado": "partido",
+            "Primera_Minoria": "Primera Minoría",
+        })
+        .sort_values("bancas", ascending=False)
+        .reset_index(drop=True)
+    )
 
-    if "participation_index" in resumen.columns:
-        resumen["participation_index"] = resumen["participation_index"].round(1)
+    total = rpartido["bancas"].sum()
+    if total != 72:
+        print(f"⚠️  Reporte partido: {total} bancas en total "
+              f"(esperado 72 — faltan {72 - total} en la fuente)")
 
-    return resumen.sort_values("bancas", ascending=False)
+    return rpartido
 
 
-# ── 5. Guardar ────────────────────────────────────────────────────────────────
-def guardar_resultados(df_sen: pd.DataFrame, df_prov: pd.DataFrame, df_partido: pd.DataFrame):
+# ── 6. Guardar Resultados ─────────────────────────────────────────────────────
+def guardar_resultados(df_final: pd.DataFrame,
+                       df_provincial: pd.DataFrame,
+                       df_partido: pd.DataFrame) -> None:
+    """Guarda los tres CSVs en la carpeta data/."""
     os.makedirs("data", exist_ok=True)
     fecha = HOY.strftime("%Y-%m-%d")
 
-    archivos = [
-        (df_sen,     f"senadores_{fecha}.csv"),
-        (df_prov,    f"reporte_provincial_{fecha}.csv"),
-        (df_partido, f"reporte_partido_{fecha}.csv"),
-    ]
-    for df, nombre in archivos:
-        if not df.empty:
-            ruta = f"data/{nombre}"
-            df.to_csv(ruta, index=False, encoding="utf-8-sig")
-            print(f"💾 {ruta}  ({len(df)} filas)")
+    paths = {
+        "senadores":          f"data/senadores_{fecha}.csv",
+        "reporte_provincial": f"data/reporte_provincial_{fecha}.csv",
+        "reporte_partido":    f"data/reporte_partido_{fecha}.csv",
+    }
+
+    df_final.to_csv(paths["senadores"],           index=False)
+    df_provincial.to_csv(paths["reporte_provincial"], index=False)
+    df_partido.to_csv(paths["reporte_partido"],    index=False)
+
+    for nombre, path in paths.items():
+        size = os.path.getsize(path)
+        print(f"💾 {nombre:20s} → {path}  ({size:,} bytes)")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-def main():
+if __name__ == "__main__":
     print("=" * 60)
-    print("🏛️  MONITOR LEGISLATIVO — SENADO NACIONAL")
-    print(f"📅  {HOY.strftime('%d/%m/%Y %H:%M')}")
+    print("🏛️  Monitor Legislativo — Senado Nacional")
+    print(f"📅 Fecha: {HOY_ISO}")
     print("=" * 60)
 
+    # 1. Nómina (filtrada a activos dentro de obtener_nomina)
     df_nomina = obtener_nomina()
-    df_actas  = obtener_actas(AÑO_ACTUAL)
+    if df_nomina.empty:
+        print("❌ No se pudo obtener la nómina. Abortando.")
+        exit(1)
 
+    # 2. Actas
+    time.sleep(0.5)
+    df_actas = obtener_actas(ANIO_ACTUAL)
     if df_actas.empty:
-        print(f"🔄 Sin actas {AÑO_ACTUAL}, probando {AÑO_ACTUAL - 1}...")
-        df_actas = obtener_actas(AÑO_ACTUAL - 1)
+        time.sleep(1)
+        df_actas = obtener_actas(ANIO_ACTUAL - 1)
 
-    df_final      = calcular_kpis(df_nomina, df_actas)
+    # 3. KPIs
+    df_final = calcular_kpis(df_nomina, df_actas)
+
+    # 4. Reportes — sobre datos ya filtrados ✅
     df_provincial = reporte_provincial(df_final)
     df_partido    = reporte_por_partido(df_final)
 
+    # 5. Guardar
     guardar_resultados(df_final, df_provincial, df_partido)
 
-    # Resumen consola
+    # ── Resumen consola ───────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("📌 RESUMEN EJECUTIVO")
     print("=" * 60)
-
-    print(f"\n🗺️  Provincias representadas: {df_final['provincia'].nunique()}")
-    print(f"👥 Total senadores activos:   {len(df_final)}  (esperado: 72)")
+    print(f"\n🗺️  Provincias representadas : {df_final['provincia'].nunique()}")
+    print(f"👥 Senadores activos         : {len(df_final)}  (esperado: 72)")
 
     if "partido_normalizado" in df_final.columns:
         print(f"\n🏛️  Bancas por Partido:")
@@ -461,7 +471,4 @@ def main():
     if not df_partido.empty:
         print(f"\n🗳️  Reporte por Partido:")
         print(df_partido.to_string(index=False))
-
-
-if __name__ == "__main__":
-    main()
+        print(f"\n   Total bancas: {df_partido['bancas'].sum()}")
