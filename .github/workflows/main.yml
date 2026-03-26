@@ -37,7 +37,10 @@ jobs:
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
           else
-            git commit -m "auto: actualización nómina senadores $(date +'%Y-%m-%d')"
+            git stash
             git pull --rebase origin main
+            git stash pop
+            git add data/
+            git commit -m "auto: actualización nómina senadores $(date +'%Y-%m-%d')"
             git push
           fi
