@@ -17,19 +17,21 @@ jobs:
       - name: 📥 Checkout repositorio
         uses: actions/checkout@v4
 
-      - name: 🐍 Configurar Python 3.11
+      - name: 🐍 Configurar Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: "pip"
 
       - name: 📦 Instalar dependencias
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
 
       - name: 🏛️ Ejecutar Monitor de Senadores
-        run: python scraper_senadores.py
+        run: python pipeline.py
 
       - name: 📤 Commit y push de datos
         run: |
