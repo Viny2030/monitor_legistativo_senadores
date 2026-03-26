@@ -1,4 +1,4 @@
-name: Monitor Legislativo — Diputados + Senadores
+name: Monitor Legislativo —Senadores
 
 on:
   workflow_dispatch:   # ejecución manual desde GitHub
