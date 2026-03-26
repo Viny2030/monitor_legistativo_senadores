@@ -1,9 +1,18 @@
+# Scraping y HTTP
 requests==2.31.0
 beautifulsoup4==4.12.3
 lxml==5.2.1
 httpx==0.27.0
+
+# Datos
 pandas==2.2.2
 numpy==1.26.4
 openpyxl==3.1.2
+
+# Utilitarios
 holidays==0.47
 python-dateutil==2.9.0
+
+# API
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0

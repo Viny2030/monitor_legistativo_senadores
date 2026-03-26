@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Indicadores – Monitor Legislativo Senado Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; line-height: 1.55; background: #f0f2f5; color: #1a1a2e; }
+
+/* ── Header ── */
+header {
+  background: linear-gradient(135deg, #6b0f1a 0%, #8b1a2a 50%, #4a0010 100%);
+  color: #fff; padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+header .escudo { font-size: 2.4rem; }
+header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: .02em; }
+header p  { font-size: .875rem; opacity: .85; margin-top: .2rem; }
+header nav { margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+header nav a {
+  color: #fff; text-decoration: none; background: rgba(255,255,255,.18);
+  padding: .4rem 1rem; border-radius: 20px; font-size: .82rem; font-weight: 600;
+  transition: background .15s;
+}
+header nav a:hover { background: rgba(255,255,255,.35); }
+header nav a.active { background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); }
+
+/* ── Nav interna ── */
+.nav-interna {
+  position: sticky; top: 0; z-index: 100;
+  background: #6b0f1a; display: flex; gap: 0; flex-wrap: wrap;
+  border-bottom: 2px solid #8b1a2a;
+}
+.nav-interna a {
+  color: rgba(255,255,255,.75); text-decoration: none;
+  padding: .55rem 1.1rem; font-size: .8rem; font-weight: 600;
+  border-right: 1px solid rgba(255,255,255,.1);
+  transition: background .12s, color .12s; white-space: nowrap;
+}
+.nav-interna a:hover  { background: rgba(255,255,255,.12); color: #fff; }
+.nav-interna a.activo { background: rgba(255,255,255,.18); color: #fff; border-bottom: 2px solid #f59e0b; }
+
+/* ── KPI ── */
+.kpi-bar {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: .75rem; padding: 1.25rem 1.5rem; background: #fff;
+  border-bottom: 1px solid #dde2ec;
+}
+.kpi-card {
+  background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;
+  padding: .9rem 1rem; text-align: center;
+}
+.kpi-card .kv { font-size: 1.75rem; font-weight: 800; color: #6b0f1a; line-height: 1; }
+.kpi-card .kl { font-size: .72rem; color: #64748b; margin-top: .3rem; text-transform: uppercase; letter-spacing: .04em; }
+.kpi-card .ks { font-size: .8rem; color: #475569; margin-top: .15rem; }
+
+/* ── Secciones ── */
+.seccion { padding: 1.25rem 1.5rem; }
+.seccion h2 { font-size: 1rem; font-weight: 700; color: #6b0f1a; margin-bottom: .9rem;
+  padding-bottom: .4rem; border-bottom: 2px solid #f1e0e3; }
+
+/* ── Grid 2 cols ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media(max-width:800px){ .grid-2 { grid-template-columns: 1fr; } }
+
+/* ── Panel card ── */
+.panel {
+  background: #fff; border-radius: 10px; border: 1px solid #dde2ec;
+  padding: 1rem 1.1rem; overflow: hidden;
+}
+.panel h3 { font-size: .88rem; font-weight: 700; color: #334155; margin-bottom: .75rem; }
+
+/* ── Tabla indicadores ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.tbl th { background: #f8f0f1; color: #6b0f1a; font-weight: 700; padding: .45rem .6rem;
+  text-align: left; border-bottom: 2px solid #e8c5cb; position: sticky; top: 0; }
+.tbl th.num, .tbl td.num { text-align: right; }
+.tbl tr:nth-child(even) { background: #fafafa; }
+.tbl td { padding: .38rem .6rem; border-bottom: 1px solid #f0f0f0; }
+.tbl tr:hover td { background: #fef3f2; }
+
+/* ── Barra de participación ── */
+.bar-wrap { display: flex; align-items: center; gap: .5rem; }
+.bar-bg { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; min-width: 60px; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.bar-label { font-size: .75rem; font-weight: 700; min-width: 38px; text-align: right; }
+
+/* ── Partidos pills ── */
+.pill {
+  display: inline-block; padding: .15rem .55rem; border-radius: 12px;
+  font-size: .7rem; font-weight: 700; color: #fff;
+}
+
+/* ── Ranking senadores ── */
+.ranking-row { display: flex; align-items: center; gap: .6rem; padding: .4rem 0;
+  border-bottom: 1px solid #f0f0f0; }
+.ranking-row:last-child { border-bottom: none; }
+.rk-num { font-size: .75rem; font-weight: 700; color: #94a3b8; min-width: 22px; }
+.rk-nombre { flex: 1; font-size: .8rem; font-weight: 600; }
+.rk-prov { font-size: .7rem; color: #64748b; }
+.rk-pct { font-size: .85rem; font-weight: 800; min-width: 48px; text-align: right; }
+
+/* ── Scroll en panel ── */
+.panel-scroll { max-height: 400px; overflow-y: auto; }
+
+/* ── Footer ── */
+footer { text-align: center; padding: 1rem; font-size: .75rem; color: #94a3b8; }
+
+/* ── Colores partidos ── */
+.c-ucr   { background: #e74c3c; }
+.c-upp   { background: #2563eb; }
+.c-lla   { background: #7c3aed; }
+.c-fp    { background: #1d6a3c; }
+.c-otro  { background: #64748b; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo · Senado Nacional</h1>
+    <p>Indicadores de participación y votación — datos al 26 de marzo de 2026</p>
+  </div>
+  <nav>
+    <a href="senado.html">🏛️ Senado</a>
+    <a href="indicadores.html" class="active">📊 Indicadores</a>
+  </nav>
+</header>
+
+<div class="nav-interna">
+  <a href="#resumen" class="activo">📋 Resumen</a>
+  <a href="#partidos">🎯 Por Partido</a>
+  <a href="#provincias">🗺️ Por Provincia</a>
+  <a href="#ranking-top">🏆 Top participación</a>
+  <a href="#ranking-bottom">⚠️ Menor participación</a>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-bar" id="resumen">
+  <div class="kpi-card">
+    <div class="kv" id="kpi-total">72</div>
+    <div class="kl">Senadores</div>
+    <div class="ks">en ejercicio</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kv" id="kpi-prom">–</div>
+    <div class="kl">Participación promedio</div>
+    <div class="ks">activos con datos</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kv" id="kpi-alta">–</div>
+    <div class="kl">Alta participación</div>
+    <div class="ks">≥ 80%</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kv" id="kpi-media">–</div>
+    <div class="kl">Media participación</div>
+    <div class="ks">40–79%</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kv" id="kpi-baja">–</div>
+    <div class="kl">Sin datos / baja</div>
+    <div class="ks">0–39% o sin período</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kv" id="kpi-partidos">–</div>
+    <div class="kl">Bloques</div>
+    <div class="ks">representados</div>
+  </div>
+</div>
+
+<!-- Partidos y Provincias -->
+<div class="seccion" id="partidos">
+  <h2>🎯 Participación por bloque / partido</h2>
+  <div class="panel">
+    <div class="panel-scroll">
+      <table class="tbl" id="tbl-partidos">
+        <thead>
+          <tr>
+            <th>Bloque</th>
+            <th class="num">Bancas</th>
+            <th style="min-width:180px">Participación</th>
+            <th class="num">Af.</th>
+            <th class="num">Neg.</th>
+            <th class="num">Abst.</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="seccion" id="provincias">
+  <h2>🗺️ Participación por provincia</h2>
+  <div class="panel">
+    <div class="panel-scroll">
+      <table class="tbl" id="tbl-provincias">
+        <thead>
+          <tr>
+            <th>Provincia</th>
+            <th class="num">Sen.</th>
+            <th style="min-width:180px">Participación</th>
+            <th>Bloques</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Rankings -->
+<div class="seccion">
+  <div class="grid-2">
+    <div id="ranking-top">
+      <h2>🏆 Top 15 — Mayor participación</h2>
+      <div class="panel">
+        <div class="panel-scroll" id="list-top"></div>
+      </div>
+    </div>
+    <div id="ranking-bottom">
+      <h2>⚠️ Menor participación (con datos)</h2>
+      <div class="panel">
+        <div class="panel-scroll" id="list-bottom"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Datos: argentinadatos.com · Actualizado 26-03-2026 · Monitor Legislativo Senado Argentina</footer>
+
+<script>
+// ── Datos embebidos (CSV 2026-03-26) ──────────────────────────────────────
+const PARTIDOS_DATA = [
+  { partido:'Unión por la Patria',       bancas:22, participation_pct:76.9,  votos_afirmativos:1708, votos_negativos:306,  abstenciones:17 },
+  { partido:'La Libertad Avanza',        bancas:18, participation_pct:23.9,  votos_afirmativos:290,  votos_negativos:214,  abstenciones:13 },
+  { partido:'Unión Cívica Radical',      bancas:12, participation_pct:56.7,  votos_afirmativos:659,  votos_negativos:149,  abstenciones:8  },
+  { partido:'Fuerza Patria',             bancas:4,  participation_pct:21.7,  votos_afirmativos:86,   votos_negativos:18,   abstenciones:0  },
+  { partido:'Alianza por Santa Cruz',    bancas:2,  participation_pct:89.2,  votos_afirmativos:184,  votos_negativos:26,   abstenciones:4  },
+  { partido:'Eco + Vamos Corrientes',    bancas:2,  participation_pct:96.2,  votos_afirmativos:189,  votos_negativos:42,   abstenciones:0  },
+  { partido:'Partido Renovador Federal', bancas:2,  participation_pct:87.1,  votos_afirmativos:114,  votos_negativos:85,   abstenciones:10 },
+  { partido:'Frente Renovador de la Concordia', bancas:2, participation_pct:89.6, votos_afirmativos:177, votos_negativos:26, abstenciones:12 },
+  { partido:'Frente Cívico por Santiago',bancas:2,  participation_pct:0.0,   votos_afirmativos:0,    votos_negativos:0,    abstenciones:0  },
+  { partido:'Frente Cambia Mendoza',     bancas:2,  participation_pct:28.8,  votos_afirmativos:54,   votos_negativos:14,   abstenciones:1  },
+  { partido:'Fuerza Entre Ríos',         bancas:1,  participation_pct:0.0,   votos_afirmativos:0,    votos_negativos:0,    abstenciones:0  },
+  { partido:'Hacemos por Córdoba',       bancas:1,  participation_pct:80.8,  votos_afirmativos:75,   votos_negativos:21,   abstenciones:1  },
+  { partido:'Primero Los Salteños',      bancas:1,  participation_pct:0.0,   votos_afirmativos:0,    votos_negativos:0,    abstenciones:0  },
+  { partido:'la Neuquinidad',            bancas:1,  participation_pct:0.0,   votos_afirmativos:0,    votos_negativos:0,    abstenciones:0  },
+];
+
+const PROVINCIAL_DATA = [
+  { provincia:'Corrientes',      senadores:3, participation_pct:95.8, partidos:'Eco + Vamos Corrientes / Unión por la Patria' },
+  { provincia:'Formosa',         senadores:3, participation_pct:90.8, partidos:'La Libertad Avanza / Unión por la Patria' },
+  { provincia:'Santa Cruz',      senadores:3, participation_pct:90.8, partidos:'Alianza por Santa Cruz / Unión por la Patria' },
+  { provincia:'La Rioja',        senadores:3, participation_pct:89.7, partidos:'La Libertad Avanza / Unión por la Patria' },
+  { provincia:'San Luis',        senadores:3, participation_pct:89.4, partidos:'La Libertad Avanza / Unión por la Patria' },
+  { provincia:'San Juan',        senadores:3, participation_pct:86.9, partidos:'La Libertad Avanza / Unión por la Patria' },
+  { provincia:'Catamarca',       senadores:3, participation_pct:85.8, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Chubut',          senadores:3, participation_pct:85.3, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Misiones',        senadores:3, participation_pct:59.7, partidos:'Frente Renovador / UCR' },
+  { provincia:'Santa Fe',        senadores:3, participation_pct:58.6, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Tucumán',         senadores:3, participation_pct:58.1, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Jujuy',           senadores:3, participation_pct:58.1, partidos:'Partido Renovador Federal / Unión por la Patria' },
+  { provincia:'La Pampa',        senadores:3, participation_pct:57.5, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Córdoba',         senadores:3, participation_pct:54.4, partidos:'Hacemos por Córdoba / UCR' },
+  { provincia:'Buenos Aires',    senadores:3, participation_pct:54.2, partidos:'Unión Cívica Radical / Unión por la Patria' },
+  { provincia:'Mendoza',         senadores:3, participation_pct:47.8, partidos:'Frente Cambia Mendoza / Unión por la Patria' },
+  { provincia:'Tierra del Fuego',senadores:3, participation_pct:31.4, partidos:'La Libertad Avanza / Unión por la Patria' },
+  { provincia:'Cdad. Bs. As.',   senadores:3, participation_pct:28.9, partidos:'Fuerza Patria / La Libertad Avanza' },
+  { provincia:'Santiago del Estero', senadores:3, participation_pct:27.5, partidos:'Frente Cívico / Unión por la Patria' },
+  { provincia:'Chaco',           senadores:3, participation_pct:0.0,  partidos:'Fuerza Patria / La Libertad Avanza' },
+  { provincia:'Entre Ríos',      senadores:3, participation_pct:0.0,  partidos:'Fuerza Entre Ríos / La Libertad Avanza' },
+  { provincia:'Neuquén',         senadores:3, participation_pct:0.0,  partidos:'La Libertad Avanza / la Neuquinidad' },
+  { provincia:'Río Negro',       senadores:3, participation_pct:0.0,  partidos:'Fuerza Patria / La Libertad Avanza' },
+  { provincia:'Salta',           senadores:3, participation_pct:0.0,  partidos:'La Libertad Avanza / Primero Los Salteños' },
+];
+
+const SENADORES_DATA = [
+  { id:'546', nombre:"Abad, Maximiliano", provincia:"Buenos Aires", partido:"Unión Cívica Radical", rol_provincial:"Primera Minoría", participation_pct:75.0, votos_afirmativos:73, votos_negativos:15, ausencias:26, abstenciones:2, votos_total:116 },
+  { id:'545', nombre:"De Pedro, Eduardo Enrique", provincia:"Buenos Aires", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:87.5, votos_afirmativos:88, votos_negativos:17, ausencias:11, abstenciones:0, votos_total:116 },
+  { id:'519', nombre:"Andrada, Guillermo Eduardo", provincia:"Catamarca", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:94.17, votos_afirmativos:98, votos_negativos:14, ausencias:3, abstenciones:1, votos_total:116 },
+  { id:'398', nombre:"Corpacci, Lucia Benigna", provincia:"Catamarca", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:80.0, votos_afirmativos:82, votos_negativos:12, ausencias:20, abstenciones:2, votos_total:116 },
+  { id:'520', nombre:"Fama, Flavio Sergio", provincia:"Catamarca", partido:"Unión Cívica Radical", rol_provincial:"Primera Minoría", participation_pct:83.33, votos_afirmativos:82, votos_negativos:17, ausencias:17, abstenciones:1, votos_total:117 },
+  { id:'570', nombre:"Cristina, Andrea Marcela", provincia:"Chubut", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:94.17, votos_afirmativos:85, votos_negativos:25, ausencias:3, abstenciones:3, votos_total:116 },
+  { id:'528', nombre:"Terenzi, Edith Elizabeth", provincia:"Chubut", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:77.5, votos_afirmativos:78, votos_negativos:15, ausencias:24, abstenciones:0, votos_total:117 },
+  { id:'529', nombre:"Linares, Carlos Alberto", provincia:"Chubut", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:84.17, votos_afirmativos:84, votos_negativos:17, ausencias:15, abstenciones:0, votos_total:116 },
+  { id:'498', nombre:"Recalde, Mariano", provincia:"Ciudad Autónoma de Buenos Aires", partido:"Fuerza Patria", rol_provincial:"Primera Minoría", participation_pct:86.67, votos_afirmativos:86, votos_negativos:18, ausencias:12, abstenciones:0, votos_total:116 },
+  { id:'461', nombre:"Espínola, Carlos Mauricio", provincia:"Corrientes", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:95.0, votos_afirmativos:93, votos_negativos:21, ausencias:2, abstenciones:0, votos_total:116 },
+  { id:'525', nombre:"Valenzuela, Mercedes Gabriela", provincia:"Corrientes", partido:"Eco + Vamos Corrientes", rol_provincial:"Mayoría", participation_pct:96.67, votos_afirmativos:96, votos_negativos:20, ausencias:0, abstenciones:0, votos_total:116 },
+  { id:'524', nombre:"Vischi, Eduardo Alejandro", provincia:"Corrientes", partido:"Eco + Vamos Corrientes", rol_provincial:"Mayoría", participation_pct:95.83, votos_afirmativos:93, votos_negativos:22, ausencias:1, abstenciones:0, votos_total:116 },
+  { id:'400', nombre:"Juez, Luis Alfredo", provincia:"Córdoba", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:82.5, votos_afirmativos:72, votos_negativos:27, ausencias:17, abstenciones:0, votos_total:116 },
+  { id:'523', nombre:"Vigo, Alejandra María", provincia:"Córdoba", partido:"Hacemos por Córdoba", rol_provincial:"Primera Minoría", participation_pct:80.83, votos_afirmativos:75, votos_negativos:21, ausencias:19, abstenciones:1, votos_total:116 },
+  { id:'477', nombre:"González, María Teresa Margarita", provincia:"Formosa", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:95.83, votos_afirmativos:97, votos_negativos:17, ausencias:1, abstenciones:1, votos_total:116 },
+  { id:'294', nombre:"Mayans, José Miguel Ángel", provincia:"Formosa", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:91.67, votos_afirmativos:92, votos_negativos:17, ausencias:6, abstenciones:1, votos_total:116 },
+  { id:'551', nombre:"Paoltroni, Francisco Manuel", provincia:"Formosa", partido:"La Libertad Avanza", rol_provincial:"Primera Minoría", participation_pct:85.0, votos_afirmativos:57, votos_negativos:43, ausencias:13, abstenciones:2, votos_total:115 },
+  { id:'552', nombre:"Atauche, Ezequiel", provincia:"Jujuy", partido:"Partido Renovador Federal", rol_provincial:"Mayoría", participation_pct:87.5, votos_afirmativos:56, votos_negativos:43, ausencias:11, abstenciones:6, votos_total:116 },
+  { id:'553', nombre:"Bedia, Vilma Facunda", provincia:"Jujuy", partido:"Partido Renovador Federal", rol_provincial:"Mayoría", participation_pct:86.67, votos_afirmativos:58, votos_negativos:42, ausencias:12, abstenciones:4, votos_total:116 },
+  { id:'532', nombre:"Bensusán, Daniel Pablo", provincia:"La Pampa", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:80.83, votos_afirmativos:81, votos_negativos:15, ausencias:19, abstenciones:1, votos_total:116 },
+  { id:'530', nombre:"Kroneberger, Daniel Ricardo", provincia:"La Pampa", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:91.67, votos_afirmativos:93, votos_negativos:17, ausencias:6, abstenciones:0, votos_total:116 },
+  { id:'555', nombre:"López, María Florencia", provincia:"La Rioja", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:92.5, votos_afirmativos:92, votos_negativos:16, ausencias:5, abstenciones:3, votos_total:116 },
+  { id:'557', nombre:"Pagotto, Juan Carlos", provincia:"La Rioja", partido:"La Libertad Avanza", rol_provincial:"Primera Minoría", participation_pct:87.5, votos_afirmativos:58, votos_negativos:43, ausencias:11, abstenciones:4, votos_total:116 },
+  { id:'556', nombre:"Rejal, Jesús Fernando", provincia:"La Rioja", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:89.17, votos_afirmativos:90, votos_negativos:16, ausencias:9, abstenciones:1, votos_total:116 },
+  { id:'571', nombre:"Suárez, Rodolfo Alejandro", provincia:"Mendoza", partido:"Frente Cambia Mendoza", rol_provincial:"Mayoría", participation_pct:57.5, votos_afirmativos:54, votos_negativos:14, ausencias:48, abstenciones:1, votos_total:117 },
+  { id:'468', nombre:"Fernández Sagasti, Anabel", provincia:"Mendoza", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:85.83, votos_afirmativos:86, votos_negativos:16, ausencias:13, abstenciones:1, votos_total:116 },
+  { id:'558', nombre:"Arce, Carlos Omar", provincia:"Misiones", partido:"Frente Renovador de la Concordia-Innovación Federal", rol_provincial:"Mayoría", participation_pct:89.17, votos_afirmativos:88, votos_negativos:13, ausencias:10, abstenciones:6, votos_total:117 },
+  { id:'559', nombre:"Rojas Decut, Sonia Elizabeth", provincia:"Misiones", partido:"Frente Renovador de la Concordia-Innovación Federal", rol_provincial:"Mayoría", participation_pct:90.0, votos_afirmativos:89, votos_negativos:13, ausencias:9, abstenciones:6, votos_total:117 },
+  { id:'510', nombre:"Neder, José Emilio", provincia:"Santiago del Estero", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:82.5, votos_afirmativos:84, votos_negativos:15, ausencias:17, abstenciones:0, votos_total:116 },
+  { id:'562', nombre:"Giménez Navarro, María Celeste", provincia:"San Juan", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:92.5, votos_afirmativos:93, votos_negativos:17, ausencias:5, abstenciones:1, votos_total:116 },
+  { id:'563', nombre:"Olivera Lucero, Bruno Antonio", provincia:"San Juan", partido:"La Libertad Avanza", rol_provincial:"Primera Minoría", participation_pct:85.83, votos_afirmativos:58, votos_negativos:43, ausencias:13, abstenciones:2, votos_total:116 },
+  { id:'561', nombre:"Uñac, Sergio Mauricio", provincia:"San Juan", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:82.5, votos_afirmativos:84, votos_negativos:15, ausencias:17, abstenciones:0, votos_total:116 },
+  { id:'564', nombre:"Abdala, Bartolomé Esteban", provincia:"San Luis", partido:"La Libertad Avanza", rol_provincial:"Mayoría", participation_pct:88.33, votos_afirmativos:60, votos_negativos:42, ausencias:10, abstenciones:4, votos_total:116 },
+  { id:'565', nombre:"Arrascaeta, Ivanna Marcela", provincia:"San Luis", partido:"La Libertad Avanza", rol_provincial:"Mayoría", participation_pct:84.17, votos_afirmativos:57, votos_negativos:43, ausencias:15, abstenciones:1, votos_total:116 },
+  { id:'566', nombre:"Salino, Fernando Aldo", provincia:"San Luis", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:95.83, votos_afirmativos:97, votos_negativos:16, ausencias:1, abstenciones:2, votos_total:116 },
+  { id:'567', nombre:"Carambia, José María", provincia:"Santa Cruz", partido:"Alianza por Santa Cruz", rol_provincial:"Mayoría", participation_pct:88.33, votos_afirmativos:91, votos_negativos:13, ausencias:11, abstenciones:2, votos_total:117 },
+  { id:'568', nombre:"Gadano, Natalia Elena", provincia:"Santa Cruz", partido:"Alianza por Santa Cruz", rol_provincial:"Mayoría", participation_pct:90.0, votos_afirmativos:93, votos_negativos:13, ausencias:9, abstenciones:2, votos_total:117 },
+  { id:'366', nombre:"Kirchner, Alicia Margarita Antonia", provincia:"Santa Cruz", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:94.17, votos_afirmativos:93, votos_negativos:18, ausencias:3, abstenciones:2, votos_total:116 },
+  { id:'573', nombre:"Galaretto, Eduardo Horacio", provincia:"Santa Fe", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:91.67, votos_afirmativos:92, votos_negativos:17, ausencias:7, abstenciones:1, votos_total:117 },
+  { id:'536', nombre:"Losada, Carolina", provincia:"Santa Fe", partido:"Unión Cívica Radical", rol_provincial:"Mayoría", participation_pct:84.17, votos_afirmativos:84, votos_negativos:16, ausencias:16, abstenciones:1, votos_total:117 },
+  { id:'576', nombre:"Manzur, Juan Luis", provincia:"Tucumán", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:91.67, votos_afirmativos:95, votos_negativos:15, ausencias:6, abstenciones:0, votos_total:116 },
+  { id:'540', nombre:"Mendoza, Sandra Mariela", provincia:"Tucumán", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:82.5, votos_afirmativos:85, votos_negativos:14, ausencias:17, abstenciones:0, votos_total:116 },
+  { id:'574', nombre:"López, Cándida Cristina", provincia:"Tierra del Fuego, Antártida e Islas del Atlántico Sur", partido:"Unión por la Patria", rol_provincial:"Primera Minoría", participation_pct:94.17, votos_afirmativos:94, votos_negativos:18, ausencias:3, abstenciones:1, votos_total:116 },
+];
+
+// ── Colores por partido ──────────────────────────────────────────────────
+function colorPartido(p) {
+  if (!p) return '#64748b';
+  const pl = p.toLowerCase();
+  if (pl.includes('radical') || pl.includes('ucr'))   return '#e74c3c';
+  if (pl.includes('patria') || pl.includes('todos') || pl.includes('frente de todos')) return '#2563eb';
+  if (pl.includes('libertad avanza') || pl.includes('lla')) return '#7c3aed';
+  if (pl.includes('hacemos') || pl.includes('córdoba')) return '#ea580c';
+  if (pl.includes('corrientes') || pl.includes('eco')) return '#0891b2';
+  if (pl.includes('renovador federal')) return '#0d9488';
+  if (pl.includes('renovador de la concordia') || pl.includes('innovación')) return '#059669';
+  if (pl.includes('cambia mendoza') || pl.includes('mendoza')) return '#7c3aed';
+  if (pl.includes('alianza por santa cruz')) return '#b45309';
+  if (pl.includes('fuerza patria') || pl.includes('fp')) return '#15803d';
+  if (pl.includes('cívico') || pl.includes('santiago')) return '#6b21a8';
+  return '#64748b';
+}
+
+function barColor(pct) {
+  if (pct >= 80) return '#22c55e';
+  if (pct >= 60) return '#f59e0b';
+  if (pct >= 40) return '#fb923c';
+  return '#ef4444';
+}
+
+function barHtml(pct) {
+  const color = barColor(pct);
+  return `<div class="bar-wrap">
+    <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>
+    <span class="bar-label" style="color:${color}">${pct > 0 ? pct.toFixed(1)+'%' : '—'}</span>
+  </div>`;
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────
+function buildKPIs() {
+  const withData = SENADORES_DATA.filter(s => s.votos_total > 0);
+  const prom = withData.length ? (withData.reduce((a,s) => a + s.participation_pct, 0) / withData.length) : 0;
+  const alta  = SENADORES_DATA.filter(s => s.participation_pct >= 80).length;
+  const media = SENADORES_DATA.filter(s => s.participation_pct >= 40 && s.participation_pct < 80).length;
+  const baja  = SENADORES_DATA.length - alta - media;
+  const bloques = new Set(PARTIDOS_DATA.map(p => p.partido)).size;
+
+  document.getElementById('kpi-total').textContent   = SENADORES_DATA.length;
+  document.getElementById('kpi-prom').textContent    = prom.toFixed(1) + '%';
+  document.getElementById('kpi-alta').textContent    = alta;
+  document.getElementById('kpi-media').textContent   = media;
+  document.getElementById('kpi-baja').textContent    = baja;
+  document.getElementById('kpi-partidos').textContent = bloques;
+}
+
+// ── Tabla partidos ────────────────────────────────────────────────────────
+function buildPartidos() {
+  const sorted = [...PARTIDOS_DATA].sort((a,b) => b.participation_pct - a.participation_pct);
+  const tb = document.querySelector('#tbl-partidos tbody');
+  tb.innerHTML = sorted.map(p => `
+    <tr>
+      <td>
+        <span class="pill" style="background:${colorPartido(p.partido)}">${p.partido}</span>
+      </td>
+      <td class="num">${p.bancas}</td>
+      <td>${barHtml(p.participation_pct)}</td>
+      <td class="num">${p.votos_afirmativos}</td>
+      <td class="num">${p.votos_negativos}</td>
+      <td class="num">${p.abstenciones}</td>
+    </tr>
+  `).join('');
+}
+
+// ── Tabla provincias ──────────────────────────────────────────────────────
+function buildProvincias() {
+  const sorted = [...PROVINCIAL_DATA].sort((a,b) => b.participation_pct - a.participation_pct);
+  const tb = document.querySelector('#tbl-provincias tbody');
+  tb.innerHTML = sorted.map(p => `
+    <tr>
+      <td><strong>${p.provincia}</strong></td>
+      <td class="num">${p.senadores}</td>
+      <td>${barHtml(p.participation_pct)}</td>
+      <td style="font-size:.72rem;color:#475569">${p.partidos}</td>
+    </tr>
+  `).join('');
+}
+
+// ── Rankings ──────────────────────────────────────────────────────────────
+function rowHtml(s, rank) {
+  const color = barColor(s.participation_pct);
+  return `<div class="ranking-row">
+    <span class="rk-num">${rank}</span>
+    <div style="flex:1;min-width:0">
+      <div class="rk-nombre">${s.nombre}</div>
+      <div class="rk-prov">${s.provincia} · <span style="color:${colorPartido(s.partido)};font-weight:700">${s.partido}</span></div>
+    </div>
+    <span class="rk-pct" style="color:${color}">${s.participation_pct.toFixed(1)}%</span>
+  </div>`;
+}
+
+function buildRankings() {
+  const withData = SENADORES_DATA.filter(s => s.votos_total > 0)
+    .sort((a,b) => b.participation_pct - a.participation_pct);
+
+  const top = withData.slice(0, 15);
+  const bottom = [...withData].reverse().slice(0, 15);
+
+  document.getElementById('list-top').innerHTML    = top.map((s,i)    => rowHtml(s, i+1)).join('');
+  document.getElementById('list-bottom').innerHTML = bottom.map((s,i) => rowHtml(s, i+1)).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+buildKPIs();
+buildPartidos();
+buildProvincias();
+buildRankings();
+</script>
+</body>
+</html>
