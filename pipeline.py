@@ -1,10 +1,10 @@
 """
-pipeline_senado.py
+pipeline.py
 Monitor Legislativo — pipeline de Senadores
 
 Orquesta:
   1. scrapers/senadores.py  → nómina 72 senadores + actas
-  2. core/senado.py         → KPIs, reportes provincial y por partido
+  2. core/senadores.py      → KPIs, reportes provincial y por partido
   3. Guarda CSVs en data/
 
 Corre standalone o es llamado desde el pipeline general.
@@ -19,7 +19,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(__file__))
 
 from scrapers.senadores import obtener_nomina, obtener_actas, ANIO_ACTUAL
-from core.senado import (
+from core.senadores import (          # ← corregido: senado → senadores
     calcular_kpis,
     reporte_provincial,
     reporte_por_partido,
@@ -92,10 +92,10 @@ def main():
     print(df_prov[cols_prov].head(10).to_string(index=False))
 
     return {
-        "nomina":    df_final,
+        "nomina":     df_final,
         "provincial": df_prov,
-        "partido":   df_partido,
-        "resumen":   resumen,
+        "partido":    df_partido,
+        "resumen":    resumen,
     }
 
 
