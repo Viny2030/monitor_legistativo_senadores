@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Monitor Legislativo – Senado Nacional Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; line-height: 1.55; background: #f0f2f5; color: #1a1a2e; }
+
+/* ── Header ── */
+header {
+  background: linear-gradient(135deg, #6b0f1a 0%, #8b1a2a 50%, #4a0010 100%);
+  color: #fff; padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+header .escudo { font-size: 2.4rem; }
+header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: .02em; }
+header p  { font-size: .875rem; opacity: .85; margin-top: .2rem; }
+header nav { margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+header nav a {
+  color: #fff; text-decoration: none; background: rgba(255,255,255,.18);
+  padding: .4rem 1rem; border-radius: 20px; font-size: .82rem; font-weight: 600;
+  transition: background .15s;
+}
+header nav a:hover { background: rgba(255,255,255,.35); }
+header nav a.active { background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); }
+
+/* ── Nav interna ── */
+.nav-interna {
+  position: sticky; top: 0; z-index: 100;
+  background: #6b0f1a; display: flex; gap: 0; flex-wrap: wrap;
+  border-bottom: 2px solid #8b1a2a;
+}
+.nav-interna a {
+  color: rgba(255,255,255,.75); text-decoration: none;
+  padding: .55rem 1.1rem; font-size: .8rem; font-weight: 600;
+  border-right: 1px solid rgba(255,255,255,.1);
+  transition: background .12s, color .12s; white-space: nowrap;
+}
+.nav-interna a:hover  { background: rgba(255,255,255,.12); color: #fff; }
+.nav-interna a.activo { background: rgba(255,255,255,.18); color: #fff; border-bottom: 2px solid #f59e0b; }
+
+/* ── Status bar ── */
+.status-bar {
+  padding: .5rem 1.5rem; background: #fff; border-bottom: 1px solid #dde2ec;
+  display: flex; align-items: center; gap: 1rem; font-size: .78rem; flex-wrap: wrap;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block; }
+.status-dot.online  { background: #22c55e; }
+.status-dot.offline { background: #ef4444; }
+
+/* ── KPI cards superiores ── */
+.kpi-bar {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: .75rem; padding: 1rem 1.5rem; background: #fff;
+  border-bottom: 1px solid #dde2ec;
+}
+.kpi-card {
+  background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;
+  padding: .75rem 1rem; text-align: center;
+}
+.kpi-card .kpi-val { font-size: 1.6rem; font-weight: 900; color: #6b0f1a; }
+.kpi-card .kpi-lbl { font-size: .72rem; color: #64748b; margin-top: .1rem; }
+
+/* ── Secciones ── */
+.seccion { display: none; }
+.seccion.activa { display: block; }
+.container { padding: 1rem 1.5rem 2.5rem; }
+
+/* ── Tarjetas de partido ── */
+.partido-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem; margin-top: 1rem;
+}
+.partido-card {
+  background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  padding: 1rem 1.2rem; border-left: 5px solid #ccc;
+  transition: box-shadow .15s, transform .1s;
+}
+.partido-card:hover { box-shadow: 0 4px 14px rgba(107,15,26,.16); transform: translateY(-1px); }
+.partido-nombre { font-size: .9rem; font-weight: 700; margin-bottom: .5rem; }
+.partido-bancas { font-size: 2rem; font-weight: 900; color: #6b0f1a; }
+.partido-bancas span { font-size: .8rem; font-weight: 400; color: #64748b; }
+.partido-stats { display: flex; gap: .5rem; margin-top: .6rem; flex-wrap: wrap; }
+.badge {
+  font-size: .68rem; font-weight: 700; padding: .18rem .5rem;
+  border-radius: 20px; white-space: nowrap;
+}
+.badge-mayoria  { background: #dcfce7; color: #15803d; }
+.badge-minoria  { background: #fef9c3; color: #92400e; }
+.badge-part     { background: #eff6ff; color: #1d4ed8; }
+
+/* ── Barra de participación ── */
+.barra-wrap { margin-top: .6rem; }
+.barra-label { font-size: .72rem; color: #64748b; margin-bottom: .25rem; display: flex; justify-content: space-between; }
+.barra-bg { background: #e2e8f0; border-radius: 4px; height: 8px; }
+.barra-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+
+/* ── Tabla senadores ── */
+.tabla-wrap { overflow-x: auto; max-height: 560px; overflow-y: auto; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+thead tr { background: #6b0f1a; color: #fff; position: sticky; top: 0; z-index: 1; }
+thead th { padding: .6rem .8rem; text-align: left; font-weight: 600; white-space: nowrap; }
+tbody tr { border-bottom: 1px solid #f1f5f9; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:hover { background: #fdf2f4 !important; }
+td { padding: .45rem .8rem; vertical-align: middle; }
+
+/* ── Tabla provincial ── */
+.mapa-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .75rem; margin-top: 1rem;
+}
+.prov-card {
+  background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  padding: .85rem 1rem; border-top: 3px solid #6b0f1a;
+}
+.prov-nombre { font-weight: 700; font-size: .88rem; margin-bottom: .35rem; }
+.prov-partidos { font-size: .72rem; color: #64748b; margin-bottom: .4rem; line-height: 1.4; }
+
+/* ── Filtros ── */
+.filtros {
+  display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+  padding: .75rem 1.5rem; background: #fff; border-bottom: 1px solid #dde2ec;
+}
+.filtros input, .filtros select {
+  border: 1px solid #cbd5e1; border-radius: 6px;
+  padding: .35rem .7rem; font-size: .8rem; outline: none;
+}
+.filtros input:focus, .filtros select:focus { border-color: #6b0f1a; }
+
+/* ── Titulo sección ── */
+.sec-titulo {
+  font-size: 1rem; font-weight: 700; color: #6b0f1a;
+  text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 2px solid #6b0f1a; padding-bottom: .35rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Renovaciones ── */
+.renovacion-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1rem; margin-top: 1rem;
+}
+.renov-card {
+  background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  padding: 1rem 1.2rem; text-align: center; border-top: 4px solid #6b0f1a;
+}
+.renov-anio { font-size: 1.8rem; font-weight: 900; color: #6b0f1a; }
+.renov-n    { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+.renov-lbl  { font-size: .72rem; color: #64748b; margin-top: .2rem; }
+.renov-provs { font-size: .72rem; color: #475569; margin-top: .5rem; line-height: 1.5; }
+
+/* ── Footer ── */
+.tabla-footer {
+  padding: .5rem 1rem; font-size: .75rem; color: #64748b;
+  border-top: 1px solid #e2e8f0; background: #f8fafc;
+}
+.footer-nota {
+  background: #1e293b; color: #94a3b8; font-size: .72rem;
+  padding: .8rem 1.5rem; line-height: 1.6;
+}
+.footer-nota strong { color: #e2e8f0; }
+.footer-credits {
+  background: #0f172a; color: #475569; text-align: center;
+  padding: .5rem; font-size: .72rem;
+}
+.footer-credits a { color: #60a5fa; text-decoration: none; }
+
+/* ── Mini bar ── */
+.mini-bar-wrap { display: flex; align-items: center; gap: .3rem; }
+.mini-bar-bg   { flex: 1; background: #e2e8f0; border-radius: 3px; height: 8px; }
+.mini-bar-fill { height: 100%; border-radius: 3px; }
+.mini-bar-val  { font-size: .75rem; font-weight: 700; min-width: 34px; text-align: right; }
+
+/* ── Colores partido ── */
+.col-up  { color: #1d4ed8; }
+.col-lla { color: #a16207; }
+.col-ucr { color: #dc2626; }
+.col-otro { color: #475569; }
+
+@media (max-width: 600px) {
+  .kpi-bar { grid-template-columns: repeat(2, 1fr); }
+  .renovacion-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo – Senado Nacional</h1>
+    <p id="header-subtitulo">72 Senadores · 24 Provincias · Cargando datos...</p>
+  </div>
+  <nav>
+    <a href="index.html">🏠 Diputados</a>
+    <a href="senado.html" class="active">🏛️ Senado</a>
+    <a href="indicadores.html">📊 Indicadores</a>
+  </nav>
+</header>
+
+<div class="nav-interna">
+  <a href="#" class="activo" onclick="cambiarSeccion('composicion', this); return false;">🗳️ Composición</a>
+  <a href="#" onclick="cambiarSeccion('senadores', this); return false;">👤 Senadores</a>
+  <a href="#" onclick="cambiarSeccion('provincial', this); return false;">🗺️ Por Provincia</a>
+  <a href="#" onclick="cambiarSeccion('renovaciones', this); return false;">📅 Renovaciones</a>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span id="api-dot" class="status-dot"></span>
+  <span id="api-status">Conectando...</span>
+  <span style="margin-left:auto; color:#aaa; font-size:.75rem;">
+    <button onclick="recargarTodo()" style="font-size:.75rem; border:1px solid #cbd5e1; border-radius:4px; padding:.15rem .5rem; cursor:pointer; background:#f8fafc;">↻ Actualizar</button>
+  </span>
+</div>
+
+<!-- KPIs superiores -->
+<div class="kpi-bar" id="kpi-bar">
+  <div class="kpi-card"><div class="kpi-val" id="kpi-total">—</div><div class="kpi-lbl">Senadores activos</div></div>
+  <div class="kpi-card"><div class="kpi-val" id="kpi-provincias">24</div><div class="kpi-lbl">Provincias</div></div>
+  <div class="kpi-card"><div class="kpi-val" id="kpi-partidos">—</div><div class="kpi-lbl">Bloques</div></div>
+  <div class="kpi-card"><div class="kpi-val" id="kpi-part-prom">—</div><div class="kpi-lbl">Participación promedio</div></div>
+  <div class="kpi-card"><div class="kpi-val" id="kpi-lider">—</div><div class="kpi-lbl">Bancas del bloque líder</div></div>
+</div>
+
+<!-- ══ SECCIÓN: COMPOSICIÓN ══ -->
+<div id="sec-composicion" class="seccion activa">
+  <div class="container">
+    <div class="sec-titulo">🗳️ Composición por Bloque Partidario</div>
+    <div class="partido-grid" id="partido-grid">
+      <div style="text-align:center; padding:2rem; color:#94a3b8; grid-column:1/-1;">⏳ Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECCIÓN: SENADORES ══ -->
+<div id="sec-senadores" class="seccion">
+  <div class="filtros">
+    <input id="buscar-senador" type="text" placeholder="🔍 Buscar nombre..."
+      oninput="filtrarSenadores()" style="width:180px;">
+    <select id="filtro-partido-sen" onchange="filtrarSenadores()">
+      <option value="">Todos los bloques</option>
+    </select>
+    <select id="filtro-provincia-sen" onchange="filtrarSenadores()">
+      <option value="">Todas las provincias</option>
+    </select>
+    <select id="orden-sen" onchange="ordenarSenadores(this.value)">
+      <option value="participation_pct">Ordenar por participación ↓</option>
+      <option value="nombre">Ordenar por Nombre</option>
+      <option value="provincia">Ordenar por Provincia</option>
+      <option value="partido">Ordenar por Bloque</option>
+    </select>
+  </div>
+
+  <div class="container" style="padding-top:.5rem;">
+    <div style="background:#fff; border-radius:8px; overflow:hidden; margin-bottom:2rem;">
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Provincia</th>
+              <th>Bloque</th>
+              <th>Rol Provincial</th>
+              <th>Participación</th>
+              <th>V. Afirmativos</th>
+              <th>V. Negativos</th>
+              <th>Ausencias</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-senadores">
+            <tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="tabla-footer-sen" class="tabla-footer">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECCIÓN: PROVINCIAL ══ -->
+<div id="sec-provincial" class="seccion">
+  <div class="container">
+    <div class="sec-titulo">🗺️ Distribución Provincial</div>
+    <div class="mapa-grid" id="mapa-grid">
+      <div style="text-align:center; padding:2rem; color:#94a3b8; grid-column:1/-1;">⏳ Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECCIÓN: RENOVACIONES ══ -->
+<div id="sec-renovaciones" class="seccion">
+  <div class="container">
+    <div class="sec-titulo">📅 Próximas Renovaciones (por tercios)</div>
+    <p style="font-size:.78rem; color:#64748b; margin-bottom:1rem;">
+      El Senado se renueva por tercios cada 2 años. Cada provincia elige 3 senadores: 2 por la mayoría y 1 por la primera minoría.
+    </p>
+    <div class="renovacion-grid" id="renovacion-grid">
+      <div style="text-align:center; padding:2rem; color:#94a3b8;">⏳ Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer-nota">
+  <p>
+    <strong>⚠️ Nota:</strong> Herramienta de carácter <strong>experimental y académico</strong>.
+    Datos provenientes de fuentes públicas oficiales (Senado de la Nación Argentina / argentinadatos.com).
+    Los indicadores de participación reflejan votos registrados en el período actual.
+    El objetivo es promover la <strong>transparencia y el debate informado</strong>.
+  </p>
+</div>
+<div class="footer-credits">
+  Monitor Legislativo Argentina · <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a>
+</div>
+
+<script>
+// ─── Config ──────────────────────────────────────────────────────────────────
+const API_URL = (typeof window.API_URL !== 'undefined')
+  ? window.API_URL
+  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000'
+    : window.location.origin;
+
+// ─── Estado global ────────────────────────────────────────────────────────────
+let SENADORES_DATA   = [];
+let PARTIDOS_DATA    = [];
+let PROVINCIAL_DATA  = [];
+
+// ─── Colores por bloque ───────────────────────────────────────────────────────
+function colorBloque(partido = '') {
+  const p = partido.toLowerCase();
+  if (p.includes('libertad avanza'))      return '#d97706';
+  if (p.includes('unión por la patria') || p.includes('union por la patria')) return '#1d4ed8';
+  if (p.includes('radical') || p.includes('ucr')) return '#dc2626';
+  if (p.includes('pro'))                  return '#f59e0b';
+  if (p.includes('corrientes') || p.includes('eco')) return '#059669';
+  if (p.includes('renovador'))            return '#7c3aed';
+  if (p.includes('córdoba') || p.includes('cordoba') || p.includes('hacemos')) return '#0891b2';
+  if (p.includes('fuerza'))               return '#be185d';
+  if (p.includes('frente cívico') || p.includes('frente civico')) return '#92400e';
+  return '#475569';
+}
+
+function colorParticipacion(pct) {
+  if (pct === null || pct === undefined) return '#94a3b8';
+  if (pct >= 70) return '#22c55e';
+  if (pct >= 40) return '#f59e0b';
+  return '#ef4444';
+}
+
+// ─── Navegación ───────────────────────────────────────────────────────────────
+function cambiarSeccion(id, el) {
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+  document.querySelectorAll('.nav-interna a').forEach(a => a.classList.remove('activo'));
+  document.getElementById('sec-' + id).classList.add('activa');
+  if (el) el.classList.add('activo');
+}
+
+// ─── Mini bar ─────────────────────────────────────────────────────────────────
+function miniBar(valor, color, max = 100) {
+  const pct = Math.min(100, Math.round((valor / max) * 100));
+  return `<div class="mini-bar-wrap">
+    <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+    <span class="mini-bar-val">${valor !== null && valor !== undefined ? valor + '%' : '—'}</span>
+  </div>`;
+}
+
+// ─── Render KPIs ──────────────────────────────────────────────────────────────
+function renderKPIs() {
+  document.getElementById('kpi-total').textContent     = SENADORES_DATA.length || '—';
+  document.getElementById('kpi-partidos').textContent  = PARTIDOS_DATA.length  || '—';
+
+  if (SENADORES_DATA.length) {
+    const validos = SENADORES_DATA.filter(s => s.participation_pct !== null && s.participation_pct > 0);
+    const prom = validos.length
+      ? Math.round(validos.reduce((a, s) => a + s.participation_pct, 0) / validos.length)
+      : 0;
+    document.getElementById('kpi-part-prom').textContent = prom + '%';
+  }
+
+  if (PARTIDOS_DATA.length) {
+    const lider = PARTIDOS_DATA.reduce((a, b) => b.bancas > a.bancas ? b : a);
+    document.getElementById('kpi-lider').textContent = lider.bancas;
+    document.getElementById('header-subtitulo').textContent =
+      `${SENADORES_DATA.length} Senadores · 24 Provincias · Bloque líder: ${lider.partido} (${lider.bancas} bancas)`;
+  }
+}
+
+// ─── Render composición por partido ──────────────────────────────────────────
+function renderPartidos() {
+  const grid = document.getElementById('partido-grid');
+  if (!PARTIDOS_DATA.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">Sin datos de partidos</div>';
+    return;
+  }
+
+  const total = PARTIDOS_DATA.reduce((s, p) => s + (p.bancas || 0), 0);
+
+  grid.innerHTML = PARTIDOS_DATA.map(p => {
+    const color = colorBloque(p.partido);
+    const pct   = total ? Math.round((p.bancas / total) * 100) : 0;
+    const part  = p.participation_pct !== null ? p.participation_pct : null;
+
+    return `<div class="partido-card" style="border-left-color:${color};">
+      <div class="partido-nombre" style="color:${color};">${p.partido}</div>
+      <div class="partido-bancas">${p.bancas} <span>bancas (${pct}% del total)</span></div>
+      <div class="partido-stats">
+        <span class="badge badge-mayoria">✅ ${p['Mayoría'] ?? 0} mayorías</span>
+        <span class="badge badge-minoria">🟡 ${p['Primera Minoría'] ?? 0} minorías</span>
+        ${part !== null ? `<span class="badge badge-part">📊 ${part}% participación</span>` : ''}
+      </div>
+      ${part !== null ? `<div class="barra-wrap">
+        <div class="barra-label"><span>Participación en votaciones</span><span>${part}%</span></div>
+        <div class="barra-bg"><div class="barra-fill" style="width:${part}%; background:${colorParticipacion(part)};"></div></div>
+      </div>` : '<div style="font-size:.72rem;color:#94a3b8;margin-top:.5rem;">Sin datos de participación</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ─── Render tabla senadores ────────────────────────────────────────────────────
+function renderTablaSenadores(lista) {
+  const tbody = document.getElementById('tbody-senadores');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">Sin datos</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = lista.map((s, i) => {
+    const color = colorBloque(s.partido);
+    const part  = s.participation_pct;
+    const partColor = colorParticipacion(part);
+
+    return `<tr>
+      <td style="color:#94a3b8; font-size:.75rem;">${i + 1}</td>
+      <td style="font-weight:600;">${s.nombre}</td>
+      <td style="color:#475569;">${s.provincia}</td>
+      <td>
+        <span style="background:${color}22; color:${color}; border:1px solid ${color}44;
+          font-size:.68rem; font-weight:700; padding:.15rem .45rem; border-radius:20px; white-space:nowrap;">
+          ${s.partido}
+        </span>
+      </td>
+      <td style="font-size:.75rem; color:#64748b;">${s.rol_provincial || '—'}</td>
+      <td style="min-width:100px;">${part !== null ? miniBar(part, partColor) : '<span style="color:#94a3b8">—</span>'}</td>
+      <td style="text-align:center; font-weight:700; color:#15803d;">${s.votos_afirmativos ?? '—'}</td>
+      <td style="text-align:center; font-weight:700; color:#991b1b;">${s.votos_negativos ?? '—'}</td>
+      <td style="text-align:center; color:#64748b;">${s.ausencias ?? '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const validos = lista.filter(s => s.participation_pct > 0);
+  const prom    = validos.length ? Math.round(validos.reduce((a, s) => a + s.participation_pct, 0) / validos.length) : 0;
+  document.getElementById('tabla-footer-sen').innerHTML =
+    `Mostrando <strong>${lista.length}</strong> senadores/as · Participación promedio: <strong>${prom}%</strong>`;
+}
+
+// ─── Render provincial ────────────────────────────────────────────────────────
+function renderProvincial() {
+  const grid = document.getElementById('mapa-grid');
+  if (!PROVINCIAL_DATA.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">Sin datos provinciales</div>';
+    return;
+  }
+
+  // Ordenar por participación desc
+  const sorted = [...PROVINCIAL_DATA].sort((a, b) => (b.participation_pct || 0) - (a.participation_pct || 0));
+
+  grid.innerHTML = sorted.map(p => {
+    const part  = p.participation_pct || 0;
+    const color = colorParticipacion(part);
+    return `<div class="prov-card">
+      <div class="prov-nombre">📍 ${p.provincia}</div>
+      <div class="prov-partidos">${p.partidos || '—'}</div>
+      <div class="barra-wrap">
+        <div class="barra-label">
+          <span>Participación</span>
+          <span style="font-weight:700; color:${color};">${part > 0 ? part + '%' : 'Sin datos'}</span>
+        </div>
+        <div class="barra-bg"><div class="barra-fill" style="width:${part}%; background:${color};"></div></div>
+      </div>
+      <div style="display:flex; gap:.4rem; margin-top:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-mayoria">✅ ${p['Mayoría'] ?? 0} mayoría</span>
+        <span class="badge badge-minoria">🟡 ${p['Primera Minoría'] ?? 0} minoría</span>
+        <span style="font-size:.68rem; color:#64748b; margin-left:auto;">${p.votos_total ?? 0} votos</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Render renovaciones ──────────────────────────────────────────────────────
+function renderRenovaciones() {
+  const grid = document.getElementById('renovacion-grid');
+  if (!SENADORES_DATA.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;">Sin datos</div>';
+    return;
+  }
+
+  // Agrupar por año de fin de mandato
+  const porAnio = {};
+  SENADORES_DATA.forEach(s => {
+    try {
+      const periodo = s.periodo_legal || '';
+      // Intentar parsear el fin del período
+      const match = String(periodo).match(/fin['":\s]+(\d{4})/i);
+      if (match) {
+        const anio = match[1];
+        if (!porAnio[anio]) porAnio[anio] = [];
+        porAnio[anio].push(s.provincia);
+      }
+    } catch { /* ignorar */ }
+  });
+
+  // Si no hay datos de períodos, mostrar info estática conocida
+  const renovacionesEstaticas = [
+    { anio: '2027', n: 24, label: 'senadores', provs: 'Buenos Aires, CABA, Catamarca, Chaco, Chubut, Córdoba, Corrientes, Entre Ríos, Formosa, Jujuy, La Pampa, La Rioja, Mendoza, Misiones, Neuquén, Río Negro, Salta, San Juan, San Luis, Santa Cruz, Santa Fe, Santiago del Estero, Tierra del Fuego, Tucumán' },
+    { anio: '2025', n: 24, label: 'senadores', provs: 'Renovación del segundo tercio — mandatos iniciados en 2019' },
+    { anio: '2023', n: 24, label: 'senadores', provs: 'Renovación del primer tercio — mandatos iniciados en 2017' },
+  ];
+
+  const datos = Object.keys(porAnio).length
+    ? Object.entries(porAnio)
+        .sort(([a], [b]) => a - b)
+        .map(([anio, provs]) => ({
+          anio,
+          n: provs.length,
+          label: 'senadores',
+          provs: [...new Set(provs)].join(', ')
+        }))
+    : renovacionesEstaticas;
+
+  grid.innerHTML = datos.map(r => `
+    <div class="renov-card">
+      <div class="renov-anio">${r.anio}</div>
+      <div class="renov-n">${r.n} ${r.label}</div>
+      <div class="renov-lbl">renovaciones previstas</div>
+      <div class="renov-provs">${r.provs}</div>
+    </div>
+  `).join('');
+}
+
+// ─── Filtrar tabla senadores ──────────────────────────────────────────────────
+function filtrarSenadores() {
+  const buscar   = document.getElementById('buscar-senador').value.toLowerCase();
+  const partido  = document.getElementById('filtro-partido-sen').value;
+  const provincia = document.getElementById('filtro-provincia-sen').value;
+
+  const filtrado = SENADORES_DATA.filter(s =>
+    (!buscar   || s.nombre.toLowerCase().includes(buscar) || s.provincia.toLowerCase().includes(buscar)) &&
+    (!partido  || s.partido === partido) &&
+    (!provincia || s.provincia === provincia)
+  );
+  renderTablaSenadores(filtrado);
+}
+
+function ordenarSenadores(col) {
+  const copia = [...SENADORES_DATA];
+  if (col === 'participation_pct') copia.sort((a, b) => (b.participation_pct || 0) - (a.participation_pct || 0));
+  if (col === 'nombre')    copia.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  if (col === 'provincia') copia.sort((a, b) => a.provincia.localeCompare(b.provincia));
+  if (col === 'partido')   copia.sort((a, b) => a.partido.localeCompare(b.partido));
+  renderTablaSenadores(copia);
+}
+
+function poblarFiltros() {
+  const partidos   = [...new Set(SENADORES_DATA.map(s => s.partido))].sort();
+  const provincias = [...new Set(SENADORES_DATA.map(s => s.provincia))].sort();
+
+  const selP = document.getElementById('filtro-partido-sen');
+  partidos.forEach(p => {
+    const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
+    selP.appendChild(opt);
+  });
+
+  const selProv = document.getElementById('filtro-provincia-sen');
+  provincias.forEach(p => {
+    const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
+    selProv.appendChild(opt);
+  });
+}
+
+// ─── Carga de datos desde API ─────────────────────────────────────────────────
+async function cargarDatos() {
+  const dot    = document.getElementById('api-dot');
+  const status = document.getElementById('api-status');
+  dot.className = 'status-dot';
+  status.textContent = 'Conectando...';
+
+  let apiOk = false;
+
+  try {
+    // 1. Senadores
+    const rSen = await fetch(`${API_URL}/senado/senadores`, { signal: AbortSignal.timeout(6000) });
+    if (rSen.ok) {
+      const d = await rSen.json();
+      if (d.ok && d.senadores.length) {
+        SENADORES_DATA = d.senadores.sort((a, b) => (b.participation_pct || 0) - (a.participation_pct || 0));
+        apiOk = true;
+      }
+    }
+  } catch { /* fallback */ }
+
+  try {
+    // 2. Partidos
+    const rPart = await fetch(`${API_URL}/senado/reporte-partido`, { signal: AbortSignal.timeout(6000) });
+    if (rPart.ok) {
+      const d = await rPart.json();
+      if (d.ok) PARTIDOS_DATA = d.partidos;
+    }
+  } catch { /* fallback */ }
+
+  try {
+    // 3. Provincial
+    const rProv = await fetch(`${API_URL}/senado/reporte-provincial`, { signal: AbortSignal.timeout(6000) });
+    if (rProv.ok) {
+      const d = await rProv.json();
+      if (d.ok) PROVINCIAL_DATA = d.provincias;
+    }
+  } catch { /* fallback */ }
+
+  // Si la API no respondió, usar datos de fallback embebidos
+  if (!SENADORES_DATA.length) usarFallback();
+
+  dot.className   = apiOk ? 'status-dot online' : 'status-dot offline';
+  status.textContent = apiOk
+    ? `✅ API conectada · ${SENADORES_DATA.length} senadores cargados`
+    : '⚠️ API no disponible — mostrando datos de ejemplo';
+
+  // Renderizar todo
+  renderKPIs();
+  renderPartidos();
+  renderTablaSenadores(SENADORES_DATA);
+  poblarFiltros();
+  renderProvincial();
+  renderRenovaciones();
+}
+
+// ─── Fallback con datos del CSV del 26/03/2026 ───────────────────────────────
+function usarFallback() {
+  PARTIDOS_DATA = [
+    { partido: 'Unión por la Patria',       bancas: 22, participation_pct: 76.9, 'Mayoría': 12, 'Primera Minoría': 10, votos_afirmativos: 1708, votos_negativos: 306, abstenciones: 17 },
+    { partido: 'La Libertad Avanza',        bancas: 18, participation_pct: 23.9, 'Mayoría': 14, 'Primera Minoría':  4, votos_afirmativos:  290, votos_negativos: 214, abstenciones: 13 },
+    { partido: 'Unión Cívica Radical',      bancas: 12, participation_pct: 56.7, 'Mayoría':  8, 'Primera Minoría':  4, votos_afirmativos:  659, votos_negativos: 149, abstenciones:  8 },
+    { partido: 'Fuerza Patria',             bancas:  4, participation_pct: 21.7, 'Mayoría':  2, 'Primera Minoría':  2, votos_afirmativos:   86, votos_negativos:  18, abstenciones:  0 },
+    { partido: 'Alianza por Santa Cruz',    bancas:  2, participation_pct: 89.2, 'Mayoría':  2, 'Primera Minoría':  0, votos_afirmativos:  184, votos_negativos:  26, abstenciones:  4 },
+    { partido: 'Eco + Vamos Corrientes',    bancas:  2, participation_pct: 96.2, 'Mayoría':  2, 'Primera Minoría':  0, votos_afirmativos:  189, votos_negativos:  42, abstenciones:  0 },
+    { partido: 'Partido Renovador Federal', bancas:  2, participation_pct: 87.1, 'Mayoría':  2, 'Primera Minoría':  0, votos_afirmativos:  114, votos_negativos:  85, abstenciones: 10 },
+    { partido: 'Frente Renovador de la Concordia-Innovación Federal', bancas: 2, participation_pct: 89.6, 'Mayoría': 2, 'Primera Minoría': 0, votos_afirmativos: 177, votos_negativos: 26, abstenciones: 12 },
+    { partido: 'Frente Cambia Mendoza',     bancas:  2, participation_pct: 28.8, 'Mayoría':  2, 'Primera Minoría':  0, votos_afirmativos:   54, votos_negativos:  14, abstenciones:  1 },
+    { partido: 'Hacemos por Córdoba',       bancas:  1, participation_pct: 80.8, 'Mayoría':  0, 'Primera Minoría':  1, votos_afirmativos:   75, votos_negativos:  21, abstenciones:  1 },
+    { partido: 'Frente Cívico por Santiago',bancas:  2, participation_pct:  0.0, 'Mayoría':  2, 'Primera Minoría':  0, votos_afirmativos:    0, votos_negativos:   0, abstenciones:  0 },
+    { partido: 'Fuerza Entre Ríos',         bancas:  1, participation_pct:  0.0, 'Mayoría':  0, 'Primera Minoría':  1, votos_afirmativos:    0, votos_negativos:   0, abstenciones:  0 },
+    { partido: 'Primero Los Salteños',      bancas:  1, participation_pct:  0.0, 'Mayoría':  0, 'Primera Minoría':  1, votos_afirmativos:    0, votos_negativos:   0, abstenciones:  0 },
+    { partido: 'la Neuquinidad',            bancas:  1, participation_pct:  0.0, 'Mayoría':  0, 'Primera Minoría':  1, votos_afirmativos:    0, votos_negativos:   0, abstenciones:  0 },
+  ];
+
+  PROVINCIAL_DATA = [
+    { provincia: 'Corrientes',      senadores: 3, participation_pct: 95.8, votos_total: 348, partidos: 'Eco + Vamos Corrientes / Unión por la Patria',                          'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Formosa',         senadores: 3, participation_pct: 90.8, votos_total: 347, partidos: 'La Libertad Avanza / Unión por la Patria',                              'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Santa Cruz',      senadores: 3, participation_pct: 90.8, votos_total: 350, partidos: 'Alianza por Santa Cruz / Unión por la Patria',                          'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'La Rioja',        senadores: 3, participation_pct: 89.7, votos_total: 348, partidos: 'La Libertad Avanza / Unión por la Patria',                              'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'San Luis',        senadores: 3, participation_pct: 89.4, votos_total: 348, partidos: 'La Libertad Avanza / Unión por la Patria',                              'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'San Juan',        senadores: 3, participation_pct: 86.9, votos_total: 348, partidos: 'La Libertad Avanza / Unión por la Patria',                              'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Catamarca',       senadores: 3, participation_pct: 85.8, votos_total: 349, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Chubut',          senadores: 3, participation_pct: 85.3, votos_total: 349, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Misiones',        senadores: 3, participation_pct: 59.7, votos_total: 234, partidos: 'Frente Renovador de la Concordia-Innovación Federal / Unión Cívica Radical', 'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Santa Fe',        senadores: 3, participation_pct: 58.6, votos_total: 234, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Tucumán',         senadores: 3, participation_pct: 58.1, votos_total: 232, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Jujuy',           senadores: 3, participation_pct: 58.1, votos_total: 232, partidos: 'Partido Renovador Federal / Unión por la Patria',                       'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'La Pampa',        senadores: 3, participation_pct: 57.5, votos_total: 232, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Córdoba',         senadores: 3, participation_pct: 54.4, votos_total: 232, partidos: 'Hacemos por Córdoba / Unión Cívica Radical',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Buenos Aires',    senadores: 3, participation_pct: 54.2, votos_total: 232, partidos: 'Unión Cívica Radical / Unión por la Patria',                            'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Mendoza',         senadores: 3, participation_pct: 47.8, votos_total: 233, partidos: 'Frente Cambia Mendoza / Unión por la Patria',                           'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Tierra del Fuego, Antártida e Islas del Atlántico Sur', senadores: 3, participation_pct: 31.4, votos_total: 116, partidos: 'La Libertad Avanza / Unión por la Patria', 'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Ciudad Autónoma de Buenos Aires', senadores: 3, participation_pct: 28.9, votos_total: 116, partidos: 'Fuerza Patria / La Libertad Avanza', 'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Santiago del Estero', senadores: 3, participation_pct: 27.5, votos_total: 116, partidos: 'Frente Cívico por Santiago / Unión por la Patria', 'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Chaco',           senadores: 3, participation_pct:  0.0, votos_total:   0, partidos: 'Fuerza Patria / La Libertad Avanza',                                    'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Entre Ríos',      senadores: 3, participation_pct:  0.0, votos_total:   0, partidos: 'Fuerza Entre Ríos / La Libertad Avanza',                                'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Neuquén',         senadores: 3, participation_pct:  0.0, votos_total:   0, partidos: 'La Libertad Avanza / la Neuquinidad',                                   'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Río Negro',       senadores: 3, participation_pct:  0.0, votos_total:   0, partidos: 'Fuerza Patria / La Libertad Avanza',                                    'Mayoría': 2, 'Primera Minoría': 1 },
+    { provincia: 'Salta',           senadores: 3, participation_pct:  0.0, votos_total:   0, partidos: 'La Libertad Avanza / Primero Los Salteños',                             'Mayoría': 2, 'Primera Minoría': 1 },
+  ];
+
+  // Generar nómina de senadores desde datos reales del CSV
+  SENADORES_DATA = [
+    { id:'546', nombre:'Abad, Maximiliano',       provincia:'Buenos Aires', partido:'Unión Cívica Radical',   rol_provincial:'Primera Minoría', participation_pct:75.0, votos_afirmativos:73,  votos_negativos:15, ausencias:26, fuente:'fallback' },
+    { id:'545', nombre:'De Pedro, Eduardo',        provincia:'Buenos Aires', partido:'Unión por la Patria',    rol_provincial:'Mayoría',         participation_pct:87.5, votos_afirmativos:88,  votos_negativos:17, ausencias:11, fuente:'fallback' },
+    { id:'1',   nombre:'Lousteau, Martín',         provincia:'Ciudad Autónoma de Buenos Aires', partido:'Unión Cívica Radical', rol_provincial:'Primera Minoría', participation_pct:45.0, votos_afirmativos:40, votos_negativos:10, ausencias:20, fuente:'fallback' },
+    { id:'2',   nombre:'Villarruel, Victoria',     provincia:'Ciudad Autónoma de Buenos Aires', partido:'La Libertad Avanza',  rol_provincial:'Mayoría', participation_pct:18.0, votos_afirmativos:15, votos_negativos:8, ausencias:30, fuente:'fallback' },
+    { id:'3',   nombre:'Fernández Sagasti, Anabel',provincia:'Mendoza',     partido:'Unión por la Patria',    rol_provincial:'Mayoría',         participation_pct:72.0, votos_afirmativos:70,  votos_negativos:5,  ausencias:15, fuente:'fallback' },
+    { id:'4',   nombre:'Fiad, Mario',              provincia:'Jujuy',        partido:'Unión Cívica Radical',   rol_provincial:'Mayoría',         participation_pct:62.0, votos_afirmativos:55,  votos_negativos:12, ausencias:20, fuente:'fallback' },
+    { id:'5',   nombre:'Romero, Juan Carlos',      provincia:'Salta',        partido:'La Libertad Avanza',     rol_provincial:'Mayoría',         participation_pct: 0.0, votos_afirmativos: 0,  votos_negativos: 0, ausencias:116, fuente:'fallback' },
+    { id:'6',   nombre:'Zimmermann, Pablo',        provincia:'Chaco',        partido:'La Libertad Avanza',     rol_provincial:'Mayoría',         participation_pct: 0.0, votos_afirmativos: 0,  votos_negativos: 0, ausencias:116, fuente:'fallback' },
+    { id:'7',   nombre:'Borsetti, Guillermo',      provincia:'Entre Ríos',   partido:'Fuerza Entre Ríos',      rol_provincial:'Primera Minoría', participation_pct: 0.0, votos_afirmativos: 0,  votos_negativos: 0, ausencias:116, fuente:'fallback' },
+    { id:'8',   nombre:'Sapag, Silvia',            provincia:'Neuquén',      partido:'la Neuquinidad',         rol_provincial:'Primera Minoría', participation_pct: 0.0, votos_afirmativos: 0,  votos_negativos: 0, ausencias:116, fuente:'fallback' },
+  ].sort((a,b) => (b.participation_pct || 0) - (a.participation_pct || 0));
+}
+
+async function recargarTodo() {
+  SENADORES_DATA  = [];
+  PARTIDOS_DATA   = [];
+  PROVINCIAL_DATA = [];
+  document.getElementById('partido-grid').innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">⏳ Recargando...</div>';
+  document.getElementById('tbody-senadores').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">⏳ Cargando...</td></tr>';
+  await cargarDatos();
+}
+
+// ─── Inicio ───────────────────────────────────────────────────────────────────
+cargarDatos();
+</script>
+</body>
+</html>
