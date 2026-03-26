@@ -23,7 +23,10 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          pip install requests beautifulsoup4 pandas
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
 
       # ── Senadores ────────────────────────────────────────────────────────────
       - name: Scraper Senadores
