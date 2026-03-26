@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Metodología – Monitor Legislativo Senado Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; line-height: 1.6; background: #f0f2f5; color: #1a1a2e; }
+header { background: linear-gradient(135deg, #6b0f1a 0%, #8b1a2a 50%, #4a0010 100%); color: #fff; padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+header .escudo { font-size: 2.4rem; }
+header h1 { font-size: 1.35rem; font-weight: 700; }
+header p  { font-size: .875rem; opacity: .85; margin-top: .2rem; }
+header nav { margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+header nav a { color: #fff; text-decoration: none; background: rgba(255,255,255,.18); padding: .4rem 1rem; border-radius: 20px; font-size: .82rem; font-weight: 600; }
+header nav a:hover { background: rgba(255,255,255,.35); }
+header nav a.active { background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); }
+.nav-interna { position: sticky; top: 0; z-index: 100; background: #6b0f1a; display: flex; flex-wrap: wrap; border-bottom: 2px solid #8b1a2a; }
+.nav-interna a { color: rgba(255,255,255,.75); text-decoration: none; padding: .55rem 1.1rem; font-size: .8rem; font-weight: 600; border-right: 1px solid rgba(255,255,255,.1); transition: background .12s; white-space: nowrap; }
+.nav-interna a:hover { background: rgba(255,255,255,.12); color: #fff; }
+.nav-interna a.activo { background: rgba(255,255,255,.18); color: #fff; border-bottom: 2px solid #f59e0b; }
+.container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+.seccion { margin-bottom: 2.5rem; }
+.seccion h2 { font-size: 1.1rem; font-weight: 800; color: #6b0f1a; padding-bottom: .5rem; border-bottom: 3px solid #f1e0e3; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
+.panel { background: #fff; border-radius: 10px; border: 1px solid #dde2ec; padding: 1.25rem 1.4rem; margin-bottom: 1rem; }
+.panel h3 { font-size: .95rem; font-weight: 700; color: #334155; margin-bottom: .6rem; }
+.panel p  { font-size: .85rem; color: #475569; margin-bottom: .5rem; }
+.panel p:last-child { margin-bottom: 0; }
+.formula-box { background: #1e293b; color: #e2e8f0; border-radius: 8px; padding: .9rem 1.2rem; font-family: 'Courier New', monospace; font-size: .88rem; margin: .75rem 0; border-left: 4px solid #f59e0b; line-height: 1.9; }
+.formula-box .var  { color: #93c5fd; }
+.formula-box .op   { color: #f59e0b; }
+.formula-box .num  { color: #86efac; }
+.formula-box .comm { color: #64748b; font-style: italic; }
+.indicador-card { background: #fff; border-radius: 10px; border: 1px solid #dde2ec; padding: 1.1rem 1.4rem; margin-bottom: .9rem; border-left: 4px solid #6b0f1a; }
+.indicador-card .ind-header { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; flex-wrap: wrap; }
+.ind-badge { background: #6b0f1a; color: #fff; border-radius: 6px; padding: .2rem .6rem; font-size: .75rem; font-weight: 800; font-family: monospace; white-space: nowrap; }
+.ind-nombre { font-size: .95rem; font-weight: 700; color: #1e293b; }
+.ind-desc   { font-size: .83rem; color: #475569; line-height: 1.55; }
+.rango-pill { display: inline-block; padding: .1rem .5rem; border-radius: 10px; font-size: .72rem; font-weight: 700; margin: .1rem; }
+.glosario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+@media(max-width:680px){ .glosario-grid { grid-template-columns: 1fr; } }
+.glos-item { background: #fff; border-radius: 8px; border: 1px solid #dde2ec; padding: .8rem 1rem; }
+.glos-term  { font-size: .82rem; font-weight: 800; color: #6b0f1a; font-family: monospace; }
+.glos-def   { font-size: .8rem; color: #475569; margin-top: .2rem; }
+.fuente-item { background: #fff; border-radius: 8px; border: 1px solid #dde2ec; padding: .9rem 1rem; margin-bottom: .75rem; display: flex; gap: 1rem; align-items: flex-start; }
+.fuente-icon { font-size: 1.6rem; flex-shrink: 0; margin-top: .1rem; }
+.fuente-body h4 { font-size: .88rem; font-weight: 700; color: #1e293b; }
+.fuente-body p  { font-size: .8rem; color: #475569; margin-top: .2rem; }
+.fuente-body a  { color: #6b0f1a; font-weight: 600; }
+.ref-item { background: #fff; border-radius: 8px; border: 1px solid #dde2ec; padding: .85rem 1rem; margin-bottom: .65rem; font-size: .82rem; color: #334155; border-left: 3px solid #cbd5e1; line-height: 1.6; }
+.ref-item .ref-autores { font-weight: 700; }
+.ref-item .ref-titulo  { font-style: italic; }
+.ref-item .ref-extra   { color: #64748b; font-size: .78rem; margin-top: .2rem; }
+.ref-item a { color: #6b0f1a; }
+.umbral-tbl { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.umbral-tbl th { background: #f8f0f1; color: #6b0f1a; font-weight: 700; padding: .5rem .8rem; text-align: left; border-bottom: 2px solid #e8c5cb; }
+.umbral-tbl td { padding: .45rem .8rem; border-bottom: 1px solid #f0f0f0; }
+.umbral-tbl tr:last-child td { border-bottom: none; }
+footer { text-align: center; padding: 1.25rem; font-size: .75rem; color: #94a3b8; border-top: 1px solid #dde2ec; margin-top: 2rem; }
+footer a { color: #6b0f1a; text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo · Senado Nacional</h1>
+    <p>Metodología, fórmulas, glosario y referencias — versión 1.0 · marzo 2026</p>
+  </div>
+  <nav>
+    <a href="senado.html">🏛️ Senado</a>
+    <a href="indicadores.html">📊 Indicadores</a>
+    <a href="metodologia.html" class="active">📚 Metodología</a>
+  </nav>
+</header>
+
+<div class="nav-interna">
+  <a href="#indicadores" class="activo">📐 Indicadores</a>
+  <a href="#umbrales">🎯 Umbrales</a>
+  <a href="#glosario">📖 Glosario</a>
+  <a href="#fuentes">🗄️ Fuentes</a>
+  <a href="#bibliografia">📚 Bibliografía</a>
+  <a href="#notas">📝 Notas técnicas</a>
+</div>
+
+<div class="container">
+
+  <div class="seccion" style="margin-top:1.5rem">
+    <div class="panel" style="background:linear-gradient(135deg,#fef3f2,#fff);border-left:4px solid #6b0f1a">
+      <p style="font-size:.9rem;color:#334155">El <strong>Monitor Legislativo — Senado Nacional</strong> mide la actividad parlamentaria de los 72 senadores de la Nación Argentina a partir de registros oficiales de votación nominal. Los indicadores reflejan el comportamiento en sesiones plenarias durante el período en ejercicio de cada legislador.</p>
+      <p style="font-size:.82rem;color:#64748b;margin-top:.5rem">Los datos se obtienen de la API pública de <strong>argentinadatos.com</strong>, que a su vez los compila del Honorable Senado de la Nación Argentina. La actualización es diaria vía pipeline automatizado.</p>
+    </div>
+  </div>
+
+  <!-- INDICADORES Y FÓRMULAS -->
+  <div class="seccion" id="indicadores">
+    <h2>📐 Indicadores y fórmulas de cálculo</h2>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">participation_pct</span>
+        <span class="ind-nombre">Índice de Participación en Votaciones (IPV)</span>
+      </div>
+      <p class="ind-desc">Mide el porcentaje de sesiones en las que el senador emitió voto (afirmativo, negativo o abstención) sobre el total de sesiones con voto registrado en su período. Es el indicador principal del monitor.</p>
+      <div class="formula-box">
+        <span class="var">IPV</span> <span class="op">=</span> ( <span class="var">votos_afirmativos</span> <span class="op">+</span> <span class="var">votos_negativos</span> <span class="op">+</span> <span class="var">abstenciones</span> ) <span class="op">/</span> <span class="var">votos_total</span> <span class="op">×</span> <span class="num">100</span><br>
+        <span class="comm">-- votos_total: sesiones plenarias con votación nominal en el período activo</span>
+      </div>
+      <p style="margin-top:.5rem">
+        <span class="rango-pill" style="background:#22c55e;color:#fff">≥ 80% Alta</span>
+        <span class="rango-pill" style="background:#f59e0b;color:#fff">40–79% Media</span>
+        <span class="rango-pill" style="background:#ef4444;color:#fff">&lt; 40% Baja</span>
+        <span class="rango-pill" style="background:#94a3b8;color:#fff">0 / sin datos</span>
+      </p>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">ausencias</span>
+        <span class="ind-nombre">Inasistencias registradas</span>
+      </div>
+      <p class="ind-desc">Conteo absoluto de sesiones en las que el senador no registró voto ni presencia. No incluye licencias reglamentarias ni reemplazos formales.</p>
+      <div class="formula-box">
+        <span class="var">ausencias</span> <span class="op">=</span> <span class="var">votos_total</span> <span class="op">−</span> ( <span class="var">votos_afirmativos</span> <span class="op">+</span> <span class="var">votos_negativos</span> <span class="op">+</span> <span class="var">abstenciones</span> <span class="op">+</span> <span class="var">no_emite</span> )
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">abstenciones</span>
+        <span class="ind-nombre">Abstenciones voluntarias</span>
+      </div>
+      <p class="ind-desc">Cantidad de sesiones en que el senador estuvo presente pero optó por no votar afirmativa ni negativamente. La abstención es un voto válido registrado formalmente en el acta de sesión.</p>
+      <div class="formula-box">
+        <span class="var">tasa_abstención</span> <span class="op">=</span> <span class="var">abstenciones</span> <span class="op">/</span> <span class="var">votos_total</span> <span class="op">×</span> <span class="num">100</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">rol_provincial</span>
+        <span class="ind-nombre">Rol en la representación provincial</span>
+      </div>
+      <p class="ind-desc">Clasifica al senador según su bloque dentro de la delegación provincial. Cada provincia elige 3 senadores: 2 para la lista ganadora (Mayoría) y 1 para la segunda fuerza (Primera Minoría), según el art. 54 CN.</p>
+      <div class="formula-box">
+        <span class="comm">-- Sistema de representación del Senado (art. 54 CN + Ley 24.012)</span><br>
+        <span class="var">Mayoría</span>       <span class="op">→</span> <span class="num">2</span> bancas (lista con más votos)<br>
+        <span class="var">Primera Minoría</span> <span class="op">→</span> <span class="num">1</span> banca (segunda lista)
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">IPV_bloque</span>
+        <span class="ind-nombre">Participación agregada por bloque</span>
+      </div>
+      <p class="ind-desc">Promedio ponderado del IPV de todos los senadores del bloque, ponderado por votos_total para neutralizar diferencias de período entre legisladores.</p>
+      <div class="formula-box">
+        <span class="var">IPV_bloque</span> <span class="op">=</span> Σ( <span class="var">IPV_i</span> <span class="op">×</span> <span class="var">votos_total_i</span> ) <span class="op">/</span> Σ( <span class="var">votos_total_i</span> ) <span class="op">×</span> <span class="num">100</span><br>
+        <span class="comm">-- donde i recorre los senadores del bloque con votos_total &gt; 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- UMBRALES -->
+  <div class="seccion" id="umbrales">
+    <h2>🎯 Umbrales de clasificación</h2>
+    <div class="panel">
+      <table class="umbral-tbl">
+        <thead><tr><th>Categoría</th><th>Rango IPV</th><th>Interpretación</th><th>Color</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Alta participación</strong></td><td>≥ 80%</td><td>Presencia sostenida; vota en la gran mayoría de sesiones</td><td><span style="color:#22c55e;font-weight:700">● Verde</span></td></tr>
+          <tr><td><strong>Media participación</strong></td><td>40–79%</td><td>Presencia intermedia; ausencias frecuentes pero no mayoritarias</td><td><span style="color:#f59e0b;font-weight:700">● Amarillo</span></td></tr>
+          <tr><td><strong>Baja participación</strong></td><td>1–39%</td><td>Ausencias predominantes; muy por debajo del promedio</td><td><span style="color:#ef4444;font-weight:700">● Rojo</span></td></tr>
+          <tr><td><strong>Sin datos / período nuevo</strong></td><td>0% o nulo</td><td>Sin sesiones registradas en el período actual</td><td><span style="color:#94a3b8;font-weight:700">● Gris</span></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.78rem;color:#64748b;margin-top:.75rem">* Umbrales basados en estándares del NDI (National Democratic Institute) y del IPOL (Instituto de Políticas Legislativas). Pueden ajustarse en <code>core/senadores.py</code>.</p>
+    </div>
+  </div>
+
+  <!-- GLOSARIO -->
+  <div class="seccion" id="glosario">
+    <h2>📖 Glosario de términos</h2>
+    <div class="glosario-grid">
+      <div class="glos-item"><div class="glos-term">votos_afirmativos</div><div class="glos-def">Sesiones en que el senador votó a favor de la moción o proyecto.</div></div>
+      <div class="glos-item"><div class="glos-term">votos_negativos</div><div class="glos-def">Sesiones en que el senador votó en contra de la moción o proyecto.</div></div>
+      <div class="glos-item"><div class="glos-term">abstenciones</div><div class="glos-def">Sesiones con presencia en recinto pero sin voto afirmativo ni negativo. Voto válido registrado en acta.</div></div>
+      <div class="glos-item"><div class="glos-term">ausencias</div><div class="glos-def">Sesiones sin presencia ni voto registrado. Puede incluir licencias, misiones o inasistencias.</div></div>
+      <div class="glos-item"><div class="glos-term">votos_total</div><div class="glos-def">Total de sesiones plenarias con votación nominal durante el período activo. Denominador del IPV.</div></div>
+      <div class="glos-item"><div class="glos-term">participation_pct</div><div class="glos-def">Índice de Participación en Votaciones (IPV). % de sesiones con voto emitido sobre el total.</div></div>
+      <div class="glos-item"><div class="glos-term">partido_normalizado</div><div class="glos-def">Bloque político normalizado para agrupar sub-denominaciones históricas bajo el nombre actual.</div></div>
+      <div class="glos-item"><div class="glos-term">rol_provincial</div><div class="glos-def">"Mayoría": lista más votada en la provincia (2 bancas). "Primera Minoría": segunda lista (1 banca).</div></div>
+      <div class="glos-item"><div class="glos-term">periodoLegal</div><div class="glos-def">Período formal del mandato (inicio y vencimiento). Duración: 6 años (art. 56 CN).</div></div>
+      <div class="glos-item"><div class="glos-term">periodoReal</div><div class="glos-def">Período efectivo de ejercicio. Puede diferir del legal por reemplazos, renuncias o cargos ejecutivos.</div></div>
+      <div class="glos-item"><div class="glos-term">no_emite</div><div class="glos-def">Presencia en sala sin accionar el sistema de votación. Distinto de abstención formal.</div></div>
+      <div class="glos-item"><div class="glos-term">fuente</div><div class="glos-def">"csv_real": dato del scraper. "fallback": dato embebido en HTML para funcionamiento offline.</div></div>
+    </div>
+  </div>
+
+  <!-- FUENTES -->
+  <div class="seccion" id="fuentes">
+    <h2>🗄️ Fuentes de datos</h2>
+    <div class="fuente-item">
+      <div class="fuente-icon">🌐</div>
+      <div class="fuente-body">
+        <h4>argentinadatos.com — API pública</h4>
+        <p>Fuente primaria del monitor. Provee nómina, datos biográficos, períodos y registros de votación nominal. Actualización diaria.<br><a href="https://argentinadatos.com" target="_blank">argentinadatos.com</a> · Endpoint: <code>GET /v1/congreso/senadores</code></p>
+      </div>
+    </div>
+    <div class="fuente-item">
+      <div class="fuente-icon">🏛️</div>
+      <div class="fuente-body">
+        <h4>Honorable Senado de la Nación Argentina</h4>
+        <p>Fuente oficial de los registros de votación nominal en sesiones plenarias.<br><a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · <a href="https://www.senado.gob.ar/parlamentario/sesiones" target="_blank">Diario de Sesiones</a></p>
+      </div>
+    </div>
+    <div class="fuente-item">
+      <div class="fuente-icon">📜</div>
+      <div class="fuente-body">
+        <h4>Constitución Nacional Argentina</h4>
+        <p>Marco legal: arts. 54–62 regulan composición (3 senadores/provincia), mandato (6 años), renovación por tercios y quórum.<br><a href="https://www.argentina.gob.ar/sites/default/files/constitucion-nacional-argentina.pdf" target="_blank">Texto completo (PDF)</a></p>
+      </div>
+    </div>
+    <div class="fuente-item">
+      <div class="fuente-icon">⚖️</div>
+      <div class="fuente-body">
+        <h4>Reglamento del Honorable Senado de la Nación</h4>
+        <p>Define tipos de votación, procedimiento nominal, ausencias justificadas y registro de asistencia.<br><a href="https://www.senado.gob.ar/bundles/senadoargentino/pdf/reglamento_senado.pdf" target="_blank">Reglamento (PDF)</a></p>
+      </div>
+    </div>
+    <div class="fuente-item">
+      <div class="fuente-icon">📁</div>
+      <div class="fuente-body">
+        <h4>CSV del pipeline — data/senadores_YYYY-MM-DD.csv</h4>
+        <p>Generado diariamente por <code>scraper_senadores.py</code>. Incluye todos los campos normalizados.<br>Repo: <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">github.com/Viny2030/monitor_legistativo_senadores</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIBLIOGRAFÍA -->
+  <div class="seccion" id="bibliografia">
+    <h2>📚 Bibliografía académica</h2>
+
+    <div class="ref-item">
+      <span class="ref-autores">Carey, J. M. (2009). </span>
+      <span class="ref-titulo">Legislative Voting and Accountability.</span>
+      Cambridge University Press.
+      <div class="ref-extra">Referencia central sobre votaciones legislativas como indicador de responsabilidad representativa. Desarrolla métricas de cohesión partidaria y participación.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Saiegh, S. M. (2011). </span>
+      <span class="ref-titulo">Ruling by Statute: How Uncertainty and Vote Buying Shape Lawmaking.</span>
+      Cambridge University Press.
+      <div class="ref-extra">Analiza patrones de votación en legislaturas latinoamericanas incluida Argentina. Introduce medidas de participación y disciplina partidaria relevantes para el IPV.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Jones, M. P., Saiegh, S., Spiller, P. T. y Tommasi, M. (2002). </span>
+      <span class="ref-titulo">Amateur Legislators – Professional Politicians: The Consequences of Party-Centered Electoral Rules in a Federal System.</span>
+      <em>American Journal of Political Science, 46</em>(3), 656–669.
+      <div class="ref-extra">Estudio seminal sobre el Congreso argentino. Analiza cómo las reglas electorales afectan la asistencia y disciplina de voto.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Mustapic, A. M. (2002). </span>
+      <span class="ref-titulo">Oscillating Relations: President and Congress in Argentina.</span>
+      En S. Morgenstern y B. Nacif (eds.), <em>Legislative Politics in Latin America.</em> Cambridge University Press.
+      <div class="ref-extra">Examina la relación ejecutivo-legislativo y los factores que afectan la participación en votaciones del Senado.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">NDI — National Democratic Institute (2016). </span>
+      <span class="ref-titulo">Legislative Assessment Toolkit.</span>
+      Washington D.C.
+      <div class="ref-extra">Marco de referencia para evaluación de legislaturas. Define estándares de participación, transparencia y rendición de cuentas. Base para los umbrales del monitor.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Chasquetti, D. (2001). </span>
+      <span class="ref-titulo">Democracia, multipartidismo y coaliciones en América Latina.</span>
+      En J. Lanzaro (comp.), <em>Tipos de presidencialismo y coaliciones políticas en América Latina.</em> CLACSO.
+      <div class="ref-extra">Contextualiza el multipartidismo del Senado argentino y su efecto en la formación de mayorías y los patrones de votación.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">CIPPEC (2018). </span>
+      <span class="ref-titulo">¿Cómo votan los legisladores argentinos? Estudio de las votaciones nominales en el Congreso 2003–2017.</span>
+      Centro de Implementación de Políticas Públicas para la Equidad y el Crecimiento, Buenos Aires.
+      <div class="ref-extra">Análisis empírico específico sobre el Congreso argentino. Fuente local directamente aplicable a las métricas del monitor. <a href="https://www.cippec.org" target="_blank">cippec.org</a></div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Poole, K. T. y Rosenthal, H. (1997). </span>
+      <span class="ref-titulo">Congress: A Political-Economic History of Roll Call Voting.</span>
+      Oxford University Press.
+      <div class="ref-extra">Referencia metodológica sobre análisis de votaciones nominales (roll call). Sus métricas de participación y cohesión son estándar global.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Alcántara Sáez, M. y Freidenberg, F. (eds.) (2001). </span>
+      <span class="ref-titulo">Partidos políticos de América Latina. Cono Sur.</span>
+      Universidad de Salamanca.
+      <div class="ref-extra">Describe estructura y disciplina de los principales partidos del Senado argentino; útil para contextualizar participación por bloque.</div>
+    </div>
+  </div>
+
+  <!-- NOTAS TÉCNICAS -->
+  <div class="seccion" id="notas">
+    <h2>📝 Notas técnicas</h2>
+    <div class="panel">
+      <h3>Senadores sin datos de votación</h3>
+      <p>Los senadores con <code>votos_total = 0</code> iniciaron su mandato en el período más reciente (diciembre 2025 en adelante) y aún no tienen sesiones registradas, o su carga en la fuente oficial está pendiente.</p>
+    </div>
+    <div class="panel">
+      <h3>Normalización de partidos</h3>
+      <p>El campo <code>partido_normalizado</code> agrupa denominaciones históricas bajo el bloque actual. Ej: "Frente de Todos" → "Unión por la Patria". La normalización es manual y revisable en <code>core/senadores.py</code>.</p>
+    </div>
+    <div class="panel">
+      <h3>Período de cálculo</h3>
+      <p>El IPV se calcula sobre el campo <code>periodoReal</code> (período activo), no sobre el mandato legal completo. Esto evita penalizar a senadores nuevos por sesiones ocurridas antes de su incorporación.</p>
+    </div>
+    <div class="panel">
+      <h3>Limitaciones</h3>
+      <p>El monitor no distingue entre tipos de sesión (ordinaria, extraordinaria, especial), ni pondera el peso político de cada votación. Para análisis más profundos se recomienda cruzar con datos de proyectos y comisiones.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Monitor Legislativo — Senado Nacional Argentina · Versión 1.0 · Marzo 2026<br>
+  <a href="senado.html">🏛️ Senado</a> · <a href="indicadores.html">📊 Indicadores</a> · <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a> · Datos: <a href="https://argentinadatos.com" target="_blank">argentinadatos.com</a>
+</footer>
+</body>
+</html>
