@@ -38,5 +38,6 @@ jobs:
             echo "Sin cambios en los datos."
           else
             git commit -m "auto: actualización nómina senadores $(date +'%Y-%m-%d')"
+            git pull --rebase origin main
             git push
           fi

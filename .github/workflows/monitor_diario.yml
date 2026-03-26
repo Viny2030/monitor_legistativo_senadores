@@ -36,5 +36,10 @@ jobs:
           git config --global user.name  "Monitor Bot"
           git config --global user.email "bot@monitor-senado.ar"
           git add data/
-          git diff --staged --quiet || git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
-          git push
+          if git diff --staged --quiet; then
+            echo "Sin cambios en los datos."
+          else
+            git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
+            git pull --rebase origin main
+            git push
+          fi
