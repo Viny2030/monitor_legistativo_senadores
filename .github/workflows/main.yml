@@ -1,4 +1,4 @@
-name: Monitor Legislativo —Senadores
+name: Monitor Legislativo — Senadores
 
 on:
   workflow_dispatch:   # ejecución manual desde GitHub
@@ -25,14 +25,9 @@ jobs:
         run: |
           pip install requests beautifulsoup4 pandas
 
-      # ── Diputados ────────────────────────────────────────────────────────────
-      - name: Scraper Diputados
-        run: python obtener_datos.py
-        continue-on-error: true   # si falla diputados, senadores igual corre
-
       # ── Senadores ────────────────────────────────────────────────────────────
       - name: Scraper Senadores
-        run: python pipeline_senado.py
+        run: python pipeline.py
 
       # ── Commit de resultados ─────────────────────────────────────────────────
       - name: Guardar cambios
@@ -40,10 +35,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add data/
-          git add nomina_diputados.csv || true
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
           else
-            git commit -m "auto: actualización nóminas $(date +'%Y-%m-%d')"
+            git commit -m "auto: actualización nómina senadores $(date +'%Y-%m-%d')"
             git push
           fi
