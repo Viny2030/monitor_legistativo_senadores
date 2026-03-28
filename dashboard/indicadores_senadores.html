@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Monitor Legislativo · Senado de la Nación Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; line-height: 1.55; background: #f0f2f5; color: #1a1a2e; }
+header { background: linear-gradient(135deg, #1a0a2e 0%, #2d1461 50%, #0d0620 100%); color: #fff; padding: 1.4rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+header .escudo { font-size: 2.4rem; }
+header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: .02em; }
+header p  { font-size: .875rem; opacity: .85; margin-top: .2rem; }
+header nav { margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+header nav a { color: #fff; text-decoration: none; background: rgba(255,255,255,.18); padding: .4rem 1rem; border-radius: 20px; font-size: .82rem; font-weight: 600; transition: background .15s; }
+header nav a:hover { background: rgba(255,255,255,.35); }
+header nav a.active { background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); }
+.nav-interna { position: sticky; top: 0; z-index: 100; background: #1a0a2e; display: flex; gap: 0; flex-wrap: wrap; border-bottom: 3px solid #C9A84C; }
+.nav-interna a { color: rgba(255,255,255,.75); text-decoration: none; padding: .55rem 1.1rem; font-size: .8rem; font-weight: 600; border-right: 1px solid rgba(255,255,255,.1); transition: background .12s, color .12s; white-space: nowrap; }
+.nav-interna a:hover { background: rgba(255,255,255,.12); color: #fff; }
+.nav-interna a.activo { background: rgba(255,255,255,.18); color: #fff; border-bottom: 3px solid #C9A84C; }
+.disclaimer { background: #fffbeb; border-left: 4px solid #C9A84C; padding: .75rem 1.5rem; font-size: .78rem; color: #5a4a00; border-bottom: 1px solid #f0e0a0; line-height: 1.55; }
+.kpi-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .75rem; padding: 1.25rem 1.5rem; background: #fff; border-bottom: 1px solid #dde2ec; }
+.kpi-card { background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; padding: .9rem 1rem; text-align: center; }
+.kpi-card .kv { font-size: 1.75rem; font-weight: 800; color: #1a0a2e; line-height: 1; }
+.kpi-card .kl { font-size: .72rem; color: #64748b; margin-top: .3rem; text-transform: uppercase; letter-spacing: .04em; }
+.kpi-card .ks { font-size: .8rem; color: #475569; margin-top: .15rem; }
+.seccion { padding: 1.25rem 1.5rem; }
+.seccion h2 { font-size: 1rem; font-weight: 700; color: #1a0a2e; margin-bottom: .9rem; padding-bottom: .4rem; border-bottom: 2px solid #d0daf0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media(max-width:800px){ .grid-2 { grid-template-columns: 1fr; } }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media(max-width:900px){ .grid-3 { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px){ .grid-3 { grid-template-columns: 1fr; } }
+.panel { background: #fff; border-radius: 10px; border: 1px solid #dde2ec; padding: 1rem 1.1rem; overflow: hidden; }
+.panel h3 { font-size: .88rem; font-weight: 700; color: #334155; margin-bottom: .75rem; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.tbl th { background: #eef2fb; color: #1a0a2e; font-weight: 700; padding: .45rem .6rem; text-align: left; border-bottom: 2px solid #c5d0e8; position: sticky; top: 0; }
+.tbl th.num, .tbl td.num { text-align: right; }
+.tbl tr:nth-child(even) { background: #fafbff; }
+.tbl td { padding: .38rem .6rem; border-bottom: 1px solid #f0f0f0; }
+.tbl tr:hover td { background: #f0f4ff; }
+.bar-wrap { display: flex; align-items: center; gap: .5rem; }
+.bar-bg { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; min-width: 60px; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.bar-label { font-size: .75rem; font-weight: 700; min-width: 38px; text-align: right; }
+.pill { display: inline-block; padding: .15rem .55rem; border-radius: 12px; font-size: .7rem; font-weight: 700; color: #fff; }
+.ranking-row { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; border-bottom: 1px solid #f0f0f0; }
+.ranking-row:last-child { border-bottom: none; }
+.rk-num { font-size: .75rem; font-weight: 700; color: #94a3b8; min-width: 22px; }
+.rk-nombre { flex: 1; font-size: .8rem; font-weight: 600; }
+.rk-dist { font-size: .7rem; color: #64748b; }
+.rk-val { font-size: .85rem; font-weight: 800; min-width: 48px; text-align: right; }
+.panel-scroll { max-height: 400px; overflow-y: auto; }
+/* Nómina */
+.nomina-controles { display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:.9rem; align-items:center; }
+.nomina-controles input { flex:1; min-width:180px; padding:.45rem .8rem; border:1px solid #dde2ec; border-radius:6px; font-size:.82rem; outline:none; }
+.nomina-controles input:focus { border-color:#1a0a2e; }
+.nomina-controles select { padding:.45rem .7rem; border:1px solid #dde2ec; border-radius:6px; font-size:.82rem; background:#fff; outline:none; }
+.nomina-count { font-size:.78rem; color:#64748b; margin-left:auto; white-space:nowrap; }
+/* Indicadores */
+.ind-card-sm { background: #fff; border-radius: 8px; border: 1px solid #dde2ec; padding: .9rem 1.1rem; margin-bottom: .7rem; display: flex; gap: 1rem; align-items: flex-start; }
+.ind-card-sm .badge-num { font-size: 1.1rem; font-weight: 900; color: #1a0a2e; min-width: 28px; flex-shrink: 0; padding-top: .1rem; }
+.ind-card-sm .ind-body { flex: 1; }
+.ind-card-sm .ind-title { font-size: .88rem; font-weight: 700; color: #1e293b; margin-bottom: .2rem; }
+.ind-card-sm .ind-def { font-size: .78rem; color: #475569; margin-bottom: .35rem; }
+.ind-card-sm .ind-formula { background: #1e293b; color: #93c5fd; border-radius: 5px; padding: .35rem .7rem; font-family: 'Courier New',monospace; font-size: .75rem; border-left: 3px solid #C9A84C; margin-bottom: .3rem; }
+.tag-disponible { display: inline-block; background: #dcfce7; color: #15803d; border-radius: 4px; padding: .1rem .45rem; font-size: .68rem; font-weight: 700; margin-left: .4rem; }
+.tag-pendiente { display: inline-block; background: #fef3c7; color: #92400e; border-radius: 4px; padding: .1rem .45rem; font-size: .68rem; font-weight: 700; margin-left: .4rem; }
+.dim-header { display: flex; align-items: center; gap: .75rem; padding: .6rem 1rem; border-radius: 8px; margin-bottom: 1rem; }
+.dim-i  { background: linear-gradient(90deg,#eff6ff,#fff); border-left: 4px solid #2563eb; }
+.dim-ii { background: linear-gradient(90deg,#f0fdf4,#fff); border-left: 4px solid #16a34a; }
+.dim-iii{ background: linear-gradient(90deg,#fef3c7,#fff); border-left: 4px solid #d97706; }
+.dim-iv { background: linear-gradient(90deg,#fdf4ff,#fff); border-left: 4px solid #7c3aed; }
+.dim-num { font-size: 1.4rem; font-weight: 900; opacity: .25; }
+.dim-title { font-size: .95rem; font-weight: 800; color: #1e293b; }
+.dim-sub { font-size: .78rem; color: #64748b; margin-top: .1rem; }
+/* Autor */
+.autor-card { background:#fff; border-radius:12px; border:1px solid #dde2ec; padding:1.4rem 1.6rem; display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; }
+.autor-foto { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#1a0a2e,#2d1461); display:flex; align-items:center; justify-content:center; font-size:2.4rem; flex-shrink:0; color:#fff; border:3px solid #C9A84C; overflow:hidden; }
+.autor-foto img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.autor-info { flex:1; min-width:200px; }
+.autor-info h3 { font-size:1rem; font-weight:800; color:#1a0a2e; margin-bottom:.2rem; }
+.autor-info .titulo { font-size:.82rem; color:#475569; font-style:italic; margin-bottom:.5rem; }
+.autor-info .bio { font-size:.8rem; color:#334155; line-height:1.6; margin-bottom:.7rem; }
+.autor-mails { display:flex; flex-wrap:wrap; gap:.5rem; }
+.autor-mail { display:inline-flex; align-items:center; gap:.35rem; background:#f0f4ff; border:1px solid #c5d0e8; border-radius:6px; padding:.3rem .75rem; font-size:.78rem; color:#1a0a2e; font-weight:600; text-decoration:none; }
+.autor-mail:hover { background:#1a0a2e; color:#fff; }
+/* Donación */
+.donacion-card { background:linear-gradient(135deg,#fff8e8,#fff); border-radius:12px; border:1px solid #f0d080; border-left:4px solid #C9A84C; padding:1.4rem 1.6rem; }
+.don-tab { padding:.4rem 1rem; border-radius:6px; border:1px solid #f0d080; background:#fff; color:#92400e; font-size:.8rem; font-weight:700; cursor:pointer; }
+.don-tab-activo { background:#C9A84C; color:#fff; border-color:#C9A84C; }
+.don-panel { }
+.don-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+@media(max-width:680px){ .don-grid { grid-template-columns:1fr; } }
+.don-cuenta { background:#fff; border-radius:8px; border:1px solid #e2e8f0; padding:1rem 1.1rem; }
+.don-cuenta-titulo { font-size:.82rem; font-weight:800; color:#1a0a2e; margin-bottom:.6rem; }
+.don-tbl { width:100%; border-collapse:collapse; font-size:.78rem; margin-bottom:.7rem; }
+.don-tbl td { padding:.3rem .4rem; border-bottom:1px solid #f0f0f0; color:#334155; }
+.don-tbl td:first-child { color:#64748b; white-space:nowrap; width:38%; }
+.don-mono { font-family:monospace; font-size:.82rem; letter-spacing:.03em; color:#1a0a2e; }
+.don-copy { background:#1a0a2e; color:#fff; border:none; border-radius:6px; padding:.35rem .9rem; font-size:.76rem; font-weight:700; cursor:pointer; }
+.don-copy:hover { background:#2d1461; }
+.don-copy.copiado { background:#15803d; }
+footer { text-align: center; padding: 1rem; font-size: .75rem; color: #94a3b8; border-top: 1px solid #dde2ec; margin-top: 1rem; }
+footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo · Senado de la Nación Argentina</h1>
+    <p>72 senadores · 24 provincias · 14 bloques · datos al 28 de marzo de 2026</p>
+  </div>
+  <nav>
+    <a href="indicadores_senadores.html" class="active">🏛️ Nómina</a>
+    <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a>
+    <a href="nomina_detalle_senadores.html">👥 Detalle</a>
+    <a href="metodologia_senadores.html">📚 Metodología</a>
+    <a href="manual_senadores.html">📖 Manual</a>
+  </nav>
+</header>
+
+<div class="nav-interna">
+  <a href="#resumen" class="activo">📋 Resumen</a>
+  <a href="#bloques">🎯 Por Bloque</a>
+  <a href="#provincias">🗺️ Por Provincia</a>
+  <a href="#nomina">👥 Nómina</a>
+  <a href="#dim1">💰 I · Costos</a>
+  <a href="#dim2">⚙️ II · Eficiencia</a>
+  <a href="#dim3">📈 III · Desempeño</a>
+  <a href="#dim4">🔍 IV · Transparencia</a>
+  <a href="#autor">👤 Autor</a>
+  <a href="#donacion">🤝 Apoyar</a>
+</div>
+
+<div class="disclaimer">
+  ⚠️ <strong>Nota:</strong> Esta herramienta es de carácter experimental y académico. Los datos provienen de fuentes públicas oficiales del Estado argentino (senado.gob.ar). Los resultados son indicadores algorítmicos — no implican juicio de valor ni determinación de responsabilidad. Versión 1.0 · marzo 2026.
+</div>
+
+<!-- KPIs -->
+<div class="kpi-bar" id="resumen">
+  <div class="kpi-card"><div class="kv" id="kpi-total">72</div><div class="kl">Senadores</div><div class="ks">en ejercicio</div></div>
+  <div class="kpi-card"><div class="kv" id="kpi-nep">—</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
+  <div class="kpi-card"><div class="kv" id="kpi-frag">—</div><div class="kl">Fragmentación</div><div class="ks">Índice de Rae</div></div>
+  <div class="kpi-card"><div class="kv" id="kpi-bloques">—</div><div class="kl">Bloques</div><div class="ks">activos</div></div>
+  <div class="kpi-card"><div class="kv">37</div><div class="kl">Quórum</div><div class="ks">Art. 55 CN</div></div>
+  <div class="kpi-card"><div class="kv">24</div><div class="kl">Provincias</div><div class="ks">3 senadores c/u</div></div>
+</div>
+
+<!-- Bloques -->
+<div class="seccion" id="bloques">
+  <h2>🎯 Composición por Bloque</h2>
+  <div class="panel">
+    <div class="panel-scroll">
+      <table class="tbl" id="tbl-bloques">
+        <thead><tr>
+          <th>Bloque</th>
+          <th class="num">Bancas</th>
+          <th style="min-width:180px">Representación</th>
+          <th class="num">% Cámara</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Provincias -->
+<div class="seccion" id="provincias">
+  <h2>🗺️ Composición por Provincia</h2>
+  <div class="panel">
+    <div class="panel-scroll">
+      <table class="tbl" id="tbl-provincias">
+        <thead><tr>
+          <th>Provincia</th>
+          <th class="num">Bancas</th>
+          <th>Bloques presentes</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Rankings -->
+<div class="seccion">
+  <div class="grid-2">
+    <div>
+      <h2>🏆 Bloques con más bancas</h2>
+      <div class="panel"><div class="panel-scroll" id="list-mayor"></div></div>
+    </div>
+    <div>
+      <h2>📉 Bloques con menos bancas</h2>
+      <div class="panel"><div class="panel-scroll" id="list-menor"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NÓMINA -->
+<div class="seccion" id="nomina">
+  <h2>👥 Nómina completa — 72 Senadores en ejercicio</h2>
+  <div class="panel">
+    <div class="nomina-controles">
+      <input type="text" id="nomina-buscar" placeholder="🔍 Buscar por nombre, bloque o provincia…" oninput="filtrarNomina()">
+      <select id="nomina-bloque" onchange="filtrarNomina()"><option value="">Todos los bloques</option></select>
+      <select id="nomina-provincia" onchange="filtrarNomina()"><option value="">Todas las provincias</option></select>
+      <span class="nomina-count" id="nomina-count">72 senadores</span>
+    </div>
+    <div class="panel-scroll" style="max-height:520px">
+      <table class="tbl" id="tbl-nomina">
+        <thead><tr>
+          <th>#</th>
+          <th>Apellido y Nombre</th>
+          <th>Provincia</th>
+          <th>Bloque</th>
+        </tr></thead>
+        <tbody id="tbody-nomina"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DIMENSIÓN I -->
+<div class="seccion" id="dim1">
+  <h2>💰 Dimensión I — Costos e Insumos (Inputs)</h2>
+  <div class="dim-header dim-i">
+    <span class="dim-num">I</span>
+    <div>
+      <div class="dim-title">Costos e Insumos</div>
+      <div class="dim-sub">¿Cuánto cuesta y qué recursos emplea el Senado? · Ref.: <em>Parliaments that Work</em>, Cap. 1</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">1</div>
+    <div class="ind-body">
+      <div class="ind-title">Costo de Representación por Ciudadano <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Gasto total del Senado prorrateado por habitante. Mide el costo directo del Senado para cada ciudadano argentino.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">CRC Senado 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">$2.890</div>
+          <div style="font-size:.68rem;color:#166534">por habitante / año</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Presupuesto Senado</div>
+          <div style="font-size:1.1rem;font-weight:900;color:#1a0a2e">~$135.800 MM</div>
+          <div style="font-size:.68rem;color:#64748b">estimado 2025</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Por senador</div>
+          <div style="font-size:1.1rem;font-weight:900;color:#1a0a2e">~$1.886 MM</div>
+          <div style="font-size:.68rem;color:#64748b">presupuesto / 72 bancas</div>
+        </div>
+      </div>
+      <div class="ind-formula">CRC = ~$135.800.000.000 / 47.000.000 hab. ≈ <strong>$2.890 / habitante</strong></div>
+      <div style="margin-top:.4rem;font-size:.72rem;color:#64748b">📄 <strong>Nota:</strong> Presupuesto estimado en base a proporción histórica Senado/Diputados (~60% del presupuesto HCDN). Valor exacto pendiente de fuente OPC 2025.</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #d97706">
+    <div class="badge-num" style="color:#d97706">2</div>
+    <div class="ind-body">
+      <div class="ind-title">Ratio de Profesionalización del Staff <span class="tag-pendiente">⚠ estimación</span></div>
+      <div class="ind-def">El Senado redujo 400 empleados respecto a la gestión anterior (tweet oficial @SenadoArgentina, nov.2023). La nómina está publicada en senado.gob.ar pero sin desglose planta permanente/transitoria en formato abierto.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:.6rem 1rem;min-width:140px">
+          <div style="font-size:.7rem;color:#92400e;font-weight:700;text-transform:uppercase">Reducción vs. anterior</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#92400e">−400</div>
+          <div style="font-size:.68rem;color:#92400e">empleados — gestión 2023</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:140px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">RPS exacto</div>
+          <div style="font-size:1rem;font-weight:900;color:#475569">pendiente</div>
+          <div style="font-size:.68rem;color:#64748b">desglose RRHH v1.1</div>
+        </div>
+      </div>
+      <div class="ind-formula">RPS = Staff_Permanente / Total_Empleados × 100 · Fuente: <a href="https://www.senado.gob.ar/recursos-humanos/agente/composicion" target="_blank" style="color:#1a0a2e">senado.gob.ar/recursos-humanos</a></div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #d97706">
+    <div class="badge-num" style="color:#d97706">3</div>
+    <div class="ind-body">
+      <div class="ind-title">Índice de Autonomía Presupuestaria <span class="tag-pendiente">⚠ estimación</span></div>
+      <div class="ind-def">En 2025 el Senado ejecutó con el presupuesto prorrogado del ejercicio 2023 (Decisión Administrativa 3/2025). Los PDF de ejecución trimestral están publicados en senado.gob.ar/administrativo/partida.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:.6rem 1rem;min-width:140px">
+          <div style="font-size:.7rem;color:#92400e;font-weight:700;text-transform:uppercase">IAP estimado 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#92400e">~0,92</div>
+          <div style="font-size:.68rem;color:#92400e">ejecución / presupuesto</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:140px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Marco legal</div>
+          <div style="font-size:.9rem;font-weight:900;color:#1a0a2e">DA 3/2025</div>
+          <div style="font-size:.68rem;color:#64748b">prórroga presupuesto 2023</div>
+        </div>
+      </div>
+      <div class="ind-formula">IAP = Ejecutado / Aprobado · PDF exacto: <a href="https://www.senado.gob.ar/administrativo/verpartida/eejec_4trim2025.pdf" target="_blank" style="color:#1a0a2e">eejec_4trim2025.pdf</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIMENSIÓN II -->
+<div class="seccion" id="dim2">
+  <h2>⚙️ Dimensión II — Eficiencia en el Proceso (Activities)</h2>
+  <div class="dim-header dim-ii">
+    <span class="dim-num">II</span>
+    <div>
+      <div class="dim-title">Eficiencia en el Proceso</div>
+      <div class="dim-sub">¿Con qué velocidad y dedicación trabaja el Senado? · Ref.: <em>Benchmarking and Self-Assessment</em>, Cap. 1</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">4</div>
+    <div class="ind-body">
+      <div class="ind-title">Tiempo Promedio de Maduración de Proyectos <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Calculado con los 16 proyectos aprobados en el período 143/2025 (PDF estadísticas oficial HSN). El Senado muestra gran agilidad cuando actúa con urgencia política: 6 proyectos dictaminados en ≤7 días.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">TPMP 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">33,4 días</div>
+          <div style="font-size:.68rem;color:#166534">ingreso → dictamen</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:110px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Mínimo</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">1 día</div>
+          <div style="font-size:.68rem;color:#64748b">presupuesto</div>
+        </div>
+        <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:.6rem 1rem;min-width:110px">
+          <div style="font-size:.7rem;color:#be123c;font-weight:700;text-transform:uppercase">Máximo</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#be123c">314 días</div>
+          <div style="font-size:.68rem;color:#be123c">calidad sanitaria</div>
+        </div>
+      </div>
+      <div class="ind-formula">TPMP = Σ(Fecha_Dictamen − Fecha_Ingreso) / 16 proyectos = <strong>33,4 días</strong> · 6/16 dictaminados en ≤7 días · Fuente: estadísticas/143/7.pdf</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #d97706">
+    <div class="badge-num" style="color:#d97706">5</div>
+    <div class="ind-body">
+      <div class="ind-title">Índice de Trabajo en Comisiones <span class="tag-pendiente">⚠ estimación</span></div>
+      <div class="ind-def">El Senado tiene 30 comisiones permanentes. En 2025 dictaminó 16 proyectos para 7 sesiones ordinarias = 2,3 dictámenes/sesión. La duración exacta de las reuniones no está en formato abierto.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:120px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Comisiones</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#1a0a2e">30</div>
+          <div style="font-size:.68rem;color:#64748b">permanentes HSN</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Proxy ITC 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">2,3</div>
+          <div style="font-size:.68rem;color:#166534">dictámenes/sesión</div>
+        </div>
+      </div>
+      <div class="ind-formula">ITC proxy = 16 dictámenes / 7 sesiones ordinarias = <strong>2,3 dict./sesión</strong> · ITC exacto (horas) pendiente v1.1</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">6</div>
+    <div class="ind-body">
+      <div class="ind-title">Nivel de Asistencia y Permanencia Efectiva <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Calculado desde las actas de votación nominales del período 143/2025. En las dos últimas sesiones con voto nominal registrado los 72 senadores estuvieron presentes.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Mod. Laboral feb.2026</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">72/72</div>
+          <div style="font-size:.68rem;color:#166534">100% presentes</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Presupuesto dic.2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">72/72</div>
+          <div style="font-size:.68rem;color:#166534">46 af.+25 neg.+1 abs.</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Sesiones ord. 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#1a0a2e">7</div>
+          <div style="font-size:.68rem;color:#64748b">período 143</div>
+        </div>
+      </div>
+      <div class="ind-formula">NAPE = 72/72 = <strong>100%</strong> en sesiones con votación nominal · Fuente: <a href="https://www.senado.gob.ar/votaciones/detalleActa/2623" target="_blank" style="color:#1a0a2e">acta 2623</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIMENSIÓN III -->
+<div class="seccion" id="dim3">
+  <h2>📈 Dimensión III — Desempeño y Calidad (Outputs)</h2>
+  <div class="dim-header dim-iii">
+    <span class="dim-num">III</span>
+    <div>
+      <div class="dim-title">Desempeño y Calidad</div>
+      <div class="dim-sub">¿Qué produce y con qué calidad? · Ref.: <em>African Parliamentary Index</em>, Cap. 9 y 15</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">7</div>
+    <div class="ind-body">
+      <div class="ind-title">Costo Operativo por Ley Sancionada <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Valor monetario que representa para el Estado la producción de una norma jurídica. 2025 fue el año con menos leyes en una década (13 totales entre ambas cámaras).</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#be123c;font-weight:700;text-transform:uppercase">COLS Senado 2025</div>
+          <div style="font-size:1.3rem;font-weight:900;color:#be123c">~$10.446 MM</div>
+          <div style="font-size:.68rem;color:#be123c">por ley (parte Senado)</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Leyes 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#1a0a2e">13</div>
+          <div style="font-size:.68rem;color:#64748b">sancionadas total</div>
+        </div>
+      </div>
+      <div class="ind-formula">COLS_Senado = ~$135.800MM / 13 leyes ≈ <strong>~$10.446 MM / ley</strong> · Mínimo histórico en 10 años</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">8</div>
+    <div class="ind-body">
+      <div class="ind-title">Ratio de Legislación Sustantiva <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Porcentaje de leyes de política pública real vs. protocolares. En 2025, el Senado revisó todas las leyes aprobadas por Diputados.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:140px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">RLS 2025</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">72,7%</div>
+          <div style="font-size:.68rem;color:#166534">leyes sustantivas</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase">Vetos revocados</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#1a0a2e">3</div>
+          <div style="font-size:.68rem;color:#64748b">insistencias exitosas</div>
+        </div>
+      </div>
+      <div class="ind-formula">RLS = (8/11) × 100 = <strong>72,7%</strong> · El Senado aprobó 3 insistencias revertiendo vetos presidenciales — hecho inédito</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">9</div>
+    <div class="ind-body">
+      <div class="ind-title">Efectividad del Control <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">En 2025 el Senado ejerció control efectivo mediante 3 insistencias exitosas (reversión de vetos presidenciales) y el rechazo de 2 pliegos de la Corte Suprema. El seguimiento sistemático de auditorías AGN requiere OPC v2.0.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Insistencias</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">3/3</div>
+          <div style="font-size:.68rem;color:#166534">100% efectividad</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:130px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Pliegos rechazados</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">2</div>
+          <div style="font-size:.68rem;color:#166534">Lijo + García-Mansilla</div>
+        </div>
+      </div>
+      <div class="ind-formula">ECO = 3/3 insistencias exitosas (universidades, jubilaciones, moratoria) · 2 pliegos rechazados Corte Suprema · AGN seguimiento: pendiente OPC v2.0</div>
+    </div>
+  </div>
+</div>
+
+<!-- DIMENSIÓN IV -->
+<div class="seccion" id="dim4">
+  <h2>🔍 Dimensión IV — Transparencia y Datos (M&amp;E Management)</h2>
+  <div class="dim-header dim-iv">
+    <span class="dim-num">IV</span>
+    <div>
+      <div class="dim-title">Transparencia y Datos</div>
+      <div class="dim-sub">¿Son accesibles y confiables los datos? · Ref.: <em>Making M&E Systems Work</em>, Cap. 10 y 12</div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">10</div>
+    <div class="ind-body">
+      <div class="ind-title">Índice de Accesibilidad Documental <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">El Senado publica versiones taquigráficas el mismo día de la sesión y ofrece datos abiertos en formato Excel y JSON — ventaja sobre Diputados.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">IAD Senado</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">4 / 5</div>
+          <div style="font-size:.68rem;color:#166534">mejor que Diputados</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Open Data</div>
+          <div style="font-size:1rem;font-weight:900;color:#15803d">XLSX · JSON</div>
+          <div style="font-size:.68rem;color:#166534">formatos estructurados ✓</div>
+        </div>
+      </div>
+      <div class="ind-formula">IAD = 4/5 · Taquigráficas: mismo día · Open data: Excel + JSON disponibles en <a href="https://www.senado.gob.ar/micrositios/DatosAbiertos/" target="_blank" style="color:#1a0a2e">senado.gob.ar/DatosAbiertos</a></div>
+    </div>
+  </div>
+  <div class="ind-card-sm" style="border-left:3px solid #16a34a">
+    <div class="badge-num" style="color:#16a34a">11</div>
+    <div class="ind-body">
+      <div class="ind-title">Tasa de Veracidad de Datos <span class="tag-disponible">✓ activo v1.0</span></div>
+      <div class="ind-def">Auditoría interna sobre los 72 senadores cruzando senado.gob.ar con datos abiertos JSON.</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.6rem 0">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem 1rem;min-width:150px">
+          <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">TVD nómina</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#15803d">~98%</div>
+          <div style="font-size:.68rem;color:#166534">72 senadores verificados</div>
+        </div>
+      </div>
+      <div class="ind-formula">TVD = (Datos_Correctos / 72) × 100 ≈ <strong>98%</strong> · Mayor precisión gracias al JSON oficial del Senado</div>
+    </div>
+  </div>
+  <div class="ind-card-sm">
+    <div class="badge-num">12</div>
+    <div class="ind-body">
+      <div class="ind-title">Índice de Participación Ciudadana Virtual <span class="tag-pendiente">🔜 v2.0</span></div>
+      <div class="ind-def">Ratio de ciudadanos que interactúan con el monitor. Previsto para v2.0 con módulo ciudadano.</div>
+      <div class="ind-formula">IPCV = Interacciones_Ciudadanas / Visitas_Totales</div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTOR -->
+<div class="seccion" id="autor">
+  <h2>👤 Sobre el Autor</h2>
+  <div class="autor-card">
+    <div class="autor-foto">
+      <img src="../foto.jpg" alt="Vicente H. Monteverde"
+           onerror="this.style.display='none';this.parentElement.textContent='👤'">
+    </div>
+    <div class="autor-info">
+      <h3>Ph.D. Vicente Humberto Monteverde</h3>
+      <div class="titulo">Doctor en Ciencias Económicas · Investigador en economía política y fenómenos de corrupción</div>
+      <div class="bio">Autor de la teoría de <strong>Transferencia Regresiva de Ingresos</strong> y desarrollador del algoritmo XAI aplicado al análisis de contrataciones públicas. Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing). Asesor en transparencia y auditoría algorítmica del gasto público.</div>
+      <div class="autor-mails">
+        <a class="autor-mail" href="/cdn-cgi/l/email-protection#97e1fffaf8f9e3f2d7e5f2e3fef9f6b9f6e5">✉️ <span class="__cf_email__" data-cfemail="f187999c9e9f8594b1839485989f90df9083">[email&#160;protected]</span></a>
+        <a class="autor-mail" href="/cdn-cgi/l/email-protection#dcaab5b2a5ecede5e9e49cbbb1bdb5b0f2bfb3b1">✉️ <span class="__cf_email__" data-cfemail="0a7c6364733a3b333f324a6d676b636624696567">[email&#160;protected]</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DONACIÓN -->
+<div class="seccion" id="donacion">
+  <h2>🤝 Apoyá este proyecto</h2>
+  <div class="donacion-card">
+    <div id="don-toggle" onclick="toggleDonacion()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none">
+      <h3 style="margin:0">💛 ¿Te resultó útil este monitor? — <span style="font-size:.82rem;font-weight:400;color:#a16207">hacé clic para ver cómo apoyar</span></h3>
+      <span id="don-arrow" style="font-size:1.1rem;color:#C9A84C;transition:transform .25s">▼</span>
+    </div>
+    <div id="don-body" style="display:none;margin-top:.9rem">
+      <p style="font-size:.82rem;color:#78350f;margin-bottom:.9rem">Este proyecto es independiente, sin publicidad ni financiamiento institucional. Si valorás la transparencia legislativa podés hacer una contribución voluntaria.</p>
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+        <button class="don-tab don-tab-activo" onclick="donTab(this,'desde-ar')">🇦🇷 Desde Argentina</button>
+        <button class="don-tab" onclick="donTab(this,'desde-ext')">🌎 Desde el Exterior</button>
+      </div>
+      <div id="desde-ar" class="don-panel">
+        <div class="don-grid">
+          <div class="don-cuenta">
+            <div class="don-cuenta-titulo">🟦 Pesos (ARS)</div>
+            <table class="don-tbl">
+              <tr><td>Tipo</td><td><strong>Caja de Ahorro</strong></td></tr>
+              <tr><td>CBU</td><td><strong class="don-mono">0140005203400552652310</strong></td></tr>
+              <tr><td>Alias</td><td><strong class="don-mono">ALGORIT.MONTE.PESOS</strong></td></tr>
+              <tr><td>Titular</td><td>Vicente Humberto Monteverde</td></tr>
+              <tr><td>CUIT</td><td>20-12034411-1</td></tr>
+            </table>
+            <button class="don-copy" onclick="copiar('0140005203400552652310', this)">📋 Copiar CBU</button>
+          </div>
+          <div class="don-cuenta">
+            <div class="don-cuenta-titulo">💵 Dólares (USD)</div>
+            <table class="don-tbl">
+              <tr><td>Tipo</td><td><strong>Caja de Ahorro USD</strong></td></tr>
+              <tr><td>CBU</td><td><strong class="don-mono">0140005204400550329709</strong></td></tr>
+              <tr><td>Alias</td><td><strong class="don-mono">ALGO.MONTE.DOLARES</strong></td></tr>
+              <tr><td>Titular</td><td>Vicente Humberto Monteverde</td></tr>
+              <tr><td>CUIT</td><td>20-12034411-1</td></tr>
+            </table>
+            <button class="don-copy" onclick="copiar('0140005204400550329709', this)">📋 Copiar CBU</button>
+          </div>
+        </div>
+      </div>
+      <div id="desde-ext" class="don-panel" style="display:none">
+        <div class="don-cuenta" style="max-width:520px">
+          <div class="don-cuenta-titulo">🌎 Transferencia Internacional (USD)</div>
+          <table class="don-tbl">
+            <tr><td>Banco</td><td><strong>Banco Santander Montevideo</strong></td></tr>
+            <tr><td>Beneficiario</td><td>Vicente Humberto Monteverde</td></tr>
+            <tr><td>Dirección</td><td>Av. Directorio 3024 PB Dto. 04</td></tr>
+            <tr><td>CUIT</td><td>20-12034411-1</td></tr>
+            <tr><td>Tipo</td><td><strong>Caja de Ahorro USD</strong></td></tr>
+            <tr><td>Número</td><td><strong class="don-mono">005200183500</strong></td></tr>
+            <tr><td>SWIFT</td><td><strong class="don-mono">BSCHUYMM</strong></td></tr>
+          </table>
+          <button class="don-copy" onclick="copiar('BSCHUYMM', this)">📋 Copiar SWIFT</button>
+        </div>
+      </div>
+      <div style="margin-top:.9rem;font-size:.75rem;color:#92400e">📧 <a href="/cdn-cgi/l/email-protection#0d7b6560626379684d7f687964636c236c7f" style="color:#92400e;font-weight:700"><span class="__cf_email__" data-cfemail="e3958b8e8c8d9786a39186978a8d82cd8291">[email&#160;protected]</span></a></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Fuente: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · 28-03-2026 · Monitor Legislativo Senado ·
+  <a href="indicadores_senadores.html">🏛️ Nómina</a> ·
+  <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a> ·
+  <a href="metodologia_senadores.html">📚 Metodología</a> ·
+  <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const SENADORES = [
+  {nombre:"Abad, Maximiliano",provincia:"BUENOS AIRES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Abdala, Bartolomé Esteban",provincia:"SAN LUIS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Almeida, Romina María",provincia:"ENTRE RÍOS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Alvarez Rivero, Carmen",provincia:"CÓRDOBA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Andrada, Guillermo Eduardo",provincia:"CATAMARCA",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Arce, Carlos Omar",provincia:"MISIONES",bloque:"FRENTE RENOVADOR DE LA CONCORDIA SOCIAL"},
+  {nombre:"Arrascaeta, Ivanna Marcela",provincia:"SAN LUIS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Atauche, Ezequiel",provincia:"JUJUY",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Avila, Beatriz Luisa",provincia:"TUCUMÁN",bloque:"INDEPENDENCIA"},
+  {nombre:"Bahl, Adán Humberto",provincia:"ENTRE RÍOS",bloque:"JUSTICIALISTA"},
+  {nombre:"Bedia, Vilma Facunda",provincia:"JUJUY",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Benegas Lynch, Joaquín Alberto",provincia:"ENTRE RÍOS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Bensusán, Daniel Pablo",provincia:"LA PAMPA",bloque:"JUSTICIALISTA"},
+  {nombre:"Bullrich, Patricia",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Capitanich, Jorge Milton",provincia:"CHACO",bloque:"JUSTICIALISTA"},
+  {nombre:"Carambia, José María",provincia:"SANTA CRUZ",bloque:"MOVERE POR SANTA CRUZ"},
+  {nombre:"Cervi, Mario Pablo",provincia:"NEUQUÉN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Corpacci, Lucía Benigna",provincia:"CATAMARCA",bloque:"JUSTICIALISTA"},
+  {nombre:"Corroza, Julieta",provincia:"NEUQUÉN",bloque:"LA NEUQUINIDAD"},
+  {nombre:"Coto, Agustín Pedro",provincia:"TIERRA DEL FUEGO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Cristina, Andrea Marcela",provincia:"CHUBUT",bloque:"FRENTE PRO"},
+  {nombre:"De Pedro, Eduardo Enrique",provincia:"BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Di Tullio, Juliana",provincia:"BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Espínola, Carlos Mauricio",provincia:"CORRIENTES",bloque:"PROVINCIAS UNIDAS"},
+  {nombre:"Fama, Flavio Sergio",provincia:"CATAMARCA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Fernández Sagasti, Anabel",provincia:"MENDOZA",bloque:"JUSTICIALISTA"},
+  {nombre:"Fullone, Enzo Paolo",provincia:"RÍO NEGRO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Gadano, Natalia Elena",provincia:"SANTA CRUZ",bloque:"MOVERE POR SANTA CRUZ"},
+  {nombre:"Galaretto, Eduardo Horacio",provincia:"SANTA FE",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Giménez Navarro, María Celeste",provincia:"SAN JUAN",bloque:"JUSTICIALISTA"},
+  {nombre:"Godoy, Juan Cruz",provincia:"CHACO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Goerling Lara, Enrique Martín",provincia:"MISIONES",bloque:"FRENTE PRO"},
+  {nombre:"González, María Teresa Margarita",provincia:"FORMOSA",bloque:"JUSTICIALISTA"},
+  {nombre:"Guzmán Coraita, Gonzalo",provincia:"SALTA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Huala, María Victoria",provincia:"LA PAMPA",bloque:"FRENTE PRO"},
+  {nombre:"Juez, Luis Alfredo",provincia:"CÓRDOBA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Juri, Mariana",provincia:"MENDOZA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Kirchner, Alicia Margarita Antonia",provincia:"SANTA CRUZ",bloque:"JUSTICIALISTA"},
+  {nombre:"Kroneberger, Daniel Ricardo",provincia:"LA PAMPA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Lewandowski, Marcelo Néstor",provincia:"SANTA FE",bloque:"JUSTICIALISTA"},
+  {nombre:"Linares, Carlos Alberto",provincia:"CHUBUT",bloque:"JUSTICIALISTA"},
+  {nombre:"López, Cándida Cristina",provincia:"TIERRA DEL FUEGO",bloque:"JUSTICIALISTA"},
+  {nombre:"López, María Florencia",provincia:"LA RIOJA",bloque:"JUSTICIALISTA"},
+  {nombre:"Losada, Carolina",provincia:"SANTA FE",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Manzur, Juan Luis",provincia:"TUCUMÁN",bloque:"JUSTICIALISTA"},
+  {nombre:"Marks, Ana Inés",provincia:"RÍO NEGRO",bloque:"JUSTICIALISTA"},
+  {nombre:"Márquez, Nadia Judith",provincia:"NEUQUÉN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Mayans, José Miguel Ángel",provincia:"FORMOSA",bloque:"JUSTICIALISTA"},
+  {nombre:"Mendoza, Sandra Mariela",provincia:"TUCUMÁN",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Moises, María Carolina",provincia:"JUJUY",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Monte de Oca, María Belén",provincia:"TIERRA DEL FUEGO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Monteverde, Agustín Aníbal",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Moreno, Elia Esther del Carmen",provincia:"SANTIAGO DEL ESTERO",bloque:"FRENTE CÍVICO POR SANTIAGO"},
+  {nombre:"Neder, José Emilio",provincia:"SANTIAGO DEL ESTERO",bloque:"JUSTICIALISTA"},
+  {nombre:"Olivera Lucero, Bruno Antonio",provincia:"SAN JUAN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Orozco, María Emilia",provincia:"SALTA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Pagotto, Juan Carlos",provincia:"LA RIOJA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Paoltroni, Francisco Manuel",provincia:"FORMOSA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Recalde, Mariano",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Rejal, Jesús Fernando",provincia:"LA RIOJA",bloque:"JUSTICIA SOCIAL FEDERAL"},
+  {nombre:"Rojas Decut, Sonia Elizabeth",provincia:"MISIONES",bloque:"FRENTE RENOVADOR DE LA CONCORDIA SOCIAL"},
+  {nombre:"Royon, Flavia Gabriela",provincia:"SALTA",bloque:"PRIMERO LOS SALTEÑOS"},
+  {nombre:"Salino, Fernando Aldo",provincia:"SAN LUIS",bloque:"JUSTICIA SOCIAL FEDERAL"},
+  {nombre:"Schneider, Silvana Lorena",provincia:"CHACO",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Soria, Martin Ignacio",provincia:"RÍO NEGRO",bloque:"JUSTICIALISTA"},
+  {nombre:"Suárez, Rodolfo Alejandro",provincia:"MENDOZA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Terenzi, Edith Elizabeth",provincia:"CHUBUT",bloque:"DESPIERTA CHUBUT"},
+  {nombre:"Uñac, Sergio Mauricio",provincia:"SAN JUAN",bloque:"JUSTICIALISTA"},
+  {nombre:"Valenzuela, Mercedes Gabriela",provincia:"CORRIENTES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Vigo, Alejandra María",provincia:"CÓRDOBA",bloque:"PROVINCIAS UNIDAS"},
+  {nombre:"Vischi, Eduardo Alejandro",provincia:"CORRIENTES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Zamora, Gerardo",provincia:"SANTIAGO DEL ESTERO",bloque:"FRENTE CÍVICO POR SANTIAGO"}
+];
+
+function colorBloque(b) {
+  if (!b) return '#64748b';
+  const bl = b.toLowerCase();
+  if (bl.includes('libertad avanza'))   return '#7c3aed';
+  if (bl.includes('justicialista'))     return '#2563eb';
+  if (bl.includes('pro'))               return '#d97706';
+  if (bl.includes('radical')||bl.includes('ucr')) return '#e74c3c';
+  if (bl.includes('provincias unidas')) return '#0891b2';
+  if (bl.includes('convicción'))        return '#0d9488';
+  if (bl.includes('frente cívico'))     return '#7c2d12';
+  if (bl.includes('frente renovador'))  return '#166534';
+  if (bl.includes('frente pro'))        return '#b45309';
+  if (bl.includes('movere'))            return '#4338ca';
+  if (bl.includes('justicia social'))   return '#9d174d';
+  if (bl.includes('neuquinidad'))       return '#065f46';
+  if (bl.includes('independencia'))     return '#1e3a5f';
+  if (bl.includes('primero'))           return '#7f1d1d';
+  if (bl.includes('despierta'))         return '#374151';
+  return '#64748b';
+}
+
+// Calcular
+const total = SENADORES.length;
+const bloques = {}, provincias = {};
+SENADORES.forEach(s => {
+  bloques[s.bloque]     = (bloques[s.bloque]||0)+1;
+  provincias[s.provincia] = (provincias[s.provincia]||0)+1;
+});
+
+const sumPi2 = Object.values(bloques).reduce((s,n)=>s+(n/total)**2,0);
+const nep  = (1/sumPi2).toFixed(2);
+const frag = (1-sumPi2).toFixed(4);
+const nb   = Object.keys(bloques).length;
+
+document.getElementById('kpi-total').textContent  = total;
+document.getElementById('kpi-nep').textContent    = nep;
+document.getElementById('kpi-frag').textContent   = frag;
+document.getElementById('kpi-bloques').textContent = nb;
+
+// Tabla bloques
+const bloquesSorted = Object.entries(bloques).sort((a,b)=>b[1]-a[1]);
+const maxB = bloquesSorted[0][1];
+document.querySelector('#tbl-bloques tbody').innerHTML = bloquesSorted.map(([b,n])=>{
+  const pct=(n/total*100).toFixed(1);
+  const w=(n/maxB*100).toFixed(0);
+  const col=colorBloque(b);
+  return `<tr>
+    <td><span class="pill" style="background:${col}">${b}</span></td>
+    <td class="num" style="font-weight:800">${n}</td>
+    <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:${col}"></div></div><span class="bar-label" style="color:${col}">${pct}%</span></div></td>
+    <td class="num">${pct}%</td>
+  </tr>`;
+}).join('');
+
+// Tabla provincias
+const provSorted = Object.entries(provincias).sort((a,b)=>a[0].localeCompare(b[0],'es'));
+document.querySelector('#tbl-provincias tbody').innerHTML = provSorted.map(([p,n])=>{
+  const blqsProv=[...new Set(SENADORES.filter(s=>s.provincia===p).map(s=>s.bloque))].map(b=>`<span class="pill" style="background:${colorBloque(b)};font-size:.62rem">${b}</span>`).join(' ');
+  return `<tr>
+    <td><strong>${p}</strong></td>
+    <td class="num" style="font-weight:800">${n}</td>
+    <td style="font-size:.72rem">${blqsProv}</td>
+  </tr>`;
+}).join('');
+
+// Rankings
+function rHtml(b, n, rank) {
+  const col = colorBloque(b);
+  const pct = (n/total*100).toFixed(1);
+  return `<div class="ranking-row">
+    <span class="rk-num">${rank}</span>
+    <div style="flex:1;min-width:0">
+      <div class="rk-nombre">${b}</div>
+      <div class="rk-dist">${n} senadores · ${pct}% del Senado</div>
+    </div>
+    <span class="rk-val" style="color:${col}">${n}</span>
+  </div>`;
+}
+const topBloques = bloquesSorted.slice(0,8);
+const bottomBloques = [...bloquesSorted].reverse().slice(0,8);
+document.getElementById('list-mayor').innerHTML = topBloques.map(([b,n],i)=>rHtml(b,n,i+1)).join('');
+document.getElementById('list-menor').innerHTML = bottomBloques.map(([b,n],i)=>rHtml(b,n,i+1)).join('');
+
+// Nómina
+const bloquesU   = [...new Set(SENADORES.map(s=>s.bloque))].sort();
+const provinciasU = [...new Set(SENADORES.map(s=>s.provincia))].sort();
+const selBloque   = document.getElementById('nomina-bloque');
+const selProv     = document.getElementById('nomina-provincia');
+bloquesU.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; selBloque.appendChild(o); });
+provinciasU.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; selProv.appendChild(o); });
+
+function renderNomina(lista) {
+  document.getElementById('tbody-nomina').innerHTML = lista.map((s,i) => {
+    const col = colorBloque(s.bloque);
+    return `<tr>
+      <td style="color:#94a3b8;font-size:.75rem">${i+1}</td>
+      <td style="font-weight:600">${s.nombre}</td>
+      <td style="font-size:.78rem">${s.provincia}</td>
+      <td><span class="pill" style="background:${col}">${s.bloque}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('nomina-count').textContent =
+    lista.length===SENADORES.length ? `${lista.length} senadores` : `${lista.length} de ${SENADORES.length}`;
+}
+
+function filtrarNomina() {
+  const txt   = document.getElementById('nomina-buscar').value.toLowerCase();
+  const blq   = document.getElementById('nomina-bloque').value;
+  const prov  = document.getElementById('nomina-provincia').value;
+  const res = SENADORES.filter(s =>
+    (!txt  || s.nombre.toLowerCase().includes(txt) || s.bloque.toLowerCase().includes(txt) || s.provincia.toLowerCase().includes(txt)) &&
+    (!blq  || s.bloque===blq) &&
+    (!prov || s.provincia===prov)
+  );
+  renderNomina(res);
+}
+
+renderNomina([...SENADORES].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')));
+
+// Donación
+function toggleDonacion() {
+  const body  = document.getElementById('don-body');
+  const arrow = document.getElementById('don-arrow');
+  const abierto = body.style.display !== 'none';
+  body.style.display  = abierto ? 'none' : 'block';
+  arrow.style.transform = abierto ? '' : 'rotate(180deg)';
+}
+function donTab(btn, panelId) {
+  document.querySelectorAll('.don-tab').forEach(b=>b.classList.remov

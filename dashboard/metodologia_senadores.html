@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Metodología · Monitor Legislativo Senado Argentina</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:1rem;line-height:1.6;background:#f0f2f5;color:#1a1a2e}
+header{background:linear-gradient(135deg,#1a0a2e 0%,#2d1461 50%,#0d0620 100%);color:#fff;padding:1.4rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+header .escudo{font-size:2.4rem}
+header h1{font-size:1.35rem;font-weight:700}
+header p{font-size:.875rem;opacity:.85;margin-top:.2rem}
+header nav{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+header nav a{color:#fff;text-decoration:none;background:rgba(255,255,255,.18);padding:.4rem 1rem;border-radius:20px;font-size:.82rem;font-weight:600}
+header nav a:hover{background:rgba(255,255,255,.35)}
+header nav a.active{background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6)}
+.nav-interna{position:sticky;top:0;z-index:100;background:#1a0a2e;display:flex;flex-wrap:wrap;border-bottom:3px solid #C9A84C}
+.nav-interna a{color:rgba(255,255,255,.75);text-decoration:none;padding:.55rem 1.1rem;font-size:.8rem;font-weight:600;border-right:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.nav-interna a:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-interna a.activo{background:rgba(255,255,255,.18);color:#fff;border-bottom:3px solid #C9A84C}
+.disclaimer{background:#fffbeb;border-left:4px solid #C9A84C;padding:.75rem 1.5rem;font-size:.78rem;color:#5a4a00;border-bottom:1px solid #f0e0a0}
+.container{max-width:960px;margin:0 auto;padding:1.5rem}
+.seccion{margin-bottom:2.5rem}
+.seccion h2{font-size:1.1rem;font-weight:800;color:#1a0a2e;padding-bottom:.5rem;border-bottom:3px solid #d0daf0;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.panel{background:#fff;border-radius:10px;border:1px solid #dde2ec;padding:1.25rem 1.4rem;margin-bottom:1rem}
+.panel h3{font-size:.95rem;font-weight:700;color:#334155;margin-bottom:.6rem}
+.panel p{font-size:.85rem;color:#475569;margin-bottom:.5rem;line-height:1.65}
+.panel p:last-child{margin-bottom:0}
+.formula-box{background:#1e293b;color:#e2e8f0;border-radius:8px;padding:.9rem 1.2rem;font-family:'Courier New',monospace;font-size:.88rem;margin:.75rem 0;border-left:4px solid #C9A84C;line-height:1.9}
+.formula-box .var{color:#93c5fd}
+.formula-box .op{color:#C9A84C}
+.formula-box .num{color:#86efac}
+.formula-box .comm{color:#64748b;font-style:italic}
+.indicador-card{background:#fff;border-radius:10px;border:1px solid #dde2ec;padding:1.1rem 1.4rem;margin-bottom:.9rem;border-left:4px solid #1a0a2e}
+.ind-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;flex-wrap:wrap}
+.ind-badge{background:#1a0a2e;color:#fff;border-radius:6px;padding:.2rem .6rem;font-size:.75rem;font-weight:800;font-family:monospace;white-space:nowrap}
+.ind-nombre{font-size:.95rem;font-weight:700;color:#1e293b}
+.ind-desc{font-size:.83rem;color:#475569;line-height:1.55}
+.tag-act{display:inline-block;background:#dcfce7;color:#15803d;border-radius:4px;padding:.1rem .45rem;font-size:.68rem;font-weight:700;margin-left:.4rem}
+.tag-pend{display:inline-block;background:#fef3c7;color:#92400e;border-radius:4px;padding:.1rem .45rem;font-size:.68rem;font-weight:700;margin-left:.4rem}
+.diff-tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.diff-tbl th{background:#1a0a2e;color:#fff;padding:.5rem .8rem;text-align:left}
+.diff-tbl td{padding:.45rem .8rem;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.diff-tbl tr:nth-child(even){background:#fafbff}
+.diff-tbl tr:last-child td{border-bottom:none}
+.ref-item{background:#fff;border-radius:8px;border:1px solid #dde2ec;padding:.85rem 1rem;margin-bottom:.65rem;font-size:.82rem;color:#334155;border-left:3px solid #cbd5e1;line-height:1.6}
+.ref-item .ref-autores{font-weight:700}
+.ref-item .ref-titulo{font-style:italic}
+.ref-item .ref-extra{color:#64748b;font-size:.78rem;margin-top:.2rem}
+footer{text-align:center;padding:1.25rem;font-size:.75rem;color:#94a3b8;border-top:1px solid #dde2ec;margin-top:2rem}
+footer a{color:#1a0a2e;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo · Metodología — Senado</h1>
+    <p>Marco institucional, fórmulas, glosario y referencias — versión 1.0 · marzo 2026</p>
+  </div>
+  <nav>
+    <a href="indicadores_senadores.html">🏛️ Nómina</a>
+    <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a>
+    <a href="nomina_detalle_senadores.html">👥 Detalle</a>
+    <a href="metodologia_senadores.html" class="active">📚 Metodología</a>
+    <a href="manual_senadores.html">📖 Manual</a>
+  </nav>
+</header>
+<div class="nav-interna">
+  <a href="#marco" class="activo">🏛️ Marco</a>
+  <a href="#diferencias">⚖️ vs Diputados</a>
+  <a href="#indicadores">📐 Indicadores</a>
+  <a href="#glosario">📖 Glosario</a>
+  <a href="#fuentes">🗄️ Fuentes</a>
+  <a href="#bibliografia">📚 Bibliografía</a>
+</div>
+<div class="disclaimer">
+  ⚠️ <strong>Nota:</strong> Esta herramienta es de carácter experimental y académico. Los datos provienen de fuentes públicas oficiales. Los indicadores son algorítmicos — no implican juicio de valor ni determinación de responsabilidad.
+</div>
+
+<div class="container">
+
+  <div class="seccion" style="margin-top:1.5rem" id="marco">
+    <div class="panel" style="background:linear-gradient(135deg,#f5f0ff,#fff8e8);border-left:4px solid #1a0a2e">
+      <p style="font-size:.9rem;color:#334155">El <strong>Monitor Legislativo — Senado de la Nación</strong> analiza la composición y el desempeño de los 72 senadores a partir de registros oficiales del HSN, el SIL y la OPC. Organiza <strong>12 indicadores en 4 dimensiones</strong>: Costos e Insumos, Eficiencia en el Proceso, Desempeño y Calidad, y Transparencia y Datos.</p>
+      <p style="font-size:.82rem;color:#64748b;margin-top:.5rem">Los datos se obtienen del sitio oficial <strong>senado.gob.ar</strong>, que publica datos abiertos en formato JSON y Excel — lo que representa una ventaja significativa en términos de accesibilidad respecto a la Cámara de Diputados.</p>
+    </div>
+
+    <h2>🏛️ Marco institucional</h2>
+    <div class="panel">
+      <h3>Constitución Nacional — Arts. 54–62</h3>
+      <p><strong>Composición:</strong> 72 senadores — 3 por cada provincia y por la Ciudad de Buenos Aires (Art. 54). 2 bancas al partido más votado, 1 banca al segundo (Art. 54).</p>
+      <p><strong>Mandato:</strong> 6 años, renovación por tercios cada 2 años (Art. 56). Pueden ser reelegidos indefinidamente.</p>
+      <p><strong>Requisitos:</strong> 30 años de edad, 6 años de ciudadanía, renta anual de 2.000 pesos fuertes o equivalente, natural o residente en el distrito (Art. 55).</p>
+      <p><strong>Presidencia:</strong> El Vicepresidente de la Nación preside el Senado pero no vota salvo empate (Art. 57). Victoria Villarruel ejerce la presidencia 2023–2027.</p>
+      <p><strong>Quórum:</strong> Mayoría absoluta de los miembros = 37 senadores (Art. 55).</p>
+    </div>
+
+    <div class="panel">
+      <h3>Renovación por tercios — Grupos de provincias</h3>
+      <p><strong>Grupo I (2021–2027):</strong> Catamarca, Córdoba, Corrientes, Chubut, La Pampa, Mendoza, Santa Fe, Tucumán.</p>
+      <p><strong>Grupo II (2023–2029):</strong> Buenos Aires, Formosa, Jujuy, La Rioja, Misiones, San Juan, San Luis, Santa Cruz.</p>
+      <p><strong>Grupo III (2025–2031):</strong> Chaco, Ciudad Autónoma de Buenos Aires, Entre Ríos, Neuquén, Río Negro, Salta, Santiago del Estero, Tierra del Fuego.</p>
+    </div>
+  </div>
+
+  <div class="seccion" id="diferencias">
+    <h2>⚖️ Diferencias clave con la Cámara de Diputados</h2>
+    <div class="panel">
+      <table class="diff-tbl">
+        <thead><tr><th>Característica</th><th>Senado</th><th>Diputados</th></tr></thead>
+        <tbody>
+          <tr><td>Composición</td><td>72 senadores</td><td>257 diputados</td></tr>
+          <tr><td>Representación</td><td>3 por provincia (igualitaria)</td><td>Proporcional a la población</td></tr>
+          <tr><td>Mandato</td><td>6 años</td><td>4 años</td></tr>
+          <tr><td>Renovación</td><td>Por tercios cada 2 años</td><td>Por mitades cada 2 años</td></tr>
+          <tr><td>Quórum</td><td>37 (mayoría de 72)</td><td>129 (mayoría de 257)</td></tr>
+          <tr><td>Rol en el proceso</td><td>Cámara revisora (generalmente)</td><td>Cámara de origen (impuestos, FFAA)</td></tr>
+          <tr><td>Sistema electoral</td><td>Mayoría + minoría (2+1)</td><td>D'Hondt proporcional</td></tr>
+          <tr><td>Open Data</td><td>JSON + Excel disponibles</td><td>Solo PDF + HTML</td></tr>
+          <tr><td>Atribuciones exclusivas</td><td>Juzgar en juicio político, acuerdos Ejecutivo</td><td>Iniciativa en tributos y reclutamiento</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="seccion" id="indicadores">
+    <h2>📐 Indicadores activos v1.0</h2>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">NEP</span>
+        <span class="ind-nombre">Número Efectivo de Partidos <span class="tag-act">✓ activo</span></span>
+      </div>
+      <p class="ind-desc">Mide cuántos bloques "efectivos" existen ponderando su tamaño. En el Senado los dos bloques mayoritarios (LLA y Justicialista, 21 bancas cada uno) dominan el cálculo.</p>
+      <div class="formula-box">
+        <span class="var">NEP</span> <span class="op">=</span> <span class="num">1</span> <span class="op">/</span> Σ <span class="var">pᵢ²</span><br>
+        <span class="comm">-- pᵢ: proporción de bancas del bloque i sobre 72</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">IF</span>
+        <span class="ind-nombre">Índice de Fragmentación (Rae) <span class="tag-act">✓ activo</span></span>
+      </div>
+      <p class="ind-desc">Dispersión del poder entre bloques. El Senado tiende a menor fragmentación que Diputados por el sistema 2+1.</p>
+      <div class="formula-box">
+        <span class="var">IF</span> <span class="op">=</span> <span class="num">1</span> <span class="op">-</span> Σ <span class="var">pᵢ²</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">CRC</span>
+        <span class="ind-nombre">Costo de Representación por Ciudadano <span class="tag-act">✓ estimado</span></span>
+      </div>
+      <p class="ind-desc">Presupuesto del Senado dividido por la población total. El Senado históricamente representa ~60% del presupuesto de la HCDN.</p>
+      <div class="formula-box">
+        <span class="var">CRC</span> <span class="op">=</span> <span class="var">~$135.800.000.000</span> <span class="op">/</span> <span class="num">47.000.000</span> <span class="op">≈</span> <span class="num">$2.890</span><span class="comm"> / habitante</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">RLS</span>
+        <span class="ind-nombre">Ratio de Legislación Sustantiva <span class="tag-act">✓ activo</span></span>
+      </div>
+      <p class="ind-desc">72,7% de las leyes ordinarias 2025 fueron sustantivas. El Senado protagonizó 3 insistencias exitosas revertiendo vetos presidenciales — hecho inédito.</p>
+      <div class="formula-box">
+        <span class="var">RLS</span> <span class="op">=</span> (<span class="num">8</span> <span class="op">/</span> <span class="num">11</span>) <span class="op">×</span> <span class="num">100</span> <span class="op">=</span> <span class="num">72,7%</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">IAD</span>
+        <span class="ind-nombre">Índice de Accesibilidad Documental <span class="tag-act">✓ activo</span></span>
+      </div>
+      <p class="ind-desc">El Senado publica versiones taquigráficas el mismo día y ofrece datos abiertos en JSON y Excel desde <a href="https://www.senado.gob.ar/micrositios/DatosAbiertos/" target="_blank" style="color:#1a0a2e">senado.gob.ar/DatosAbiertos</a> — superior a Diputados en open data estructurado.</p>
+      <div class="formula-box">
+        <span class="var">IAD_Senado</span> <span class="op">=</span> <span class="num">4/5</span><span class="comm"> · taquigráficas mismo día · JSON/Excel disponibles</span>
+      </div>
+    </div>
+
+    <div class="indicador-card">
+      <div class="ind-header">
+        <span class="ind-badge">TVD</span>
+        <span class="ind-nombre">Tasa de Veracidad de Datos <span class="tag-act">✓ activo</span></span>
+      </div>
+      <p class="ind-desc">~98% de precisión en la nómina, validada cruzando senado.gob.ar con el JSON oficial de datos abiertos del Senado.</p>
+      <div class="formula-box">
+        <span class="var">TVD</span> <span class="op">≈</span> <span class="num">98%</span><span class="comm"> · 72 senadores verificados vs. JSON oficial</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion" id="glosario">
+    <h2>📖 Glosario específico del Senado</h2>
+    <div class="panel">
+      <p><strong>Cámara revisora:</strong> El Senado suele actuar como cámara revisora de los proyectos aprobados en Diputados, salvo excepciones constitucionales.</p>
+      <p><strong>Sistema 2+1:</strong> La provincia que obtiene más votos recibe 2 bancas; la segunda fuerza recibe 1. Garantiza representación de la minoría pero favorece a los dos primeros partidos.</p>
+      <p><strong>Insistencia:</strong> Cuando el PE veta una ley aprobada por el Congreso, cada Cámara puede "insistir" en la ley original con 2/3 de los votos. En 2025 el Senado insistió exitosamente 3 veces.</p>
+      <p><strong>Acuerdo:</strong> El Senado presta acuerdo al PE para designar jueces de la Corte Suprema, embajadores y otros funcionarios. En 2025 rechazó pliego de Lijo y García-Mansilla.</p>
+      <p><strong>Juicio político:</strong> El Senado juzga a los funcionarios acusados por Diputados. Se requieren 2/3 de los miembros presentes para condenar.</p>
+      <p><strong>Renovación por tercios:</strong> Cada 2 años se renuevan 8 de las 24 provincias (24 bancas de 72), a diferencia de Diputados que renueva la mitad.</p>
+    </div>
+  </div>
+
+  <div class="seccion" id="fuentes">
+    <h2>🗄️ Fuentes de datos</h2>
+    <div class="panel">
+      <p><strong>Nómina y bloques:</strong> <a href="https://www.senado.gob.ar/senadores/listados/agrupados-por-bloques" target="_blank" style="color:#1a0a2e">senado.gob.ar — Listado por bloques</a> · Dirección General de Secretaría · actualizado marzo 2026.</p>
+      <p><strong>Datos abiertos JSON:</strong> <a href="https://www.senado.gob.ar/micrositios/DatosAbiertos/ExportarListadoSenadores/json" target="_blank" style="color:#1a0a2e">senado.gob.ar — ExportarListadoSenadores/json</a></p>
+      <p><strong>Estadísticas parlamentarias:</strong> <a href="https://www.senado.gob.ar/parlamentario/estadisticas" target="_blank" style="color:#1a0a2e">senado.gob.ar — Estadísticas</a></p>
+      <p><strong>Transparencia presupuestaria:</strong> <a href="https://www.senado.gob.ar/administrativo/partida" target="_blank" style="color:#1a0a2e">senado.gob.ar — Partidas presupuestarias</a></p>
+      <p><strong>Versiones taquigráficas:</strong> <a href="https://www.senado.gob.ar/parlamentario/sesiones/busquedaTac" target="_blank" style="color:#1a0a2e">senado.gob.ar — Sesiones</a></p>
+      <p><strong>Leyes 2025:</strong> Directorio Legislativo — Balance Legislativo 2025 (dic. 2025)</p>
+    </div>
+  </div>
+
+  <div class="seccion" id="bibliografia">
+    <h2>📚 Bibliografía</h2>
+    <div class="ref-item">
+      <span class="ref-autores">Laakso, M. y Taagepera, R. (1979). </span>
+      <span class="ref-titulo">"Effective" Number of Parties.</span>
+      <em>Comparative Political Studies, 12</em>(1), 3–27.
+      <div class="ref-extra">Base del indicador NEP del monitor.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Rae, D. W. (1967). </span>
+      <span class="ref-titulo">The Political Consequences of Electoral Laws.</span>
+      Yale University Press.
+      <div class="ref-extra">Introduce el índice de fragmentación (IF).</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">IPU — Inter-Parliamentary Union (2022). </span>
+      <span class="ref-titulo">Parline Database on National Parliaments.</span>
+      <a href="https://data.ipu.org" target="_blank" style="color:#1a0a2e">data.ipu.org</a>
+      <div class="ref-extra">Base de datos comparativa de legislaturas mundiales.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">CPA-Zentralstelle (2019). </span>
+      <span class="ref-titulo">Benchmarking and Self-Assessment for Parliaments.</span>
+      <div class="ref-extra">Marco de referencia para indicadores de transparencia y eficiencia parlamentaria.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Mustapic, A. M. (2002). </span>
+      <span class="ref-titulo">Oscillating Relations: President and Congress in Argentina.</span>
+      Cambridge University Press.
+      <div class="ref-extra">Análisis de la relación ejecutivo-legislativo en Argentina, con foco en el Senado.</div>
+    </div>
+    <div class="ref-item">
+      <span class="ref-autores">Directorio Legislativo (2025). </span>
+      <span class="ref-titulo">Balance Legislativo 2025.</span>
+      Buenos Aires: Directorio Legislativo.
+      <div class="ref-extra">Fuente primaria para indicadores COLS y RLS 2025. <a href="https://directoriolegislativo.org" target="_blank" style="color:#1a0a2e">directoriolegislativo.org</a></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Monitor Legislativo — Senado de la Nación · Versión 1.0 · Marzo 2026<br>
+  <a href="indicadores_senadores.html">🏛️ Nómina</a> ·
+  <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a> ·
+  <a href="nomina_detalle_senadores.html">👥 Detalle</a> ·
+  <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a> ·
+  Datos: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a>
+</footer>
+</body>
+</html>

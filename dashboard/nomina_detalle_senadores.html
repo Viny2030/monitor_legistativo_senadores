@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nómina Detallada · Senado Argentina</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:1rem;line-height:1.55;background:#f0f2f5;color:#1a1a2e}
+header{background:linear-gradient(135deg,#1a0a2e 0%,#2d1461 50%,#0d0620 100%);color:#fff;padding:1.4rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+header .escudo{font-size:2.4rem}
+header h1{font-size:1.35rem;font-weight:700}
+header p{font-size:.875rem;opacity:.85;margin-top:.2rem}
+header nav{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+header nav a{color:#fff;text-decoration:none;background:rgba(255,255,255,.18);padding:.4rem 1rem;border-radius:20px;font-size:.82rem;font-weight:600}
+header nav a:hover{background:rgba(255,255,255,.35)}
+header nav a.active{background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6)}
+.nav-interna{position:sticky;top:0;z-index:100;background:#1a0a2e;display:flex;flex-wrap:wrap;border-bottom:3px solid #C9A84C}
+.nav-interna a{color:rgba(255,255,255,.75);text-decoration:none;padding:.55rem 1.1rem;font-size:.8rem;font-weight:600;border-right:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.nav-interna a:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-interna a.activo{background:rgba(255,255,255,.18);color:#fff;border-bottom:3px solid #C9A84C}
+.disclaimer{background:#fffbeb;border-left:4px solid #C9A84C;padding:.75rem 1.5rem;font-size:.78rem;color:#5a4a00;border-bottom:1px solid #f0e0a0}
+.controles-bar{background:#fff;border-bottom:1px solid #dde2ec;padding:1rem 1.5rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.controles-bar input{flex:1;min-width:200px;padding:.5rem .9rem;border:1px solid #dde2ec;border-radius:8px;font-size:.85rem;outline:none}
+.controles-bar input:focus{border-color:#1a0a2e}
+.controles-bar select{padding:.5rem .7rem;border:1px solid #dde2ec;border-radius:8px;font-size:.82rem;background:#fff;outline:none;cursor:pointer}
+.count-badge{margin-left:auto;background:#f0f4ff;border:1px solid #c5d0e8;border-radius:20px;padding:.3rem .9rem;font-size:.78rem;font-weight:700;color:#1a0a2e;white-space:nowrap}
+.vista-toggle{display:flex;gap:.4rem}
+.vista-btn{padding:.4rem .8rem;border-radius:6px;border:1px solid #dde2ec;background:#fff;color:#64748b;font-size:.8rem;cursor:pointer;font-weight:600}
+.vista-btn.activo{background:#1a0a2e;color:#fff;border-color:#1a0a2e}
+.cards-container{padding:1.25rem 1.5rem}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}}
+.dip-card{background:#fff;border-radius:12px;border:1px solid #dde2ec;overflow:hidden;transition:box-shadow .18s,transform .18s}
+.dip-card:hover{box-shadow:0 4px 20px rgba(26,10,46,.12);transform:translateY(-2px)}
+.dip-card-header{padding:1rem 1.1rem .7rem;display:flex;align-items:center;gap:.85rem;border-bottom:1px solid #f0f0f0}
+.dip-foto{width:52px;height:52px;border-radius:50%;background:#eef2fb;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:2px solid #c5d0e8;overflow:hidden}
+.dip-info{flex:1;min-width:0}
+.dip-nombre{font-size:.88rem;font-weight:800;color:#1e293b;line-height:1.3;margin-bottom:.25rem}
+.dip-prov{font-size:.72rem;color:#64748b}
+.dip-bloque-pill{display:inline-block;padding:.15rem .55rem;border-radius:12px;font-size:.67rem;font-weight:700;color:#fff;margin-top:.2rem}
+.dip-card-body{padding:.75rem 1.1rem}
+.dip-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem}
+.dip-meta-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.2rem .6rem;font-size:.7rem;color:#475569}
+.dip-meta-item strong{color:#1a0a2e}
+.dip-indicadores{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.4rem}
+.dip-ind{background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;padding:.4rem .6rem;text-align:center}
+.di-code{font-size:.65rem;font-weight:800;color:#1a0a2e;font-family:monospace}
+.di-val{font-size:.9rem;font-weight:800;color:#334155;line-height:1.1;margin:.1rem 0}
+.di-label{font-size:.62rem;color:#94a3b8}
+.tag-act{display:inline-block;background:#dcfce7;color:#15803d;border-radius:3px;padding:.05rem .3rem;font-size:.62rem;font-weight:700}
+.dip-card-footer{border-top:1px solid #f0f0f0;padding:.5rem 1.1rem;display:flex;align-items:center;justify-content:space-between}
+.dip-link{font-size:.72rem;color:#1a0a2e;text-decoration:none;font-weight:600}
+.dip-link:hover{text-decoration:underline}
+.lista-container{padding:1.25rem 1.5rem}
+.lista-tbl{width:100%;border-collapse:collapse;font-size:.8rem;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #dde2ec}
+.lista-tbl th{background:#eef2fb;color:#1a0a2e;font-weight:700;padding:.5rem .75rem;text-align:left;border-bottom:2px solid #c5d0e8}
+.lista-tbl td{padding:.42rem .75rem;border-bottom:1px solid #f0f0f0}
+.lista-tbl tr:nth-child(even){background:#fafbff}
+.lista-tbl tr:hover td{background:#f0f4ff}
+.lista-tbl tr:last-child td{border-bottom:none}
+.sin-resultados{text-align:center;padding:3rem 1rem;color:#94a3b8}
+footer{text-align:center;padding:1rem;font-size:.75rem;color:#94a3b8;border-top:1px solid #dde2ec;margin-top:1rem}
+footer a{color:#1a0a2e;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <span class="escudo">🏛️</span>
+  <div>
+    <h1>Monitor Legislativo · Nómina Detallada — Senado</h1>
+    <p>72 senadores en ejercicio · indicadores activos v1.0 · 28 de marzo de 2026</p>
+  </div>
+  <nav>
+    <a href="indicadores_senadores.html">🏛️ Nómina</a>
+    <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a>
+    <a href="nomina_detalle_senadores.html" class="active">👥 Detalle</a>
+    <a href="metodologia_senadores.html">📚 Metodología</a>
+    <a href="manual_senadores.html">📖 Manual</a>
+  </nav>
+</header>
+<div class="nav-interna">
+  <a href="#cards" class="activo">👥 Senadores</a>
+  <a href="indicadores_senadores.html">📊 Composición</a>
+  <a href="metodologia_senadores.html">📚 Metodología</a>
+</div>
+<div class="disclaimer">
+  ⚠️ <strong>Nota:</strong> Indicadores activos v1.0: <strong>NEP · RLS · COLS · IAD · TVD · CRC</strong> — datos oficiales 2025. Indicadores individuales por senador (asistencia nominal, proyectos propios) requieren integración SIL (v1.1).
+</div>
+<div class="controles-bar">
+  <input type="text" id="buscar" placeholder="🔍 Buscar por nombre, bloque o provincia…" oninput="filtrar()">
+  <select id="sel-bloque" onchange="filtrar()"><option value="">Todos los bloques</option></select>
+  <select id="sel-prov" onchange="filtrar()"><option value="">Todas las provincias</option></select>
+  <div class="vista-toggle">
+    <button class="vista-btn activo" id="btn-cards" onclick="setVista('cards')">▦ Cards</button>
+    <button class="vista-btn" id="btn-lista" onclick="setVista('lista')">☰ Lista</button>
+  </div>
+  <span class="count-badge" id="count-badge">72 senadores</span>
+</div>
+<div class="cards-container" id="vista-cards">
+  <div class="cards-grid" id="grid-cards"></div>
+  <div class="sin-resultados" id="sin-res-cards" style="display:none">No se encontraron senadores.</div>
+</div>
+<div class="lista-container" id="vista-lista" style="display:none">
+  <table class="lista-tbl">
+    <thead><tr>
+      <th>#</th><th>Apellido y Nombre</th><th>Provincia</th><th>Bloque</th>
+      <th>NEP</th><th>RLS</th><th>COLS</th><th>IAD</th>
+    </tr></thead>
+    <tbody id="tbody-lista"></tbody>
+  </table>
+  <div class="sin-resultados" id="sin-res-lista" style="display:none">No se encontraron senadores.</div>
+</div>
+<footer>
+  Fuente: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · 28-03-2026 ·
+  <a href="indicadores_senadores.html">🏛️ Nómina</a> ·
+  <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a> ·
+  <a href="metodologia_senadores.html">📚 Metodología</a>
+</footer>
+<script>
+const SENADORES=[
+  {nombre:"Abad, Maximiliano",provincia:"BUENOS AIRES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Abdala, Bartolomé Esteban",provincia:"SAN LUIS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Almeida, Romina María",provincia:"ENTRE RÍOS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Alvarez Rivero, Carmen",provincia:"CÓRDOBA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Andrada, Guillermo Eduardo",provincia:"CATAMARCA",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Arce, Carlos Omar",provincia:"MISIONES",bloque:"FRENTE RENOVADOR DE LA CONCORDIA SOCIAL"},
+  {nombre:"Arrascaeta, Ivanna Marcela",provincia:"SAN LUIS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Atauche, Ezequiel",provincia:"JUJUY",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Avila, Beatriz Luisa",provincia:"TUCUMÁN",bloque:"INDEPENDENCIA"},
+  {nombre:"Bahl, Adán Humberto",provincia:"ENTRE RÍOS",bloque:"JUSTICIALISTA"},
+  {nombre:"Bedia, Vilma Facunda",provincia:"JUJUY",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Benegas Lynch, Joaquín Alberto",provincia:"ENTRE RÍOS",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Bensusán, Daniel Pablo",provincia:"LA PAMPA",bloque:"JUSTICIALISTA"},
+  {nombre:"Bullrich, Patricia",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Capitanich, Jorge Milton",provincia:"CHACO",bloque:"JUSTICIALISTA"},
+  {nombre:"Carambia, José María",provincia:"SANTA CRUZ",bloque:"MOVERE POR SANTA CRUZ"},
+  {nombre:"Cervi, Mario Pablo",provincia:"NEUQUÉN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Corpacci, Lucía Benigna",provincia:"CATAMARCA",bloque:"JUSTICIALISTA"},
+  {nombre:"Corroza, Julieta",provincia:"NEUQUÉN",bloque:"LA NEUQUINIDAD"},
+  {nombre:"Coto, Agustín Pedro",provincia:"TIERRA DEL FUEGO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Cristina, Andrea Marcela",provincia:"CHUBUT",bloque:"FRENTE PRO"},
+  {nombre:"De Pedro, Eduardo Enrique",provincia:"BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Di Tullio, Juliana",provincia:"BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Espínola, Carlos Mauricio",provincia:"CORRIENTES",bloque:"PROVINCIAS UNIDAS"},
+  {nombre:"Fama, Flavio Sergio",provincia:"CATAMARCA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Fernández Sagasti, Anabel",provincia:"MENDOZA",bloque:"JUSTICIALISTA"},
+  {nombre:"Fullone, Enzo Paolo",provincia:"RÍO NEGRO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Gadano, Natalia Elena",provincia:"SANTA CRUZ",bloque:"MOVERE POR SANTA CRUZ"},
+  {nombre:"Galaretto, Eduardo Horacio",provincia:"SANTA FE",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Giménez Navarro, María Celeste",provincia:"SAN JUAN",bloque:"JUSTICIALISTA"},
+  {nombre:"Godoy, Juan Cruz",provincia:"CHACO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Goerling Lara, Enrique Martín",provincia:"MISIONES",bloque:"FRENTE PRO"},
+  {nombre:"González, María Teresa Margarita",provincia:"FORMOSA",bloque:"JUSTICIALISTA"},
+  {nombre:"Guzmán Coraita, Gonzalo",provincia:"SALTA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Huala, María Victoria",provincia:"LA PAMPA",bloque:"FRENTE PRO"},
+  {nombre:"Juez, Luis Alfredo",provincia:"CÓRDOBA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Juri, Mariana",provincia:"MENDOZA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Kirchner, Alicia Margarita Antonia",provincia:"SANTA CRUZ",bloque:"JUSTICIALISTA"},
+  {nombre:"Kroneberger, Daniel Ricardo",provincia:"LA PAMPA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Lewandowski, Marcelo Néstor",provincia:"SANTA FE",bloque:"JUSTICIALISTA"},
+  {nombre:"Linares, Carlos Alberto",provincia:"CHUBUT",bloque:"JUSTICIALISTA"},
+  {nombre:"López, Cándida Cristina",provincia:"TIERRA DEL FUEGO",bloque:"JUSTICIALISTA"},
+  {nombre:"López, María Florencia",provincia:"LA RIOJA",bloque:"JUSTICIALISTA"},
+  {nombre:"Losada, Carolina",provincia:"SANTA FE",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Manzur, Juan Luis",provincia:"TUCUMÁN",bloque:"JUSTICIALISTA"},
+  {nombre:"Marks, Ana Inés",provincia:"RÍO NEGRO",bloque:"JUSTICIALISTA"},
+  {nombre:"Márquez, Nadia Judith",provincia:"NEUQUÉN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Mayans, José Miguel Ángel",provincia:"FORMOSA",bloque:"JUSTICIALISTA"},
+  {nombre:"Mendoza, Sandra Mariela",provincia:"TUCUMÁN",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Moises, María Carolina",provincia:"JUJUY",bloque:"CONVICCIÓN FEDERAL"},
+  {nombre:"Monte de Oca, María Belén",provincia:"TIERRA DEL FUEGO",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Monteverde, Agustín Aníbal",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Moreno, Elia Esther del Carmen",provincia:"SANTIAGO DEL ESTERO",bloque:"FRENTE CÍVICO POR SANTIAGO"},
+  {nombre:"Neder, José Emilio",provincia:"SANTIAGO DEL ESTERO",bloque:"JUSTICIALISTA"},
+  {nombre:"Olivera Lucero, Bruno Antonio",provincia:"SAN JUAN",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Orozco, María Emilia",provincia:"SALTA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Pagotto, Juan Carlos",provincia:"LA RIOJA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Paoltroni, Francisco Manuel",provincia:"FORMOSA",bloque:"LA LIBERTAD AVANZA"},
+  {nombre:"Recalde, Mariano",provincia:"CIUDAD AUTÓNOMA DE BUENOS AIRES",bloque:"JUSTICIALISTA"},
+  {nombre:"Rejal, Jesús Fernando",provincia:"LA RIOJA",bloque:"JUSTICIA SOCIAL FEDERAL"},
+  {nombre:"Rojas Decut, Sonia Elizabeth",provincia:"MISIONES",bloque:"FRENTE RENOVADOR DE LA CONCORDIA SOCIAL"},
+  {nombre:"Royon, Flavia Gabriela",provincia:"SALTA",bloque:"PRIMERO LOS SALTEÑOS"},
+  {nombre:"Salino, Fernando Aldo",provincia:"SAN LUIS",bloque:"JUSTICIA SOCIAL FEDERAL"},
+  {nombre:"Schneider, Silvana Lorena",provincia:"CHACO",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Soria, Martin Ignacio",provincia:"RÍO NEGRO",bloque:"JUSTICIALISTA"},
+  {nombre:"Suárez, Rodolfo Alejandro",provincia:"MENDOZA",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Terenzi, Edith Elizabeth",provincia:"CHUBUT",bloque:"DESPIERTA CHUBUT"},
+  {nombre:"Uñac, Sergio Mauricio",provincia:"SAN JUAN",bloque:"JUSTICIALISTA"},
+  {nombre:"Valenzuela, Mercedes Gabriela",provincia:"CORRIENTES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Vigo, Alejandra María",provincia:"CÓRDOBA",bloque:"PROVINCIAS UNIDAS"},
+  {nombre:"Vischi, Eduardo Alejandro",provincia:"CORRIENTES",bloque:"UCR - UNIÓN CÍVICA RADICAL"},
+  {nombre:"Zamora, Gerardo",provincia:"SANTIAGO DEL ESTERO",bloque:"FRENTE CÍVICO POR SANTIAGO"}
+];
+
+function colorBloque(b){
+  const bl=(b||'').toLowerCase();
+  if(bl.includes('libertad avanza'))   return '#7c3aed';
+  if(bl.includes('justicialista'))     return '#2563eb';
+  if(bl.includes('pro'))               return '#d97706';
+  if(bl.includes('radical')||bl.includes('ucr')) return '#e74c3c';
+  if(bl.includes('provincias unidas')) return '#0891b2';
+  if(bl.includes('convicción'))        return '#0d9488';
+  if(bl.includes('frente cívico'))     return '#7c2d12';
+  if(bl.includes('frente renovador'))  return '#166534';
+  if(bl.includes('frente pro'))        return '#b45309';
+  if(bl.includes('movere'))            return '#4338ca';
+  if(bl.includes('justicia social'))   return '#9d174d';
+  if(bl.includes('neuquinidad'))       return '#065f46';
+  if(bl.includes('independencia'))     return '#1e3a5f';
+  if(bl.includes('primero'))           return '#7f1d1d';
+  if(bl.includes('despierta'))         return '#374151';
+  return '#64748b';
+}
+
+function iniciales(nombre){
+  const p=nombre.split(',');
+  return ((p[0]||'')[0]||'').toUpperCase()+((p[1]||'').trim()[0]||'').toUpperCase();
+}
+
+const total=SENADORES.length;
+const bloquesMap={};
+SENADORES.forEach(s=>{bloquesMap[s.bloque]=(bloquesMap[s.bloque]||0)+1;});
+const sumPi2=Object.values(bloquesMap).reduce((s,n)=>s+(n/total)**2,0);
+const NEP=(1/sumPi2).toFixed(2);
+
+// Selects
+const bloquesU=[...new Set(SENADORES.map(s=>s.bloque))].sort();
+const provsU=[...new Set(SENADORES.map(s=>s.provincia))].sort();
+bloquesU.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;document.getElementById('sel-bloque').appendChild(o);});
+provsU.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;document.getElementById('sel-prov').appendChild(o);});
+
+function cardHTML(s,i){
+  const col=colorBloque(s.bloque);
+  const inic=iniciales(s.nombre);
+  const blqN=bloquesMap[s.bloque]||0;
+  return `<div class="dip-card">
+    <div class="dip-card-header">
+      <div class="dip-foto" style="background:${col}22;border-color:${col}55">
+        <span style="font-size:.85rem;font-weight:800;color:${col}">${inic}</span>
+      </div>
+      <div class="dip-info">
+        <div class="dip-nombre">${s.nombre}</div>
+        <div class="dip-prov">📍 ${s.provincia}</div>
+        <span class="dip-bloque-pill" style="background:${col}">${s.bloque}</span>
+      </div>
+    </div>
+    <div class="dip-card-body">
+      <div class="dip-meta">
+        <span class="dip-meta-item">🏛️ Bloque: <strong>${blqN} bancas</strong></span>
+        <span class="dip-meta-item">📅 Mandato: <strong>6 años</strong></span>
+      </div>
+      <div class="dip-indicadores">
+        <div class="dip-ind"><div class="di-code">NEP</div><div class="di-val">${NEP}</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">RLS</div><div class="di-val">72,7%</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">IAD</div><div class="di-val">4/5</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">TVD</div><div class="di-val">~98%</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">COLS</div><div class="di-val" style="font-size:.7rem">~$10.4M</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">CRC</div><div class="di-val" style="font-size:.7rem">~$2.890</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">IF</div><div class="di-val">${(1-sumPi2).toFixed(3)}</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+        <div class="dip-ind"><div class="di-code">COLS/b</div><div class="di-val" style="font-size:.65rem">~$${Math.round(135800/blqN)}M</div><div class="di-label"><span class="tag-act">✓</span></div></div>
+      </div>
+    </div>
+    <div class="dip-card-footer">
+      <span style="font-size:.72rem;font-weight:700;color:#1a0a2e">🔵 Mandato 6 años</span>
+      <a class="dip-link" href="https://www.senado.gob.ar/senadores/listados/listaSenadoRes" target="_blank">Ver perfil →</a>
+    </div>
+  </div>`;
+}
+
+function filaHTML(s,i){
+  const col=colorBloque(s.bloque);
+  return `<tr>
+    <td style="color:#94a3b8;font-size:.74rem">${i+1}</td>
+    <td style="font-weight:700">${s.nombre}</td>
+    <td style="font-size:.78rem">${s.provincia}</td>
+    <td><span style="background:${col};color:#fff;padding:.12rem .45rem;border-radius:10px;font-size:.68rem;font-weight:700">${s.bloque}</span></td>
+    <td style="color:#7c3aed;font-weight:700;font-size:.78rem">${NEP}</td>
+    <td style="color:#15803d;font-weight:700;font-size:.78rem">72,7%</td>
+    <td style="color:#be123c;font-weight:700;font-size:.74rem">~$10.4M</td>
+    <td style="color:#15803d;font-weight:700;font-size:.78rem">4/5</td>
+  </tr>`;
+}
+
+function renderizar(lista){
+  const grid=document.getElementById('grid-cards');
+  const sinC=document.getElementById('sin-res-cards');
+  if(!lista.length){grid.innerHTML='';sinC.style.display='block';}
+  else{sinC.style.display='none';grid.innerHTML=lista.map(cardHTML).join('');}
+  const tbody=document.getElementById('tbody-lista');
+  const sinL=document.getElementById('sin-res-lista');
+  if(!lista.length){tbody.innerHTML='';sinL.style.display='block';}
+  else{sinL.style.display='none';tbody.innerHTML=lista.map(filaHTML).join('');}
+  document.getElementById('count-badge').textContent=lista.length===SENADORES.length?`${lista.length} senadores`:`${lista.length} de ${SENADORES.length}`;
+}
+
+function filtrar(){
+  const txt=document.getElementById('buscar').value.toLowerCase();
+  const blq=document.getElementById('sel-bloque').value;
+  const prov=document.getElementById('sel-prov').value;
+  renderizar(SENADORES.filter(s=>
+    (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))&&
+    (!blq||s.bloque===blq)&&(!prov||s.provincia===prov)
+  ));
+}
+
+function setVista(v){
+  document.getElementById('vista-cards').style.display=v==='cards'?'block':'none';
+  document.getElementById('vista-lista').style.display=v==='lista'?'block':'none';
+  document.getElementById('btn-cards').classList.toggle('activo',v==='cards');
+  document.getElementById('btn-lista').classList.toggle('activo',v==='lista');
+}
+
+renderizar([...SENADORES].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')));
+</script>
+</body>
+</html>
