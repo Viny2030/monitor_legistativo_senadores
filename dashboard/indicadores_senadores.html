@@ -803,4 +803,8 @@ function toggleDonacion() {
   arrow.style.transform = abierto ? '' : 'rotate(180deg)';
 }
 function donTab(btn, panelId) {
-  document.querySelectorAll('.don-tab').forEach(b=>b.classList.remov
+  document.querySelectorAll('.don-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.don-panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+}
