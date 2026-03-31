@@ -116,9 +116,8 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
     <p>72 senadores · 24 provincias · 14 bloques · datos al 28 de marzo de 2026</p>
   </div>
   <nav>
-    <a href="indicadores_senadores.html" class="active">🏛️ Indicadores</a>
+    <a href="indicadores_senadores.html" class="active">🏛️ Nómina</a>
     <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a>
-    <a href="comparativa_senado.html">🌐 Comparativa</a>
     <a href="nomina_detalle_senadores.html">👥 Detalle</a>
     <a href="metodologia_senadores.html">📚 Metodología</a>
     <a href="manual_senadores.html">📖 Manual</a>
@@ -150,11 +149,6 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
   <div class="kpi-card"><div class="kv" id="kpi-bloques">—</div><div class="kl">Bloques</div><div class="ks">activos</div></div>
   <div class="kpi-card"><div class="kv">37</div><div class="kl">Quórum</div><div class="ks">Art. 55 CN</div></div>
   <div class="kpi-card"><div class="kv">24</div><div class="kl">Provincias</div><div class="ks">3 senadores c/u</div></div>
-  <div class="kpi-card"><div class="kv" id="kpi-mujeres">—</div><div class="kl">Mujeres</div><div class="ks" id="kpi-mujeres-pct">paridad de género</div></div>
-  <div class="kpi-card"><div class="kv" id="kpi-varones">—</div><div class="kl">Varones</div><div class="ks" id="kpi-varones-pct">composición</div></div>
-  <div class="kpi-card"><div class="kv" id="kpi-r2027">—</div><div class="kl">Renuevan 2027</div><div class="ks">mandato 2021–2027</div></div>
-  <div class="kpi-card"><div class="kv" id="kpi-r2029">—</div><div class="kl">Renuevan 2029</div><div class="ks">mandato 2023–2029</div></div>
-  <div class="kpi-card"><div class="kv" id="kpi-r2031">—</div><div class="kl">Renuevan 2031</div><div class="ks">mandato 2025–2031</div></div>
 </div>
 
 <!-- Bloques -->
@@ -184,9 +178,7 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
         <thead><tr>
           <th>Provincia</th>
           <th class="num">Bancas</th>
-          <th>Bloque mayoritario</th>
           <th>Bloques presentes</th>
-          <th>Tercio</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -208,12 +200,6 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
   </div>
 </div>
 
-<!-- Ranking antigüedad -->
-<div class="seccion">
-  <h2>📅 Bloques con más antigüedad promedio en banca</h2>
-  <div class="panel"><div class="panel-scroll" id="list-antiguedad"></div></div>
-</div>
-
 <!-- NÓMINA -->
 <div class="seccion" id="nomina">
   <h2>👥 Nómina completa — 72 Senadores en ejercicio</h2>
@@ -223,16 +209,14 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
       <select id="nomina-bloque" onchange="filtrarNomina()"><option value="">Todos los bloques</option></select>
       <select id="nomina-provincia" onchange="filtrarNomina()"><option value="">Todas las provincias</option></select>
       <span class="nomina-count" id="nomina-count">72 senadores</span>
-      <button onclick="exportarCSV()" style="padding:.38rem .8rem;border-radius:6px;border:1px solid #dde2ec;background:#fff;font-size:.78rem;font-weight:700;cursor:pointer;color:#1a0a2e">⬇ CSV</button>
     </div>
     <div class="panel-scroll" style="max-height:520px">
       <table class="tbl" id="tbl-nomina">
         <thead><tr>
-          <th style="cursor:pointer" onclick="sortNomina('num')">#</th>
-          <th style="cursor:pointer" onclick="sortNomina('nombre')">Apellido y Nombre ↕</th>
-          <th style="cursor:pointer" onclick="sortNomina('provincia')">Provincia ↕</th>
-          <th style="cursor:pointer" onclick="sortNomina('bloque')">Bloque ↕</th>
-          <th style="cursor:pointer" onclick="sortNomina('fin_mandato')">Mandato hasta ↕</th>
+          <th>#</th>
+          <th>Apellido y Nombre</th>
+          <th>Provincia</th>
+          <th>Bloque</th>
         </tr></thead>
         <tbody id="tbody-nomina"></tbody>
       </table>
@@ -540,8 +524,8 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
       <div class="titulo">Doctor en Ciencias Económicas · Investigador en economía política y fenómenos de corrupción</div>
       <div class="bio">Autor de la teoría de <strong>Transferencia Regresiva de Ingresos</strong> y desarrollador del algoritmo XAI aplicado al análisis de contrataciones públicas. Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing). Asesor en transparencia y auditoría algorítmica del gasto público.</div>
       <div class="autor-mails">
-        <a class="autor-mail" href="mailto:vmonteverde@economicas.uba.ar">✉️ vmonteverde@economicas.uba.ar</a>
-        <a class="autor-mail" href="mailto:vicente.monteverde@hotmail.com">✉️ vicente.monteverde@hotmail.com</a>
+        <a class="autor-mail" href="/cdn-cgi/l/email-protection#f88e909597968c9db88a9d8c919699d6998a">✉️ <span class="__cf_email__" data-cfemail="d5a3bdb8babba1b095a7b0a1bcbbb4fbb4a7">[email&#160;protected]</span></a>
+        <a class="autor-mail" href="/cdn-cgi/l/email-protection#5c2a3532256c6d6569641c3b313d3530723f3331">✉️ <span class="__cf_email__" data-cfemail="f98f909780c9c8c0ccc1b99e94989095d79a9694">[email&#160;protected]</span></a>
       </div>
     </div>
   </div>
@@ -608,7 +592,7 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
 </div>
 
 <footer>
-  Fuente: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · <span id="footer-fecha"></span> · Monitor Legislativo Senado ·
+  Fuente: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · 28-03-2026 · Monitor Legislativo Senado ·
   <a href="indicadores_senadores.html">🏛️ Nómina</a> ·
   <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a> ·
   <a href="metodologia_senadores.html">📚 Metodología</a> ·
@@ -712,14 +696,15 @@ function colorBloque(b) {
   return '#64748b';
 }
 
+// Calcular
 const total = SENADORES.length;
 const bloques = {}, provincias = {};
-SENADORES.forEach(function(s) {
+SENADORES.forEach(s => {
   bloques[s.bloque]     = (bloques[s.bloque]||0)+1;
   provincias[s.provincia] = (provincias[s.provincia]||0)+1;
 });
 
-const sumPi2 = Object.values(bloques).reduce(function(s,n){return s+(n/total)*(n/total);},0);
+const sumPi2 = Object.values(bloques).reduce((s,n)=>s+(n/total)**2,0);
 const nep  = (1/sumPi2).toFixed(2);
 const frag = (1-sumPi2).toFixed(4);
 const nb   = Object.keys(bloques).length;
@@ -729,182 +714,89 @@ document.getElementById('kpi-nep').textContent    = nep;
 document.getElementById('kpi-frag').textContent   = frag;
 document.getElementById('kpi-bloques').textContent = nb;
 
-const nMujeres = SENADORES.filter(function(s){return s.genero==='F';}).length;
-const nVarones = total - nMujeres;
-document.getElementById('kpi-mujeres').textContent = nMujeres;
-document.getElementById('kpi-mujeres-pct').textContent = (nMujeres/total*100).toFixed(1)+'% del Senado';
-document.getElementById('kpi-varones').textContent = nVarones;
-document.getElementById('kpi-varones-pct').textContent = (nVarones/total*100).toFixed(1)+'% del Senado';
-document.getElementById('kpi-r2027').textContent = SENADORES.filter(function(s){return s.fin_mandato===2027;}).length;
-document.getElementById('kpi-r2029').textContent = SENADORES.filter(function(s){return s.fin_mandato===2029;}).length;
-document.getElementById('kpi-r2031').textContent = SENADORES.filter(function(s){return s.fin_mandato===2031;}).length;
-document.getElementById('footer-fecha').textContent = new Date().toLocaleDateString('es-AR');
-
-const bloquesSorted = Object.entries(bloques).sort(function(a,b){return b[1]-a[1];});
+// Tabla bloques
+const bloquesSorted = Object.entries(bloques).sort((a,b)=>b[1]-a[1]);
 const maxB = bloquesSorted[0][1];
-document.querySelector('#tbl-bloques tbody').innerHTML = bloquesSorted.map(function(entry){
-  const b=entry[0], n=entry[1];
+document.querySelector('#tbl-bloques tbody').innerHTML = bloquesSorted.map(([b,n])=>{
   const pct=(n/total*100).toFixed(1);
   const w=(n/maxB*100).toFixed(0);
   const col=colorBloque(b);
-  return '<tr><td><span class="pill" style="background:'+col+'">'+b+'</span></td>'
-    +'<td class="num" style="font-weight:800">'+n+'</td>'
-    +'<td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+w+'%;background:'+col+'"></div></div>'
-    +'<span class="bar-label" style="color:'+col+'">'+pct+'%</span></div></td>'
-    +'<td class="num">'+pct+'%</td></tr>';
+  return `<tr>
+    <td><span class="pill" style="background:${col}">${b}</span></td>
+    <td class="num" style="font-weight:800">${n}</td>
+    <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${w}%;background:${col}"></div></div><span class="bar-label" style="color:${col}">${pct}%</span></div></td>
+    <td class="num">${pct}%</td>
+  </tr>`;
 }).join('');
 
-const TERCIO = {
-  'CATAMARCA':2027,'CÓRDOBA':2027,'CORRIENTES':2027,'CHUBUT':2027,
-  'LA PAMPA':2027,'MENDOZA':2027,'SANTA FE':2027,'TUCUMÁN':2027,
-  'BUENOS AIRES':2029,'FORMOSA':2029,'JUJUY':2029,'LA RIOJA':2029,
-  'MISIONES':2029,'SAN JUAN':2029,'SAN LUIS':2029,'SANTA CRUZ':2029,
-  'CIUDAD AUTÓNOMA DE BUENOS AIRES':2031,'CHACO':2031,'ENTRE RÍOS':2031,
-  'NEUQUÉN':2031,'RÍO NEGRO':2031,'SALTA':2031,'SANTIAGO DEL ESTERO':2031,
-  'TIERRA DEL FUEGO':2031
-};
-const provSorted = Object.entries(provincias).sort(function(a,b){return a[0].localeCompare(b[0],'es');});
-document.querySelector('#tbl-provincias tbody').innerHTML = provSorted.map(function(entry){
-  const p=entry[0], n=entry[1];
-  const sensProv = SENADORES.filter(function(s){return s.provincia===p;});
-  const blqCount = {};
-  sensProv.forEach(function(s){blqCount[s.bloque]=(blqCount[s.bloque]||0)+1;});
-  const mayorEntry = Object.entries(blqCount).sort(function(a,b){return b[1]-a[1];})[0];
-  const mayorHtml = '<span class="pill" style="background:'+colorBloque(mayorEntry[0])+'">'+mayorEntry[0]+' ('+mayorEntry[1]+')</span>';
-  const blqsProv = [...new Set(sensProv.map(function(s){return s.bloque;}))].map(function(b){
-    return '<span class="pill" style="background:'+colorBloque(b)+';font-size:.62rem">'+b+'</span>';
-  }).join(' ');
-  const tercio = TERCIO[p]||'—';
-  const tCol = tercio===2027?'#2563eb':tercio===2029?'#d97706':'#16a34a';
-  return '<tr><td><strong>'+p+'</strong></td>'
-    +'<td class="num" style="font-weight:800">'+n+'</td>'
-    +'<td style="font-size:.75rem">'+mayorHtml+'</td>'
-    +'<td style="font-size:.72rem">'+blqsProv+'</td>'
-    +'<td><span style="background:'+tCol+';color:#fff;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700">'+tercio+'</span></td></tr>';
+// Tabla provincias
+const provSorted = Object.entries(provincias).sort((a,b)=>a[0].localeCompare(b[0],'es'));
+document.querySelector('#tbl-provincias tbody').innerHTML = provSorted.map(([p,n])=>{
+  const blqsProv=[...new Set(SENADORES.filter(s=>s.provincia===p).map(s=>s.bloque))].map(b=>`<span class="pill" style="background:${colorBloque(b)};font-size:.62rem">${b}</span>`).join(' ');
+  return `<tr>
+    <td><strong>${p}</strong></td>
+    <td class="num" style="font-weight:800">${n}</td>
+    <td style="font-size:.72rem">${blqsProv}</td>
+  </tr>`;
 }).join('');
 
+// Rankings
 function rHtml(b, n, rank) {
   const col = colorBloque(b);
   const pct = (n/total*100).toFixed(1);
-  return '<div class="ranking-row">'
-    +'<span class="rk-num">'+rank+'</span>'
-    +'<div style="flex:1;min-width:0"><div class="rk-nombre">'+b+'</div>'
-    +'<div class="rk-dist">'+n+' senadores · '+pct+'% del Senado</div></div>'
-    +'<span class="rk-val" style="color:'+col+'">'+n+'</span></div>';
+  return `<div class="ranking-row">
+    <span class="rk-num">${rank}</span>
+    <div style="flex:1;min-width:0">
+      <div class="rk-nombre">${b}</div>
+      <div class="rk-dist">${n} senadores · ${pct}% del Senado</div>
+    </div>
+    <span class="rk-val" style="color:${col}">${n}</span>
+  </div>`;
 }
-const topBloques = bloquesSorted.slice(0,5);
-const topNames = topBloques.map(function(x){return x[0];});
-const bottomBloques = bloquesSorted.slice().reverse().filter(function(x){return topNames.indexOf(x[0])===-1;}).slice(0,5);
-document.getElementById('list-mayor').innerHTML = topBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
-document.getElementById('list-menor').innerHTML = bottomBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
+const topBloques = bloquesSorted.slice(0,8);
+const bottomBloques = [...bloquesSorted].reverse().slice(0,8);
+document.getElementById('list-mayor').innerHTML = topBloques.map(([b,n],i)=>rHtml(b,n,i+1)).join('');
+document.getElementById('list-menor').innerHTML = bottomBloques.map(([b,n],i)=>rHtml(b,n,i+1)).join('');
 
-const anioActual = new Date().getFullYear();
-const antiguedad = {};
-SENADORES.forEach(function(s){
-  if(!antiguedad[s.bloque]) antiguedad[s.bloque]={suma:0,n:0};
-  antiguedad[s.bloque].suma += (anioActual - s.inicio_mandato);
-  antiguedad[s.bloque].n++;
-});
-const antiguedadSorted = Object.entries(antiguedad).map(function(e){
-  return {bloque:e[0], avg:(e[1].suma/e[1].n).toFixed(1)};
-}).sort(function(a,b){return b.avg-a.avg;});
-document.getElementById('list-antiguedad').innerHTML = antiguedadSorted.slice(0,8).map(function(x,i){
-  const col = colorBloque(x.bloque);
-  return '<div class="ranking-row">'
-    +'<span class="rk-num">'+(i+1)+'</span>'
-    +'<div style="flex:1;min-width:0"><div class="rk-nombre">'+x.bloque+'</div>'
-    +'<div class="rk-dist">'+x.avg+' años prom. en banca</div></div>'
-    +'<span class="rk-val" style="color:'+col+'">'+x.avg+'</span></div>';
-}).join('');
-
-const bloquesU   = [...new Set(SENADORES.map(function(s){return s.bloque;}))].sort();
-const provinciasU = [...new Set(SENADORES.map(function(s){return s.provincia;}))].sort();
+// Nómina
+const bloquesU   = [...new Set(SENADORES.map(s=>s.bloque))].sort();
+const provinciasU = [...new Set(SENADORES.map(s=>s.provincia))].sort();
 const selBloque   = document.getElementById('nomina-bloque');
 const selProv     = document.getElementById('nomina-provincia');
-bloquesU.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;selBloque.appendChild(o);});
-provinciasU.forEach(function(p){const o=document.createElement('option');o.value=p;o.textContent=p;selProv.appendChild(o);});
-
-let _sortCol = 'nombre', _sortAsc = true;
-function sortNomina(col) {
-  if (_sortCol===col){_sortAsc=!_sortAsc;}else{_sortCol=col;_sortAsc=true;}
-  filtrarNomina();
-}
-function getSorted(lista) {
-  return lista.slice().sort(function(a,b){
-    const va=a[_sortCol]||'', vb=b[_sortCol]||'';
-    if(typeof va==='number') return _sortAsc?va-vb:vb-va;
-    return _sortAsc?String(va).localeCompare(String(vb),'es'):String(vb).localeCompare(String(va),'es');
-  });
-}
+bloquesU.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; selBloque.appendChild(o); });
+provinciasU.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; selProv.appendChild(o); });
 
 function renderNomina(lista) {
-  document.getElementById('tbody-nomina').innerHTML = lista.map(function(s,i){
+  document.getElementById('tbody-nomina').innerHTML = lista.map((s,i) => {
     const col = colorBloque(s.bloque);
-    const tCol = s.fin_mandato===2027?'#2563eb':s.fin_mandato===2029?'#d97706':'#16a34a';
-    return '<tr>'
-      +'<td style="color:#94a3b8;font-size:.75rem">'+(i+1)+'</td>'
-      +'<td style="font-weight:600">'+s.nombre+'</td>'
-      +'<td style="font-size:.78rem">'+s.provincia+'</td>'
-      +'<td><span class="pill" style="background:'+col+'">'+s.bloque+'</span></td>'
-      +'<td><span style="background:'+tCol+';color:#fff;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700">'+(s.fin_mandato||'—')+'</span></td>'
-      +'</tr>';
+    return `<tr>
+      <td style="color:#94a3b8;font-size:.75rem">${i+1}</td>
+      <td style="font-weight:600">${s.nombre}</td>
+      <td style="font-size:.78rem">${s.provincia}</td>
+      <td><span class="pill" style="background:${col}">${s.bloque}</span></td>
+    </tr>`;
   }).join('');
   document.getElementById('nomina-count').textContent =
-    lista.length===SENADORES.length?lista.length+' senadores':lista.length+' de '+SENADORES.length;
+    lista.length===SENADORES.length ? `${lista.length} senadores` : `${lista.length} de ${SENADORES.length}`;
 }
 
 function filtrarNomina() {
-  const txt = document.getElementById('nomina-buscar').value.toLowerCase();
-  const blq = document.getElementById('nomina-bloque').value;
-  const prov = document.getElementById('nomina-provincia').value;
-  const res = SENADORES.filter(function(s){
-    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))&&
-    (!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
-  });
-  renderNomina(getSorted(res));
+  const txt   = document.getElementById('nomina-buscar').value.toLowerCase();
+  const blq   = document.getElementById('nomina-bloque').value;
+  const prov  = document.getElementById('nomina-provincia').value;
+  const res = SENADORES.filter(s =>
+    (!txt  || s.nombre.toLowerCase().includes(txt) || s.bloque.toLowerCase().includes(txt) || s.provincia.toLowerCase().includes(txt)) &&
+    (!blq  || s.bloque===blq) &&
+    (!prov || s.provincia===prov)
+  );
+  renderNomina(res);
 }
 
-function exportarCSV() {
-  const txt = document.getElementById('nomina-buscar').value.toLowerCase();
-  const blq = document.getElementById('nomina-bloque').value;
-  const prov = document.getElementById('nomina-provincia').value;
-  const lista = getSorted(SENADORES.filter(function(s){
-    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))&&
-    (!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
-  }));
-  const filas = lista.map(function(s){
-    const g = s.genero==='F'?'Femenino':'Masculino';
-    return [s.nombre,s.provincia,s.bloque,g,s.fin_mandato].map(function(v){return '"'+String(v)+'"';}).join(',');
-  });
-  const csv = ['Nombre,Provincia,Bloque,Genero,Mandato hasta'].concat(filas).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
-  a.download = 'senadores.csv';
-  a.click();
-}
+renderNomina([...SENADORES].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')));
 
-renderNomina(getSorted(SENADORES));
-
+// Donación
 function toggleDonacion() {
   const body  = document.getElementById('don-body');
   const arrow = document.getElementById('don-arrow');
   const abierto = body.style.display !== 'none';
-  body.style.display  = abierto ? 'none' : 'block';
-  arrow.style.transform = abierto ? '' : 'rotate(180deg)';
-}
-function donTab(btn, panelId) {
-  document.querySelectorAll('.don-tab').forEach(function(b){b.classList.remove('don-tab-activo');});
-  btn.classList.add('don-tab-activo');
-  document.querySelectorAll('.don-panel').forEach(function(p){p.style.display='none';});
-  document.getElementById(panelId).style.display='block';
-}
-function copiar(texto, btn) {
-  navigator.clipboard.writeText(texto).then(function(){
-    btn.textContent='✓ Copiado';
-    btn.classList.add('copiado');
-    setTimeout(function(){btn.textContent='📋 Copiar CBU';btn.classList.remove('copiado');},2000);
-  });
-}
-</script>
-</body>
-</html>
+  body.style.display  = abierto ? 'none' : 'blo

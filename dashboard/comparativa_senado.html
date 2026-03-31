@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Comparativa Internacional · Senado Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+header { background: linear-gradient(135deg,#1a0a2e 0%,#2d1461 50%,#0d0620 100%); color:#fff; padding:1.4rem 2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+header h1 { font-size:1.25rem; font-weight:700; }
+header p { font-size:.85rem; opacity:.8; margin-top:.2rem; }
+header nav { margin-left:auto; display:flex; gap:.5rem; flex-wrap:wrap; }
+header nav a { color:#fff; text-decoration:none; background:rgba(255,255,255,.18); padding:.4rem 1rem; border-radius:20px; font-size:.82rem; font-weight:600; transition:background .15s; }
+header nav a:hover { background:rgba(255,255,255,.35); }
+header nav a.active { background:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.6); }
+.nav-interna { position:sticky; top:0; z-index:100; background:#1a0a2e; display:flex; gap:0; flex-wrap:wrap; border-bottom:3px solid #C9A84C; }
+.nav-interna a { color:rgba(255,255,255,.75); text-decoration:none; padding:.55rem 1.1rem; font-size:.8rem; font-weight:600; border-right:1px solid rgba(255,255,255,.1); transition:background .12s; white-space:nowrap; }
+.nav-interna a:hover { background:rgba(255,255,255,.12); color:#fff; }
+.nav-interna a.activo { background:rgba(255,255,255,.18); color:#fff; border-bottom:3px solid #C9A84C; }
+.disclaimer { background:#fffbeb; border-left:4px solid #C9A84C; padding:.75rem 1.5rem; font-size:.78rem; color:#5a4a00; border-bottom:1px solid #f0e0a0; }
+.seccion { padding:1.25rem 1.5rem; }
+.seccion h2 { font-size:1rem; font-weight:700; color:#1a0a2e; margin-bottom:.9rem; padding-bottom:.4rem; border-bottom:2px solid #d0daf0; }
+.panel { background:#fff; border-radius:10px; border:1px solid #dde2ec; padding:1rem 1.1rem; margin-bottom:1rem; }
+.panel h3 { font-size:.88rem; font-weight:700; color:#334155; margin-bottom:.75rem; }
+/* KPIs */
+.kpi-bar { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:.75rem; padding:1.25rem 1.5rem; background:#fff; border-bottom:1px solid #dde2ec; }
+.kpi-card { background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; padding:.9rem 1rem; text-align:center; }
+.kpi-card .kv { font-size:1.6rem; font-weight:800; color:#1a0a2e; line-height:1; }
+.kpi-card .kl { font-size:.72rem; color:#64748b; margin-top:.3rem; text-transform:uppercase; letter-spacing:.04em; }
+.kpi-card .ks { font-size:.75rem; color:#475569; margin-top:.15rem; }
+/* Tabla comparativa */
+.tbl { width:100%; border-collapse:collapse; font-size:.8rem; }
+.tbl th { background:#eef2fb; color:#1a0a2e; font-weight:700; padding:.5rem .7rem; text-align:left; border-bottom:2px solid #c5d0e8; }
+.tbl th.num, .tbl td.num { text-align:right; }
+.tbl tr:nth-child(even) { background:#fafbff; }
+.tbl td { padding:.42rem .7rem; border-bottom:1px solid #f0f0f0; }
+.tbl tr:hover td { background:#f0f4ff; }
+.tbl tr.highlight td { background:#fffbeb; font-weight:700; border-left:3px solid #C9A84C; }
+/* Barras */
+.bar-wrap { display:flex; align-items:center; gap:.5rem; }
+.bar-bg { flex:1; height:10px; background:#e2e8f0; border-radius:5px; overflow:hidden; min-width:80px; }
+.bar-fill { height:100%; border-radius:5px; transition:width .4s; }
+.bar-label { font-size:.75rem; font-weight:700; min-width:52px; text-align:right; }
+/* Badge país */
+.pais-badge { display:inline-flex; align-items:center; gap:.4rem; font-weight:700; }
+.flag { font-size:1.1rem; }
+/* Grid */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+@media(max-width:800px){ .grid-2 { grid-template-columns:1fr; } }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+@media(max-width:900px){ .grid-3 { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px){ .grid-3 { grid-template-columns:1fr; } }
+/* Indicador card */
+.ind-row { display:flex; align-items:center; gap:.75rem; padding:.5rem 0; border-bottom:1px solid #f0f0f0; }
+.ind-row:last-child { border-bottom:none; }
+.ind-pais { min-width:130px; font-size:.8rem; font-weight:600; }
+.ind-val { min-width:70px; text-align:right; font-weight:800; font-size:.9rem; }
+/* Nota fuente */
+.nota-fuente { font-size:.72rem; color:#94a3b8; margin-top:.75rem; }
+/* Cambio divisas */
+.tc-box { background:#1e293b; color:#93c5fd; border-radius:8px; padding:.6rem 1rem; font-family:monospace; font-size:.78rem; border-left:3px solid #C9A84C; margin-bottom:.75rem; display:flex; gap:1.5rem; flex-wrap:wrap; }
+.tc-item { display:flex; flex-direction:column; gap:.15rem; }
+.tc-label { font-size:.65rem; color:#64748b; text-transform:uppercase; }
+.tc-val { font-weight:700; color:#e2e8f0; }
+/* Pill */
+.pill { display:inline-block; padding:.15rem .55rem; border-radius:12px; font-size:.7rem; font-weight:700; color:#fff; }
+footer { text-align:center; padding:1rem; font-size:.75rem; color:#94a3b8; border-top:1px solid #dde2ec; margin-top:1rem; }
+footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:2rem">🌐</span>
+  <div>
+    <h1>Comparativa Internacional · Senado de la Nación Argentina</h1>
+    <p>Argentina vs. Brasil · Chile · Uruguay · México · España · OCDE · datos 2024–2025</p>
+  </div>
+  <nav>
+    <a href="indicadores_senadores.html">🏛️ Indicadores</a>
+    <a href="indicadores_bloques_senadores.html">🔬 Por Bloque</a>
+    <a href="comparativa_senado.html" class="active">🌐 Comparativa</a>
+    <a href="metodologia_senadores.html">📚 Metodología</a>
+  </nav>
+</header>
+
+<div class="nav-interna">
+  <a href="#costos" class="activo">💵 Costos en USD</a>
+  <a href="#estructura">🏛️ Estructura</a>
+  <a href="#calidad">📈 Calidad Legislativa</a>
+  <a href="#internacional">🌎 Comparativa Internacional</a>
+  <a href="#dietas">💰 Dietas</a>
+</div>
+
+<div class="disclaimer">
+  ⚠️ <strong>Nota metodológica:</strong> Las comparaciones internacionales deben interpretarse con cautela — cada parlamento tiene atribuciones, escalas y contextos distintos. Los costos en USD usan tipo de cambio oficial promedio 2025 (~$1.000 ARS/USD para presupuesto; ~$1.450 ARS/USD para salarios desde jul.2025). Fuentes: OPC Argentina, OCDE, IPU Parline, fuentes oficiales de cada país.
+</div>
+
+<!-- KPIs resumen -->
+<div class="kpi-bar">
+  <div class="kpi-card"><div class="kv">USD 94M</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
+  <div class="kpi-card"><div class="kv">USD 2,0</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
+  <div class="kpi-card"><div class="kv">USD 5.500</div><div class="kl">Dieta neta senador</div><div class="ks">promedio jul.2025</div></div>
+  <div class="kpi-card"><div class="kv">72</div><div class="kl">Bancas</div><div class="ks">3 por provincia</div></div>
+  <div class="kpi-card"><div class="kv">5,06</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
+  <div class="kpi-card"><div class="kv">13</div><div class="kl">Leyes 2025</div><div class="ks">mínimo histórico</div></div>
+</div>
+
+<!-- COSTOS EN USD -->
+<div class="seccion" id="costos">
+  <h2>💵 Costos del Senado en Dólares — 2025</h2>
+  <div class="panel">
+    <h3>Tipos de cambio utilizados</h3>
+    <div class="tc-box">
+      <div class="tc-item"><span class="tc-label">TC oficial promedio 2025</span><span class="tc-val">~$1.000 ARS/USD</span></div>
+      <div class="tc-item"><span class="tc-label">TC para salarios (jul.2025)</span><span class="tc-val">~$1.450 ARS/USD</span></div>
+      <div class="tc-item"><span class="tc-label">Presupuesto Senado ARS</span><span class="tc-val">~$135.800 MM</span></div>
+      <div class="tc-item"><span class="tc-label">Presupuesto Senado USD</span><span class="tc-val">~USD 93,7 MM</span></div>
+    </div>
+    <div class="grid-3" style="margin-top:.75rem">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
+        <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Presupuesto total USD</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#15803d">~USD 93,7 MM</div>
+        <div style="font-size:.7rem;color:#166534">TC oficial promedio ~$1.000</div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
+        <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">CRC en dólares</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#15803d">USD 1,99</div>
+        <div style="font-size:.7rem;color:#166534">por habitante / año</div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
+        <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Costo por sesión USD</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#15803d">~USD 420K</div>
+        <div style="font-size:.7rem;color:#166534">12 sesiones en 2025</div>
+      </div>
+    </div>
+    <p class="nota-fuente">Fuentes: Presupuesto Senado estimado ~$135.800MM ARS (proporción histórica HSN/HCDN). TC oficial: BCRA. Costo sesión: iProfesional oct.2025.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Dietas de senadores en dólares — 2025</h3>
+    <table class="tbl">
+      <thead><tr>
+        <th>Concepto</th>
+        <th class="num">ARS (bruto)</th>
+        <th class="num">ARS (neto)</th>
+        <th class="num">USD neto (TC ~1.450)</th>
+      </tr></thead>
+      <tbody>
+        <tr class="highlight">
+          <td>Senador con aumento (jul.2025)</td>
+          <td class="num">$9.990.000</td>
+          <td class="num">~$8.100.000</td>
+          <td class="num"><strong>~USD 5.580</strong></td>
+        </tr>
+        <tr>
+          <td>Senador sin aumento (desacoplado)</td>
+          <td class="num">$9.500.000</td>
+          <td class="num">~$7.800.000</td>
+          <td class="num">~USD 5.380</td>
+        </tr>
+        <tr>
+          <td>Dieta base (2.500 módulos)</td>
+          <td class="num">~$6.250.000</td>
+          <td class="num">~$5.100.000</td>
+          <td class="num">~USD 3.520</td>
+        </tr>
+        <tr>
+          <td>Gastos representación (1.000 mód.)</td>
+          <td class="num">~$2.500.000</td>
+          <td class="num">—</td>
+          <td class="num">~USD 1.720</td>
+        </tr>
+        <tr>
+          <td>Desarraigo +100km CABA (500 mód.)</td>
+          <td class="num">~$1.250.000</td>
+          <td class="num">—</td>
+          <td class="num">~USD 860</td>
+        </tr>
+        <tr>
+          <td>Costo por sesión (72 sen.)</td>
+          <td class="num">~$611.800.000</td>
+          <td class="num">—</td>
+          <td class="num">~USD 421.900</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="nota-fuente">Fuente: iProfesional, oct.2025. TC $1.450 ARS/USD (TC oficial jul.2025).</p>
+  </div>
+</div>
+
+<!-- ESTRUCTURA BICAMERAL -->
+<div class="seccion" id="estructura">
+  <h2>🏛️ Estructura Bicameral — Argentina vs. el Mundo</h2>
+  <div class="panel">
+    <table class="tbl">
+      <thead><tr>
+        <th>País</th>
+        <th>Cámara Alta</th>
+        <th class="num">Bancas</th>
+        <th class="num">Habitantes / Senador</th>
+        <th class="num">Mandato</th>
+        <th>Sistema elección</th>
+      </tr></thead>
+      <tbody>
+        <tr class="highlight">
+          <td><span class="pais-badge"><span class="flag">🇦🇷</span> Argentina</span></td>
+          <td>Senado de la Nación</td>
+          <td class="num"><strong>72</strong></td>
+          <td class="num"><strong>652.000</strong></td>
+          <td class="num">6 años</td>
+          <td>Directo · 3 por prov.</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇧🇷</span> Brasil</span></td>
+          <td>Senado Federal</td>
+          <td class="num">81</td>
+          <td class="num">2.630.000</td>
+          <td class="num">8 años</td>
+          <td>Directo · 3 por estado</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇨🇱</span> Chile</span></td>
+          <td>Senado</td>
+          <td class="num">50</td>
+          <td class="num">390.000</td>
+          <td class="num">8 años</td>
+          <td>Directo proporcional</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇺🇾</span> Uruguay</span></td>
+          <td>Senado</td>
+          <td class="num">30</td>
+          <td class="num">117.000</td>
+          <td class="num">5 años</td>
+          <td>Directo proporcional</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇲🇽</span> México</span></td>
+          <td>Senado de la República</td>
+          <td class="num">128</td>
+          <td class="num">1.050.000</td>
+          <td class="num">6 años</td>
+          <td>Mixto (mayoría + RVP)</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇪🇸</span> España</span></td>
+          <td>Senado</td>
+          <td class="num">265</td>
+          <td class="num">176.000</td>
+          <td class="num">4 años</td>
+          <td>Mixto (directo + designado)</td>
+        </tr>
+        <tr>
+          <td><span class="pais-badge"><span class="flag">🇺🇸</span> EEUU (ref.)</span></td>
+          <td>Senate</td>
+          <td class="num">100</td>
+          <td class="num">3.350.000</td>
+          <td class="num">6 años</td>
+          <td>Directo · 2 por estado</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="nota-fuente">Fuentes: IPU Parline Database 2025, censos nacionales oficiales.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Habitantes por senador — menor = más representación per cápita</h3>
+    <div id="bar-habitantes"></div>
+    <p class="nota-fuente">Nota: menor ratio significa que cada senador representa a menos ciudadanos → mayor representatividad per cápita. Argentina tiene una representatividad intermedia en la región.</p>
+  </div>
+</div>
+
+<!-- CALIDAD LEGISLATIVA -->
+<div class="seccion" id="calidad">
+  <h2>📈 Calidad Legislativa — Indicadores Comparados 2024–2025</h2>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Leyes sancionadas por año (Senado / Cámara Alta)</h3>
+      <table class="tbl">
+        <thead><tr>
+          <th>País</th>
+          <th class="num">Leyes 2024</th>
+          <th class="num">Leyes 2025</th>
+          <th>Tendencia</th>
+        </tr></thead>
+        <tbody>
+          <tr class="highlight">
+            <td>🇦🇷 Argentina (total bicameral)</td>
+            <td class="num">~38</td>
+            <td class="num"><strong>13</strong></td>
+            <td><span class="pill" style="background:#dc2626">↓ Mínimo histórico</span></td>
+          </tr>
+          <tr>
+            <td>🇧🇷 Brasil</td>
+            <td class="num">~180</td>
+            <td class="num">~160</td>
+            <td><span class="pill" style="background:#d97706">→ Estable</span></td>
+          </tr>
+          <tr>
+            <td>🇨🇱 Chile</td>
+            <td class="num">116</td>
+            <td class="num">~110</td>
+            <td><span class="pill" style="background:#16a34a">↑ Alta productividad</span></td>
+          </tr>
+          <tr>
+            <td>🇺🇾 Uruguay</td>
+            <td class="num">~80</td>
+            <td class="num">~85</td>
+            <td><span class="pill" style="background:#16a34a">↑ Estable-alta</span></td>
+          </tr>
+          <tr>
+            <td>🇲🇽 México</td>
+            <td class="num">~200</td>
+            <td class="num">~180</td>
+            <td><span class="pill" style="background:#d97706">→ Estable</span></td>
+          </tr>
+          <tr>
+            <td>🇪🇸 España</td>
+            <td class="num">~90</td>
+            <td class="num">~85</td>
+            <td><span class="pill" style="background:#d97706">→ Moderada</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="nota-fuente">Fuentes: Congreso.ar, Senado Chile (Cuenta Pública 2024-2025), IPU Parline. Argentina: 13 leyes bicamerales totales 2025.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Sesiones realizadas 2025</h3>
+      <table class="tbl">
+        <thead><tr>
+          <th>País</th>
+          <th class="num">Sesiones</th>
+          <th class="num">Asistencia</th>
+        </tr></thead>
+        <tbody>
+          <tr class="highlight">
+            <td>🇦🇷 Argentina Senado</td>
+            <td class="num"><strong>12</strong></td>
+            <td class="num"><strong>100%</strong></td>
+          </tr>
+          <tr>
+            <td>🇦🇷 Argentina Diputados</td>
+            <td class="num">16</td>
+            <td class="num">~85%</td>
+          </tr>
+          <tr>
+            <td>🇨🇱 Chile Senado</td>
+            <td class="num">106</td>
+            <td class="num">~90%</td>
+          </tr>
+          <tr>
+            <td>🇺🇾 Uruguay Senado</td>
+            <td class="num">~90</td>
+            <td class="num">~88%</td>
+          </tr>
+          <tr>
+            <td>🇪🇸 España Senado</td>
+            <td class="num">~45</td>
+            <td class="num">~82%</td>
+          </tr>
+          <tr>
+            <td>🌐 OCDE promedio</td>
+            <td class="num">~70</td>
+            <td class="num">~85%</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="nota-fuente">Argentina Senado: 12 sesiones (7 ord. + 5 esp.). Asistencia 100% en votaciones nominales verificadas (actas HSN). Chile: Cuenta Pública jul.2024–jun.2025.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Fragmentación política — NEP (Número Efectivo de Partidos)</h3>
+    <p style="font-size:.78rem;color:#475569;margin-bottom:.75rem">Mayor NEP = más fragmentación = más difícil alcanzar mayorías. Índice Laakso-Taagepera.</p>
+    <div id="bar-nep"></div>
+    <p class="nota-fuente">Argentina Senado: calculado sobre distribución actual de 14 bloques. Otros países: estimación sobre composición 2024-2025 (IPU Parline).</p>
+  </div>
+</div>
+
+<!-- COMPARATIVA INTERNACIONAL COSTOS -->
+<div class="seccion" id="internacional">
+  <h2>🌎 Comparativa Internacional de Costos — Senados / Cámaras Altas</h2>
+  <div class="panel">
+    <h3>Costo por habitante / año (USD) — presupuesto cámara alta</h3>
+    <p style="font-size:.78rem;color:#475569;margin-bottom:.75rem">⚠️ Comparaciones con reservas metodológicas: cada cámara tiene distinta escala, atribuciones y estructura de personal. Ver nota.</p>
+    <div id="bar-costo-hab"></div>
+    <p class="nota-fuente">Fuentes: Argentina: estimado OPC/HSN. Chile: Dipres 2025. Uruguay: Presupuesto Nacional. Brasil: Senado Federal. España: Presupuestos Generales del Estado. OCDE: estimaciones IPU. Tipos de cambio promedio 2024-2025.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Dieta anual senador vs. salario mínimo del país (ratio)</h3>
+    <p style="font-size:.78rem;color:#475569;margin-bottom:.75rem">Veces que la dieta supera al salario mínimo nacional — indicador de brecha representativa.</p>
+    <table class="tbl">
+      <thead><tr>
+        <th>País</th>
+        <th class="num">Dieta anual (USD)</th>
+        <th class="num">Sal. Mínimo anual (USD)</th>
+        <th class="num">Ratio</th>
+        <th>Interpretación</th>
+      </tr></thead>
+      <tbody>
+        <tr class="highlight">
+          <td>🇦🇷 Argentina</td>
+          <td class="num">~USD 66.960</td>
+          <td class="num">~USD 4.200</td>
+          <td class="num"><strong>15,9×</strong></td>
+          <td><span class="pill" style="background:#dc2626">Brecha muy alta</span></td>
+        </tr>
+        <tr>
+          <td>🇨🇱 Chile</td>
+          <td class="num">~USD 84.000</td>
+          <td class="num">~USD 6.000</td>
+          <td class="num">14,0×</td>
+          <td><span class="pill" style="background:#dc2626">Brecha muy alta</span></td>
+        </tr>
+        <tr>
+          <td>🇺🇾 Uruguay</td>
+          <td class="num">~USD 54.000</td>
+          <td class="num">~USD 7.800</td>
+          <td class="num">6,9×</td>
+          <td><span class="pill" style="background:#d97706">Brecha moderada</span></td>
+        </tr>
+        <tr>
+          <td>🇧🇷 Brasil</td>
+          <td class="num">~USD 100.000</td>
+          <td class="num">~USD 4.200</td>
+          <td class="num">23,8×</td>
+          <td><span class="pill" style="background:#7c2d12">Brecha extrema</span></td>
+        </tr>
+        <tr>
+          <td>🇲🇽 México</td>
+          <td class="num">~USD 80.000</td>
+          <td class="num">~USD 3.600</td>
+          <td class="num">22,2×</td>
+          <td><span class="pill" style="background:#7c2d12">Brecha extrema</span></td>
+        </tr>
+        <tr>
+          <td>🇪🇸 España</td>
+          <td class="num">~USD 50.000</td>
+          <td class="num">~USD 18.000</td>
+          <td class="num">2,8×</td>
+          <td><span class="pill" style="background:#16a34a">Brecha baja</span></td>
+        </tr>
+        <tr>
+          <td>🌐 OCDE promedio</td>
+          <td class="num">~USD 95.000</td>
+          <td class="num">~USD 24.000</td>
+          <td class="num">4,0×</td>
+          <td><span class="pill" style="background:#16a34a">Brecha baja-mod.</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="nota-fuente">Argentina: dieta neta ~USD 5.580/mes × 12. Sal. mínimo ARG 2025: ~$350.000 ARS/mes ≈ USD 350 × 12. Otros países: fuentes oficiales + Deel/Bloomberg Línea ene.2026.</p>
+  </div>
+</div>
+
+<!-- DIETAS COMPARADAS -->
+<div class="seccion" id="dietas">
+  <h2>💰 Dietas de Senadores — Comparativa Regional</h2>
+  <div class="panel">
+    <h3>Remuneración mensual neta en USD (2025)</h3>
+    <div id="bar-dietas"></div>
+    <p class="nota-fuente">Argentina: dieta neta jul.2025 (iProfesional). Chile: dieta senador CLP ~4.500.000 ≈ USD 4.900. Uruguay: USD ~4.500. Brasil: dieta bruta R$44.008 ≈ USD 8.000. México: MXN ~174.000 ≈ USD 8.700. España: EUR ~3.700 ≈ USD 4.000. EEUU: USD 14.500 (referencia).</p>
+  </div>
+
+  <div class="panel">
+    <h3>Síntesis comparativa — Senado Argentina en contexto</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
+        <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:.5rem">✅ Puntos fuertes</div>
+        <ul style="font-size:.78rem;color:#166534;padding-left:1rem;line-height:1.8">
+          <li>Asistencia 100% en votaciones nominales</li>
+          <li>Open data: Excel + JSON disponibles</li>
+          <li>Taquigráficas mismo día sesión</li>
+          <li>CRC en USD más bajo que Chile</li>
+          <li>3 insistencias exitosas (vetos revertidos)</li>
+          <li>Fragmentación moderada vs. Diputados</li>
+        </ul>
+      </div>
+      <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:.9rem 1rem">
+        <div style="font-size:.8rem;font-weight:700;color:#be123c;margin-bottom:.5rem">⚠️ Áreas de mejora</div>
+        <ul style="font-size:.78rem;color:#9f1239;padding-left:1rem;line-height:1.8">
+          <li>13 leyes 2025 = mínimo histórico bicameral</li>
+          <li>12 sesiones vs. 106 del Senado chileno</li>
+          <li>Ratio dieta/sal.mínimo = 15,9× (muy alto)</li>
+          <li>~70 empleados por senador (vs. 20 en Dip.)</li>
+          <li>Presupuesto sin desglose RRHH abierto</li>
+          <li>Sesiones Senado = 4,6% del tiempo laboral</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Fuente: <a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a> · OPC · IPU Parline · Fuentes oficiales de cada país ·
+  <a href="indicadores_senadores.html">🏛️ Indicadores Senado</a> ·
+  <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a> ·
+  <span id="footer-fecha"></span>
+</footer>
+
+<script>
+// ── Datos para gráficos ──
+const PAISES = [
+  {nombre:'🇦🇷 Argentina', hab_sen:652000, nep:5.06, costo_hab:1.99, dieta_mes:5580, color:'#C9A84C', highlight:true},
+  {nombre:'🇧🇷 Brasil',    hab_sen:2630000, nep:3.8, costo_hab:2.80, dieta_mes:8000, color:'#16a34a'},
+  {nombre:'🇨🇱 Chile',     hab_sen:390000,  nep:4.2, costo_hab:3.10, dieta_mes:4900, color:'#dc2626'},
+  {nombre:'🇺🇾 Uruguay',   hab_sen:117000,  nep:3.5, costo_hab:4.50, dieta_mes:4500, color:'#2563eb'},
+  {nombre:'🇲🇽 México',    hab_sen:1050000, nep:3.2, costo_hab:1.20, dieta_mes:8700, color:'#7c3aed'},
+  {nombre:'🇪🇸 España',    hab_sen:176000,  nep:4.8, costo_hab:5.80, dieta_mes:4000, color:'#d97706'},
+  {nombre:'🌐 OCDE prom.', hab_sen:500000,  nep:3.9, costo_hab:8.50, dieta_mes:7900, color:'#64748b'},
+];
+
+function buildBars(containerId, data, maxVal, formatFn, unit) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = data.map(function(d) {
+    const w = (d.val / maxVal * 100).toFixed(1);
+    const hl = d.highlight ? 'font-weight:700;' : '';
+    return '<div style="display:flex;align-items:center;gap:.6rem;padding:.35rem 0;border-bottom:1px solid #f0f0f0">'
+      + '<div style="min-width:140px;font-size:.78rem;'+hl+'">'+d.nombre+'</div>'
+      + '<div style="flex:1;height:12px;background:#e2e8f0;border-radius:6px;overflow:hidden">'
+      + '<div style="height:100%;width:'+w+'%;background:'+d.color+';border-radius:6px;transition:width .4s"></div></div>'
+      + '<div style="min-width:70px;text-align:right;font-size:.78rem;font-weight:700;color:'+d.color+'">'+formatFn(d.val)+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+// Habitantes por senador
+const habData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.hab_sen, color:p.color, highlight:p.highlight}; })
+  .sort(function(a,b){ return a.val-b.val; });
+buildBars('bar-habitantes', habData, Math.max.apply(null, habData.map(function(d){return d.val;})),
+  function(v){ return (v/1000).toFixed(0)+'K'; });
+
+// NEP
+const nepData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.nep, color:p.color, highlight:p.highlight}; })
+  .sort(function(a,b){ return b.val-a.val; });
+buildBars('bar-nep', nepData, 8,
+  function(v){ return v.toFixed(2); });
+
+// Costo por habitante USD
+const costoData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.costo_hab, color:p.color, highlight:p.highlight}; })
+  .sort(function(a,b){ return b.val-a.val; });
+buildBars('bar-costo-hab', costoData, 10,
+  function(v){ return 'USD '+v.toFixed(2); });
+
+// Dietas
+const dietaData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.dieta_mes, color:p.color, highlight:p.highlight}; });
+dietaData.push({nombre:'🇺🇸 EEUU (ref.)', val:14500, color:'#0891b2'});
+dietaData.sort(function(a,b){ return b.val-a.val; });
+buildBars('bar-dietas', dietaData, 15000,
+  function(v){ return 'USD '+v.toLocaleString('es-AR'); });
+
+// Footer fecha
+document.getElementById('footer-fecha').textContent = new Date().toLocaleDateString('es-AR');
+</script>
+</body>
+</html>
