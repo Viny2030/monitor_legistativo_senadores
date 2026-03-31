@@ -160,9 +160,15 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
 <!-- Bloques -->
 <div class="seccion" id="bloques">
   <h2>🎯 Composición por Bloque</h2>
-  <div class="panel">
-    <div class="panel-scroll">
-      <table class="tbl" id="tbl-bloques">
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:1.25rem;align-items:start">
+    <div class="panel" style="padding:1rem">
+      <div style="font-size:.8rem;font-weight:700;color:#334155;margin-bottom:.6rem">Distribución visual</div>
+      <svg id="donut-bloques" viewBox="0 0 260 260" width="100%" style="max-width:260px;display:block;margin:0 auto"></svg>
+      <div id="donut-leyenda" style="margin-top:.6rem;font-size:.72rem;display:flex;flex-direction:column;gap:.25rem"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-scroll">
+        <table class="tbl" id="tbl-bloques">
         <thead><tr>
           <th>Bloque</th>
           <th class="num">Bancas</th>
@@ -171,6 +177,7 @@ footer a { color: #1a0a2e; text-decoration: none; font-weight: 600; }
         </tr></thead>
         <tbody></tbody>
       </table>
+      </div>
     </div>
   </div>
 </div>
@@ -715,10 +722,9 @@ function colorBloque(b) {
 const total = SENADORES.length;
 const bloques = {}, provincias = {};
 SENADORES.forEach(function(s) {
-  bloques[s.bloque]     = (bloques[s.bloque]||0)+1;
+  bloques[s.bloque] = (bloques[s.bloque]||0)+1;
   provincias[s.provincia] = (provincias[s.provincia]||0)+1;
 });
-
 const sumPi2 = Object.values(bloques).reduce(function(s,n){return s+(n/total)*(n/total);},0);
 const nep  = (1/sumPi2).toFixed(2);
 const frag = (1-sumPi2).toFixed(4);
@@ -728,13 +734,10 @@ document.getElementById('kpi-total').textContent  = total;
 document.getElementById('kpi-nep').textContent    = nep;
 document.getElementById('kpi-frag').textContent   = frag;
 document.getElementById('kpi-bloques').textContent = nb;
-
-const nMujeres = SENADORES.filter(function(s){return s.genero==='F';}).length;
-const nVarones = total - nMujeres;
-document.getElementById('kpi-mujeres').textContent = nMujeres;
-document.getElementById('kpi-mujeres-pct').textContent = (nMujeres/total*100).toFixed(1)+'% del Senado';
-document.getElementById('kpi-varones').textContent = nVarones;
-document.getElementById('kpi-varones-pct').textContent = (nVarones/total*100).toFixed(1)+'% del Senado';
+document.getElementById('kpi-mujeres').textContent = SENADORES.filter(function(s){return s.genero==='F';}).length;
+document.getElementById('kpi-mujeres-pct').textContent = (SENADORES.filter(function(s){return s.genero==='F';}).length/total*100).toFixed(1)+'% del Senado';
+document.getElementById('kpi-varones').textContent = SENADORES.filter(function(s){return s.genero==='M';}).length;
+document.getElementById('kpi-varones-pct').textContent = (SENADORES.filter(function(s){return s.genero==='M';}).length/total*100).toFixed(1)+'% del Senado';
 document.getElementById('kpi-r2027').textContent = SENADORES.filter(function(s){return s.fin_mandato===2027;}).length;
 document.getElementById('kpi-r2029').textContent = SENADORES.filter(function(s){return s.fin_mandato===2029;}).length;
 document.getElementById('kpi-r2031').textContent = SENADORES.filter(function(s){return s.fin_mandato===2031;}).length;
@@ -754,6 +757,32 @@ document.querySelector('#tbl-bloques tbody').innerHTML = bloquesSorted.map(funct
     +'<td class="num">'+pct+'%</td></tr>';
 }).join('');
 
+(function() {
+  var cx=130, cy=130, r=90, ri=52, startAngle=-Math.PI/2;
+  var paths='', leyenda='';
+  bloquesSorted.forEach(function(entry){
+    var b=entry[0], n=entry[1];
+    var slice=(n/total)*2*Math.PI, endAngle=startAngle+slice;
+    var x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
+    var x2=cx+r*Math.cos(endAngle),   y2=cy+r*Math.sin(endAngle);
+    var x3=cx+ri*Math.cos(endAngle),  y3=cy+ri*Math.sin(endAngle);
+    var x4=cx+ri*Math.cos(startAngle),y4=cy+ri*Math.sin(startAngle);
+    var lg=slice>Math.PI?1:0, col=colorBloque(b), pct=(n/total*100).toFixed(1);
+    paths+='<path d="M'+x1.toFixed(2)+','+y1.toFixed(2)+' A'+r+','+r+' 0 '+lg+',1 '+x2.toFixed(2)+','+y2.toFixed(2)
+      +' L'+x3.toFixed(2)+','+y3.toFixed(2)+' A'+ri+','+ri+' 0 '+lg+',0 '+x4.toFixed(2)+','+y4.toFixed(2)
+      +' Z" fill="'+col+'" stroke="#fff" stroke-width="1.5"><title>'+b+': '+n+' ('+pct+'%)</title></path>';
+    leyenda+='<div style="display:flex;align-items:center;gap:.4rem"><span style="width:10px;height:10px;border-radius:2px;background:'+col+';flex-shrink:0"></span>'
+      +'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b+'</span>'
+      +'<span style="font-weight:700;color:'+col+'">'+n+'</span></div>';
+    startAngle=endAngle;
+  });
+  paths+='<circle cx="'+cx+'" cy="'+cy+'" r="'+ri+'" fill="white"/>';
+  paths+='<text x="'+cx+'" y="'+(cy-8)+'" text-anchor="middle" font-size="22" font-weight="800" fill="#1a0a2e">'+total+'</text>';
+  paths+='<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" fill="#64748b">senadores</text>';
+  document.getElementById('donut-bloques').innerHTML=paths;
+  document.getElementById('donut-leyenda').innerHTML=leyenda;
+})();
+
 const TERCIO = {
   'CATAMARCA':2027,'CÓRDOBA':2027,'CORRIENTES':2027,'CHUBUT':2027,
   'LA PAMPA':2027,'MENDOZA':2027,'SANTA FE':2027,'TUCUMÁN':2027,
@@ -766,142 +795,125 @@ const TERCIO = {
 const provSorted = Object.entries(provincias).sort(function(a,b){return a[0].localeCompare(b[0],'es');});
 document.querySelector('#tbl-provincias tbody').innerHTML = provSorted.map(function(entry){
   const p=entry[0], n=entry[1];
-  const sensProv = SENADORES.filter(function(s){return s.provincia===p;});
-  const blqCount = {};
+  const sensProv=SENADORES.filter(function(s){return s.provincia===p;});
+  const blqCount={};
   sensProv.forEach(function(s){blqCount[s.bloque]=(blqCount[s.bloque]||0)+1;});
-  const mayorEntry = Object.entries(blqCount).sort(function(a,b){return b[1]-a[1];})[0];
-  const mayorHtml = '<span class="pill" style="background:'+colorBloque(mayorEntry[0])+'">'+mayorEntry[0]+' ('+mayorEntry[1]+')</span>';
-  const blqsProv = [...new Set(sensProv.map(function(s){return s.bloque;}))].map(function(b){
+  const mayorEntry=Object.entries(blqCount).sort(function(a,b){return b[1]-a[1];})[0];
+  const mayorHtml='<span class="pill" style="background:'+colorBloque(mayorEntry[0])+'">'+mayorEntry[0]+' ('+mayorEntry[1]+')</span>';
+  const blqsProv=[...new Set(sensProv.map(function(s){return s.bloque;}))].map(function(b){
     return '<span class="pill" style="background:'+colorBloque(b)+';font-size:.62rem">'+b+'</span>';
   }).join(' ');
-  const tercio = TERCIO[p]||'—';
-  const tCol = tercio===2027?'#2563eb':tercio===2029?'#d97706':'#16a34a';
-  return '<tr><td><strong>'+p+'</strong></td>'
-    +'<td class="num" style="font-weight:800">'+n+'</td>'
-    +'<td style="font-size:.75rem">'+mayorHtml+'</td>'
-    +'<td style="font-size:.72rem">'+blqsProv+'</td>'
+  const tercio=TERCIO[p]||'—';
+  const tCol=tercio===2027?'#2563eb':tercio===2029?'#d97706':'#16a34a';
+  return '<tr><td><strong>'+p+'</strong></td><td class="num" style="font-weight:800">'+n+'</td>'
+    +'<td style="font-size:.75rem">'+mayorHtml+'</td><td style="font-size:.72rem">'+blqsProv+'</td>'
     +'<td><span style="background:'+tCol+';color:#fff;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700">'+tercio+'</span></td></tr>';
 }).join('');
 
-function rHtml(b, n, rank) {
-  const col = colorBloque(b);
-  const pct = (n/total*100).toFixed(1);
-  return '<div class="ranking-row">'
-    +'<span class="rk-num">'+rank+'</span>'
+function rHtml(b,n,rank){
+  const col=colorBloque(b), pct=(n/total*100).toFixed(1);
+  return '<div class="ranking-row"><span class="rk-num">'+rank+'</span>'
     +'<div style="flex:1;min-width:0"><div class="rk-nombre">'+b+'</div>'
     +'<div class="rk-dist">'+n+' senadores · '+pct+'% del Senado</div></div>'
     +'<span class="rk-val" style="color:'+col+'">'+n+'</span></div>';
 }
-const topBloques = bloquesSorted.slice(0,5);
-const topNames = topBloques.map(function(x){return x[0];});
-const bottomBloques = bloquesSorted.slice().reverse().filter(function(x){return topNames.indexOf(x[0])===-1;}).slice(0,5);
-document.getElementById('list-mayor').innerHTML = topBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
-document.getElementById('list-menor').innerHTML = bottomBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
+const topBloques=bloquesSorted.slice(0,5);
+const topNames=topBloques.map(function(x){return x[0];});
+const bottomBloques=bloquesSorted.slice().reverse().filter(function(x){return topNames.indexOf(x[0])===-1;}).slice(0,5);
+document.getElementById('list-mayor').innerHTML=topBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
+document.getElementById('list-menor').innerHTML=bottomBloques.map(function(x,i){return rHtml(x[0],x[1],i+1);}).join('');
 
-const anioActual = new Date().getFullYear();
-const antiguedad = {};
+const anioActual=new Date().getFullYear();
+const antiguedad={};
 SENADORES.forEach(function(s){
   if(!antiguedad[s.bloque]) antiguedad[s.bloque]={suma:0,n:0};
-  antiguedad[s.bloque].suma += (anioActual - s.inicio_mandato);
+  antiguedad[s.bloque].suma+=(anioActual-s.inicio_mandato);
   antiguedad[s.bloque].n++;
 });
-const antiguedadSorted = Object.entries(antiguedad).map(function(e){
-  return {bloque:e[0], avg:(e[1].suma/e[1].n).toFixed(1)};
-}).sort(function(a,b){return b.avg-a.avg;});
-document.getElementById('list-antiguedad').innerHTML = antiguedadSorted.slice(0,8).map(function(x,i){
-  const col = colorBloque(x.bloque);
-  return '<div class="ranking-row">'
-    +'<span class="rk-num">'+(i+1)+'</span>'
-    +'<div style="flex:1;min-width:0"><div class="rk-nombre">'+x.bloque+'</div>'
-    +'<div class="rk-dist">'+x.avg+' años prom. en banca</div></div>'
-    +'<span class="rk-val" style="color:'+col+'">'+x.avg+'</span></div>';
-}).join('');
+document.getElementById('list-antiguedad').innerHTML=Object.entries(antiguedad)
+  .map(function(e){return {bloque:e[0],avg:(e[1].suma/e[1].n).toFixed(1)};})
+  .sort(function(a,b){return b.avg-a.avg;}).slice(0,8)
+  .map(function(x,i){
+    const col=colorBloque(x.bloque);
+    return '<div class="ranking-row"><span class="rk-num">'+(i+1)+'</span>'
+      +'<div style="flex:1;min-width:0"><div class="rk-nombre">'+x.bloque+'</div>'
+      +'<div class="rk-dist">'+x.avg+' años prom. en banca</div></div>'
+      +'<span class="rk-val" style="color:'+col+'">'+x.avg+'</span></div>';
+  }).join('');
 
-const bloquesU   = [...new Set(SENADORES.map(function(s){return s.bloque;}))].sort();
-const provinciasU = [...new Set(SENADORES.map(function(s){return s.provincia;}))].sort();
-const selBloque   = document.getElementById('nomina-bloque');
-const selProv     = document.getElementById('nomina-provincia');
+const bloquesU=[...new Set(SENADORES.map(function(s){return s.bloque;}))].sort();
+const provinciasU=[...new Set(SENADORES.map(function(s){return s.provincia;}))].sort();
+const selBloque=document.getElementById('nomina-bloque');
+const selProv=document.getElementById('nomina-provincia');
 bloquesU.forEach(function(b){const o=document.createElement('option');o.value=b;o.textContent=b;selBloque.appendChild(o);});
 provinciasU.forEach(function(p){const o=document.createElement('option');o.value=p;o.textContent=p;selProv.appendChild(o);});
 
-let _sortCol = 'nombre', _sortAsc = true;
-function sortNomina(col) {
-  if (_sortCol===col){_sortAsc=!_sortAsc;}else{_sortCol=col;_sortAsc=true;}
-  filtrarNomina();
-}
-function getSorted(lista) {
+let _sortCol='nombre', _sortAsc=true;
+function sortNomina(col){if(_sortCol===col){_sortAsc=!_sortAsc;}else{_sortCol=col;_sortAsc=true;}filtrarNomina();}
+function getSorted(lista){
   return lista.slice().sort(function(a,b){
     const va=a[_sortCol]||'', vb=b[_sortCol]||'';
     if(typeof va==='number') return _sortAsc?va-vb:vb-va;
     return _sortAsc?String(va).localeCompare(String(vb),'es'):String(vb).localeCompare(String(va),'es');
   });
 }
-
-function renderNomina(lista) {
-  document.getElementById('tbody-nomina').innerHTML = lista.map(function(s,i){
-    const col = colorBloque(s.bloque);
-    const tCol = s.fin_mandato===2027?'#2563eb':s.fin_mandato===2029?'#d97706':'#16a34a';
-    return '<tr>'
-      +'<td style="color:#94a3b8;font-size:.75rem">'+(i+1)+'</td>'
+function renderNomina(lista){
+  document.getElementById('tbody-nomina').innerHTML=lista.map(function(s,i){
+    const col=colorBloque(s.bloque);
+    const tCol=s.fin_mandato===2027?'#2563eb':s.fin_mandato===2029?'#d97706':'#16a34a';
+    return '<tr><td style="color:#94a3b8;font-size:.75rem">'+(i+1)+'</td>'
       +'<td style="font-weight:600">'+s.nombre+'</td>'
       +'<td style="font-size:.78rem">'+s.provincia+'</td>'
       +'<td><span class="pill" style="background:'+col+'">'+s.bloque+'</span></td>'
-      +'<td><span style="background:'+tCol+';color:#fff;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700">'+(s.fin_mandato||'—')+'</span></td>'
-      +'</tr>';
+      +'<td><span style="background:'+tCol+';color:#fff;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700">'+(s.fin_mandato||'—')+'</span></td></tr>';
   }).join('');
-  document.getElementById('nomina-count').textContent =
+  document.getElementById('nomina-count').textContent=
     lista.length===SENADORES.length?lista.length+' senadores':lista.length+' de '+SENADORES.length;
 }
-
-function filtrarNomina() {
-  const txt = document.getElementById('nomina-buscar').value.toLowerCase();
-  const blq = document.getElementById('nomina-bloque').value;
-  const prov = document.getElementById('nomina-provincia').value;
-  const res = SENADORES.filter(function(s){
-    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))&&
-    (!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
-  });
-  renderNomina(getSorted(res));
+function filtrarNomina(){
+  const txt=document.getElementById('nomina-buscar').value.toLowerCase();
+  const blq=document.getElementById('nomina-bloque').value;
+  const prov=document.getElementById('nomina-provincia').value;
+  renderNomina(getSorted(SENADORES.filter(function(s){
+    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))
+      &&(!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
+  })));
 }
-
-function exportarCSV() {
-  const txt = document.getElementById('nomina-buscar').value.toLowerCase();
-  const blq = document.getElementById('nomina-bloque').value;
-  const prov = document.getElementById('nomina-provincia').value;
-  const lista = getSorted(SENADORES.filter(function(s){
-    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))&&
-    (!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
+function exportarCSV(){
+  const txt=document.getElementById('nomina-buscar').value.toLowerCase();
+  const blq=document.getElementById('nomina-bloque').value;
+  const prov=document.getElementById('nomina-provincia').value;
+  const lista=getSorted(SENADORES.filter(function(s){
+    return (!txt||s.nombre.toLowerCase().includes(txt)||s.bloque.toLowerCase().includes(txt)||s.provincia.toLowerCase().includes(txt))
+      &&(!blq||s.bloque===blq)&&(!prov||s.provincia===prov);
   }));
-  const filas = lista.map(function(s){
-    const g = s.genero==='F'?'Femenino':'Masculino';
-    return [s.nombre,s.provincia,s.bloque,g,s.fin_mandato].map(function(v){return '"'+String(v)+'"';}).join(',');
+  const filas=lista.map(function(s){
+    return [s.nombre,s.provincia,s.bloque,s.genero==='F'?'Femenino':'Masculino',s.fin_mandato]
+      .map(function(v){return '"'+String(v)+'"';}).join(',');
   });
-  const csv = ['Nombre,Provincia,Bloque,Genero,Mandato hasta'].concat(filas).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
-  a.download = 'senadores.csv';
-  a.click();
+  const csv=['Nombre,Provincia,Bloque,Genero,Mandato hasta'].concat(filas).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download='senadores.csv'; a.click();
 }
-
 renderNomina(getSorted(SENADORES));
 
-function toggleDonacion() {
-  const body  = document.getElementById('don-body');
-  const arrow = document.getElementById('don-arrow');
-  const abierto = body.style.display !== 'none';
-  body.style.display  = abierto ? 'none' : 'block';
-  arrow.style.transform = abierto ? '' : 'rotate(180deg)';
+function toggleDonacion(){
+  const body=document.getElementById('don-body');
+  const arrow=document.getElementById('don-arrow');
+  const abierto=body.style.display!=='none';
+  body.style.display=abierto?'none':'block';
+  arrow.style.transform=abierto?'':'rotate(180deg)';
 }
-function donTab(btn, panelId) {
+function donTab(btn,panelId){
   document.querySelectorAll('.don-tab').forEach(function(b){b.classList.remove('don-tab-activo');});
   btn.classList.add('don-tab-activo');
   document.querySelectorAll('.don-panel').forEach(function(p){p.style.display='none';});
   document.getElementById(panelId).style.display='block';
 }
-function copiar(texto, btn) {
+function copiar(texto,btn){
   navigator.clipboard.writeText(texto).then(function(){
-    btn.textContent='✓ Copiado';
-    btn.classList.add('copiado');
+    btn.textContent='✓ Copiado'; btn.classList.add('copiado');
     setTimeout(function(){btn.textContent='📋 Copiar CBU';btn.classList.remove('copiado');},2000);
   });
 }
