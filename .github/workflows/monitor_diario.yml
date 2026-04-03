@@ -37,6 +37,12 @@ jobs:
       - name: 📊 Actualizar array en indicadores_senadores.html
         run: python scripts/actualizar_indicadores_senado.py
 
+      - name: 📊 Actualizar bloques y nómina detallada
+        run: python scripts/actualizar_bloques_nomina_senado.py
+
+      - name: 🗂️ Actualizar bloques y nómina detallada
+        run: python scripts/actualizar_bloques_nomina_senado.py
+
       - name: 📤 Commit y push de datos
         run: |
           git config --global user.name  "Monitor Bot"
