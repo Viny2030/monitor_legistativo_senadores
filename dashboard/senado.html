@@ -642,6 +642,7 @@ async function cargarDatos() {
 
 // ─── Fallback con datos del CSV del 26/03/2026 ───────────────────────────────
 function usarFallback() {
+// FALLBACK:START
   PARTIDOS_DATA = [
     { partido: 'Unión por la Patria',       bancas: 22, participation_pct: 76.9, 'Mayoría': 12, 'Primera Minoría': 10, votos_afirmativos: 1708, votos_negativos: 306, abstenciones: 17 },
     { partido: 'La Libertad Avanza',        bancas: 18, participation_pct: 23.9, 'Mayoría': 14, 'Primera Minoría':  4, votos_afirmativos:  290, votos_negativos: 214, abstenciones: 13 },
@@ -761,6 +762,7 @@ function usarFallback() {
     { id:'', nombre:"di Tullio, Juliana", provincia:"Buenos Aires", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:0.0, votos_afirmativos:0, votos_negativos:0, ausencias:0, abstenciones:0, votos_total:0, foto:"", email:"juliana.ditullio@senado.gob.ar", telefono:"", fuente:'fallback' },
     { id:'', nombre:"Fullone, Enzo Paolo", provincia:"Río Negro", partido:"La Libertad Avanza", rol_provincial:"Primera Minoría", participation_pct:0.0, votos_afirmativos:0, votos_negativos:0, ausencias:0, abstenciones:0, votos_total:0, foto:"", email:"enzo.fullone@senado.gob.ar", telefono:"", fuente:'fallback' },
   ].sort((a,b) => (b.participation_pct || 0) - (a.participation_pct || 0));
+// FALLBACK:END
 }
 
 async function recargarTodo() {
