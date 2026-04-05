@@ -1,6 +1,6 @@
 ﻿id,nombre,provincia,partido,periodoLegal,periodoReal,reemplazo,observaciones,foto,email,telefono,redes,partido_normalizado,rol_provincial,abstenciones,ausencias,lev.vot.,votos_negativos,no emite,votos_afirmativos,votos_total,participation_pct
-546,"Abad, Maximiliano",Buenos Aires,Juntos por el Cambio,"{'inicio': '2023-12-10', 'fin': '2029-12-09'}","{'inicio': '2023-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/546.gif,maximiliano.abad@senado.gob.ar,(+54 11) 28223000,,Unión Cívica Radical,Mayoría,2,26,0.0,15,2.0,73,116,75.0
-545,"De Pedro, Eduardo Enrique",Buenos Aires,Alianza Unión por la Patria,"{'inicio': '2023-12-10', 'fin': '2029-12-09'}","{'inicio': '2023-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/545.gif,,,,Unión por la Patria,Primera Minoría,0,11,0.0,17,2.0,88,116,87.5
+546,"Abad, Maximiliano",Buenos Aires,Juntos por el Cambio,"{'inicio': '2023-12-10', 'fin': '2029-12-09'}","{'inicio': '2023-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/546.gif,maximiliano.abad@senado.gob.ar,(+54 11) 28223000,,Unión Cívica Radical,Primera Minoría,2,26,0.0,15,2.0,73,116,75.0
+545,"De Pedro, Eduardo Enrique",Buenos Aires,Alianza Unión por la Patria,"{'inicio': '2023-12-10', 'fin': '2029-12-09'}","{'inicio': '2023-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/545.gif,,,,Unión por la Patria,Mayoría,0,11,0.0,17,2.0,88,116,87.5
 519,"Andrada, Guillermo Eduardo",Catamarca,Frente de Todos,"{'inicio': '2021-12-10', 'fin': '2027-12-09'}","{'inicio': '2021-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/519.gif,guillermo.andrada@senado.gob.ar,(+54 11) 28223000,,Unión por la Patria,Mayoría,1,3,0.0,14,2.0,98,116,94.17
 398,"Corpacci, Lucia Benigna",Catamarca,Frente de Todos,"{'inicio': '2021-12-10', 'fin': '2027-12-09'}","{'inicio': '2021-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/398.gif,lucia.corpacci@senado.gob.ar,(+54 11) 28223000,,Unión por la Patria,Mayoría,2,20,0.0,12,2.0,82,116,80.0
 520,"Fama, Flavio Sergio",Catamarca,Juntos por el Cambio,"{'inicio': '2021-12-10', 'fin': '2027-12-09'}","{'inicio': '2021-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/520.gif,flavio.fama@senado.gob.ar,(+54 11) 28223000,,Unión Cívica Radical,Primera Minoría,1,17,0.0,17,1.0,82,117,83.33
@@ -69,3 +69,14 @@
 541,"Avila, Beatriz Luisa",Tucumán,Juntos por el Cambio,"{'inicio': '2021-12-10', 'fin': '2027-12-09'}","{'inicio': '2021-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/541.gif,beatriz.avila@senado.gob.ar,(+54 11) 28223000,,Unión Cívica Radical,Primera Minoría,0,0,,0,,0,0,0.0
 576,"Manzur, Juan Luis",Tucumán,Alianza Frente de Todos,"{'inicio': '2023-12-09', 'fin': '2027-12-09'}","{'inicio': '2023-12-09', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/576.gif,juan.manzur@senado.gob.ar,(+54 11) 28223000,,Unión por la Patria,Mayoría,0,6,0.0,15,2.0,95,116,91.67
 540,"Mendoza, Sandra Mariela",Tucumán,Frente de Todos,"{'inicio': '2021-12-10', 'fin': '2027-12-09'}","{'inicio': '2021-12-10', 'fin': None}",,,https://api.argentinadatos.com/static/senado/senadores/540.gif,sandra.mendoza@senado.gob.ar,(+54 11) 28223000,,Unión por la Patria,Mayoría,0,17,0.0,14,2.0,85,116,82.5
+,"di Tullio,
+
+                                        
+
+                                                                                    Juliana",Buenos Aires,Alianza Unión por la Patria,"{'inicio': '2023-12-10', 'fin': '2029-12-09'}",{},,Incorporado desde senado.gob.ar (ausente en API),,juliana.ditullio@senado.gob.ar,,,Unión por la Patria,Mayoría,0,0,,0,,0,0,0.0
+,"Fullone,
+
+
+                                        
+
+                                                                                    Enzo Paolo",Río Negro,Alianza la Libertad Avanza,"{'inicio': '2025-12-26', 'fin': '2031-12-09'}",{},,Incorporado desde senado.gob.ar (ausente en API),,enzo.fullone@senado.gob.ar,,,La Libertad Avanza,Primera Minoría,0,0,,0,,0,0,0.0
