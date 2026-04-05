@@ -1,0 +1,26 @@
+﻿# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# IDE
+.idea/
+
+# Archivos temporales
+fix.html
+fix_cf.py
+test.html
+script_debug.js
+scraper_senadores.py
+
+# PDFs grandes
+*.pdf
+
+# Data generada (se regenera con el pipeline)
+data/
+
+# OS
+.DS_Store
+Thumbs.db
