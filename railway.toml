@@ -1,0 +1,8 @@
+﻿[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "uvicorn api.run_senado:app --host 0.0.0.0 --port \"
+healthcheckPath = "/salud"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
