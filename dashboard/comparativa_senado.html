@@ -504,31 +504,114 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 
 <!-- DONACION:START -->
 <div id="donacion" class="seccion" style="background:#fffbeb;border-top:2px solid #C9A84C;">
-  <div class="panel" style="border:1px solid #f0e0a0;background:#fffdf0;">
-    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;">
-      <span style="font-size:1.6rem">💛</span>
+
+  <!-- Autor -->
+  <div class="panel" style="border:1px solid #dde2ec;background:#fff;margin-bottom:1rem;">
+    <div style="font-size:.85rem;font-weight:700;color:#1a0a2e;margin-bottom:.75rem;">👤 Sobre el Autor</div>
+    <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+      <img src="foto.jpg" alt="Vicente Monteverde"
+           style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #C9A84C;flex-shrink:0;">
       <div>
-        <div style="font-size:.95rem;font-weight:700;color:#1a0a2e">Apoyá este proyecto</div>
-        <div style="font-size:.78rem;color:#64748b">Monitor Legislativo · Senado de la Nación Argentina</div>
+        <div style="font-size:.95rem;font-weight:700;color:#1a0a2e;">Ph.D. Vicente Humberto Monteverde</div>
+        <div style="font-size:.78rem;color:#64748b;margin-top:.15rem;">Doctor en Ciencias Económicas · Investigador en economía política y fenómenos de corrupción</div>
+        <p style="font-size:.78rem;color:#475569;margin-top:.5rem;line-height:1.6;">
+          Autor de la teoría de <strong>Transferencia Regresiva de Ingresos</strong> y desarrollador del algoritmo XAI aplicado al análisis de contrataciones públicas. Publicaciones en <em>Journal of Financial Crime</em> (Emerald Publishing). Asesor en transparencia y auditoría algorítmica del gasto público.
+        </p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem;">
+          <a href="mailto:vhmonte@retina.ar"
+             style="display:inline-flex;align-items:center;gap:.3rem;background:#f1f5f9;color:#1a0a2e;padding:.3rem .8rem;border-radius:12px;text-decoration:none;font-size:.75rem;font-weight:600;border:1px solid #e2e8f0;">
+            ✉️ vhmonte@retina.ar
+          </a>
+          <a href="mailto:monteverdevicente@hotmail.com"
+             style="display:inline-flex;align-items:center;gap:.3rem;background:#f1f5f9;color:#1a0a2e;padding:.3rem .8rem;border-radius:12px;text-decoration:none;font-size:.75rem;font-weight:600;border:1px solid #e2e8f0;">
+            ✉️ monteverdevicente@hotmail.com
+          </a>
+        </div>
       </div>
     </div>
-    <p style="font-size:.8rem;color:#475569;margin-bottom:.9rem;line-height:1.6">
-      Este monitor es un proyecto académico independiente de acceso libre. Si te resultó útil para investigar, periodismo o ciudadanía activa, podés colaborar para mantenerlo actualizado.
+  </div>
+
+  <div class="panel" style="border:1px solid #f0e0a0;background:#fffdf0;">
+    <div style="font-size:.95rem;font-weight:700;color:#1a0a2e;margin-bottom:.5rem;">💛 Apoyá este proyecto</div>
+    <p style="font-size:.8rem;color:#475569;margin-bottom:1rem;line-height:1.6">
+      Este proyecto es independiente, sin publicidad ni financiamiento institucional. Si valorás la transparencia legislativa y querés que sigamos desarrollando nuevos indicadores, podés hacer una contribución voluntaria. Cada aporte ayuda a sostener el tiempo de investigación, el mantenimiento de los datos y el desarrollo de la versión 1.1.
     </p>
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-      <a href="https://cafecito.app/vicentemonteverde" target="_blank"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:#1a0a2e;color:#C9A84C;padding:.55rem 1.2rem;border-radius:20px;text-decoration:none;font-size:.82rem;font-weight:700;border:1px solid #C9A84C;">
-        ☕ Cafecito
-      </a>
-      <a href="https://www.paypal.com/paypalme/vicentemonteverde" target="_blank"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:#0070ba;color:#fff;padding:.55rem 1.2rem;border-radius:20px;text-decoration:none;font-size:.82rem;font-weight:700;">
-        💳 PayPal
-      </a>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <button onclick="document.getElementById('tab-arg').style.display='block';document.getElementById('tab-ext').style.display='none';this.style.background='#1a0a2e';this.style.color='#C9A84C';document.getElementById('btn-ext').style.background='#f1f5f9';document.getElementById('btn-ext').style.color='#334155';"
+        id="btn-arg"
+        style="padding:.45rem 1rem;border-radius:20px;border:1px solid #C9A84C;background:#1a0a2e;color:#C9A84C;font-size:.8rem;font-weight:700;cursor:pointer;">
+        🇦🇷 Desde Argentina
+      </button>
+      <button onclick="document.getElementById('tab-ext').style.display='block';document.getElementById('tab-arg').style.display='none';this.style.background='#1a0a2e';this.style.color='#C9A84C';document.getElementById('btn-arg').style.background='#f1f5f9';document.getElementById('btn-arg').style.color='#334155';"
+        id="btn-ext"
+        style="padding:.45rem 1rem;border-radius:20px;border:1px solid #dde2ec;background:#f1f5f9;color:#334155;font-size:.8rem;font-weight:700;cursor:pointer;">
+        🌐 Desde el Exterior
+      </button>
     </div>
-    <p style="font-size:.72rem;color:#94a3b8;margin-top:.75rem;">
-      Ph.D. Vicente Humberto Monteverde · <a href="mailto:monteverdevicente@hotmail.com" style="color:#1a0a2e;">monteverdevicente@hotmail.com</a>
+
+    <!-- Tab Argentina -->
+    <div id="tab-arg" style="display:block;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;flex-wrap:wrap;">
+        <!-- Pesos -->
+        <div style="background:#fff;border:1px solid #dde2ec;border-radius:8px;padding:.9rem 1rem;">
+          <div style="font-size:.8rem;font-weight:700;color:#1a0a2e;margin-bottom:.75rem;">🔵 Pesos (ARS)</div>
+          <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+            <tr><td style="color:#64748b;padding:.2rem 0;">Tipo</td><td style="font-weight:700;">Caja de Ahorro</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">CBU</td><td style="font-weight:700;">0140005203400552652310</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">Alias</td><td style="font-weight:700;">ALGORIT.MONTE.PESOS</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">Titular</td><td>Vicente Humberto Monteverde</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">CUIT</td><td>20-12034411-1</td></tr>
+          </table>
+          <button onclick="navigator.clipboard.writeText('0140005203400552652310')"
+            style="margin-top:.75rem;padding:.4rem .9rem;background:#1a0a2e;color:#fff;border:none;border-radius:6px;font-size:.75rem;cursor:pointer;">
+            📋 Copiar CBU
+          </button>
+        </div>
+        <!-- Dólares -->
+        <div style="background:#fff;border:1px solid #dde2ec;border-radius:8px;padding:.9rem 1rem;">
+          <div style="font-size:.8rem;font-weight:700;color:#1a0a2e;margin-bottom:.75rem;">💵 Dólares (USD)</div>
+          <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+            <tr><td style="color:#64748b;padding:.2rem 0;">Tipo</td><td style="font-weight:700;">Caja de Ahorro USD</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">CBU</td><td style="font-weight:700;">0140005204400550329709</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">Alias</td><td style="font-weight:700;">ALGO.MONTE.DOLARES</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">Titular</td><td>Vicente Humberto Monteverde</td></tr>
+            <tr><td style="color:#64748b;padding:.2rem 0;">CUIT</td><td>20-12034411-1</td></tr>
+          </table>
+          <button onclick="navigator.clipboard.writeText('0140005204400550329709')"
+            style="margin-top:.75rem;padding:.4rem .9rem;background:#1a0a2e;color:#fff;border:none;border-radius:6px;font-size:.75rem;cursor:pointer;">
+            📋 Copiar CBU
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Exterior -->
+    <div id="tab-ext" style="display:none;">
+      <div style="background:#fff;border:1px solid #dde2ec;border-radius:8px;padding:.9rem 1rem;max-width:480px;">
+        <div style="font-size:.8rem;font-weight:700;color:#1a0a2e;margin-bottom:.75rem;">🌐 Transferencia Internacional (USD)</div>
+        <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+          <tr><td style="color:#64748b;padding:.2rem 0;">Banco</td><td style="font-weight:700;">Banco Santander Montevideo</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">Beneficiario</td><td>Vicente Humberto Monteverde</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">Dirección</td><td>Av. Directorio 3024 PB Dto. 04</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">CUIT</td><td>20-12034411-1</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">Tipo de cuenta</td><td style="font-weight:700;">Caja de Ahorro USD</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">Número</td><td style="font-weight:700;">005200183500</td></tr>
+          <tr><td style="color:#64748b;padding:.2rem 0;">SWIFT / BIC</td><td style="font-weight:700;">BSCHUYMM</td></tr>
+        </table>
+        <button onclick="navigator.clipboard.writeText('BSCHUYMM')"
+          style="margin-top:.75rem;padding:.4rem .9rem;background:#1a0a2e;color:#fff;border:none;border-radius:6px;font-size:.75rem;cursor:pointer;">
+          📋 Copiar SWIFT
+        </button>
+      </div>
+    </div>
+
+    <p style="font-size:.72rem;color:#94a3b8;margin-top:.9rem;">
+      🔵 Consultas: <a href="mailto:vhmonte@retina.ar" style="color:#1a0a2e;">vhmonte@retina.ar</a>
     </p>
   </div>
+</div>
 </div>
 <!-- DONACION:END -->
 
