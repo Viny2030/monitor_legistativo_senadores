@@ -98,7 +98,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
   ⚠️ <strong>Nota metodológica:</strong> Las comparaciones internacionales deben interpretarse con cautela — cada parlamento tiene atribuciones, escalas y contextos distintos. Los costos en USD usan tipo de cambio oficial promedio 2025 (~$1.000 ARS/USD para presupuesto; ~$1.450 ARS/USD para salarios desde jul.2025). Fuentes: OPC Argentina, OCDE, IPU Parline, fuentes oficiales de cada país.
 </div>
 
-<!-- KPIs resumen -->
+<!-- KPI_COMPARATIVA:START -->
 <div class="kpi-bar">
   <div class="kpi-card"><div class="kv">USD 94M</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
   <div class="kpi-card"><div class="kv">USD 2,0</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
@@ -107,6 +107,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
   <div class="kpi-card"><div class="kv">5,06</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
   <div class="kpi-card"><div class="kv">13</div><div class="kl">Leyes 2025</div><div class="ks">mínimo histórico</div></div>
 </div>
+<!-- KPI_COMPARATIVA:END -->
 
 <!-- COSTOS EN USD -->
 <div class="seccion" id="costos">
@@ -139,6 +140,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
     <p class="nota-fuente">Fuentes: Presupuesto Senado estimado ~$135.800MM ARS (proporción histórica HSN/HCDN). TC oficial: BCRA. Costo sesión: iProfesional oct.2025.</p>
   </div>
 
+  <!-- DIETAS_USD:START -->
   <div class="panel">
     <h3>Dietas de senadores en dólares — 2025</h3>
     <table class="tbl">
@@ -189,6 +191,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
     </table>
     <p class="nota-fuente">Fuente: iProfesional, oct.2025. TC $1.450 ARS/USD (TC oficial jul.2025).</p>
   </div>
+  <!-- DIETAS_USD:END -->
 </div>
 
 <!-- ESTRUCTURA BICAMERAL -->
@@ -277,6 +280,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 <div class="seccion" id="calidad">
   <h2>📈 Calidad Legislativa — Indicadores Comparados 2024–2025</h2>
   <div class="grid-2">
+    <!-- LEYES_SESIONES:START -->
     <div class="panel">
       <h3>Leyes sancionadas por año (Senado / Cámara Alta)</h3>
       <table class="tbl">
@@ -371,6 +375,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
       </table>
       <p class="nota-fuente">Argentina Senado: 12 sesiones (7 ord. + 5 esp.). Asistencia 100% en votaciones nominales verificadas (actas HSN). Chile: Cuenta Pública jul.2024–jun.2025.</p>
     </div>
+<!-- LEYES_SESIONES:END -->
   </div>
 
   <div class="panel">
@@ -505,7 +510,8 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 
 <script>
 // ── Datos para gráficos ──
-const PAISES = [
+// PAISES_DATA:START
+var PAISES = [
   {nombre:'🇦🇷 Argentina', hab_sen:652000, nep:5.06, costo_hab:1.99, dieta_mes:5580, color:'#C9A84C', highlight:true},
   {nombre:'🇧🇷 Brasil',    hab_sen:2630000, nep:3.8, costo_hab:2.80, dieta_mes:8000, color:'#16a34a'},
   {nombre:'🇨🇱 Chile',     hab_sen:390000,  nep:4.2, costo_hab:3.10, dieta_mes:4900, color:'#dc2626'},
@@ -514,13 +520,14 @@ const PAISES = [
   {nombre:'🇪🇸 España',    hab_sen:176000,  nep:4.8, costo_hab:5.80, dieta_mes:4000, color:'#d97706'},
   {nombre:'🌐 OCDE prom.', hab_sen:500000,  nep:3.9, costo_hab:8.50, dieta_mes:7900, color:'#64748b'},
 ];
+// PAISES_DATA:END
 
 function buildBars(containerId, data, maxVal, formatFn, unit) {
-  const el = document.getElementById(containerId);
+  var el = document.getElementById(containerId);
   if (!el) return;
   el.innerHTML = data.map(function(d) {
-    const w = (d.val / maxVal * 100).toFixed(1);
-    const hl = d.highlight ? 'font-weight:700;' : '';
+    var w = (d.val / maxVal * 100).toFixed(1);
+    var hl = d.highlight ? 'font-weight:700;' : '';
     return '<div style="display:flex;align-items:center;gap:.6rem;padding:.35rem 0;border-bottom:1px solid #f0f0f0">'
       + '<div style="min-width:140px;font-size:.78rem;'+hl+'">'+d.nombre+'</div>'
       + '<div style="flex:1;height:12px;background:#e2e8f0;border-radius:6px;overflow:hidden">'
@@ -531,25 +538,25 @@ function buildBars(containerId, data, maxVal, formatFn, unit) {
 }
 
 // Habitantes por senador
-const habData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.hab_sen, color:p.color, highlight:p.highlight}; })
-  .sort(function(a,b){ return a.val-b.val; });
+var habData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.hab_sen, color:p.color, highlight:p.highlight}; });
+habData.sort(function(a,b){ return a.val-b.val; });
 buildBars('bar-habitantes', habData, Math.max.apply(null, habData.map(function(d){return d.val;})),
   function(v){ return (v/1000).toFixed(0)+'K'; });
 
 // NEP
-const nepData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.nep, color:p.color, highlight:p.highlight}; })
-  .sort(function(a,b){ return b.val-a.val; });
+var nepData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.nep, color:p.color, highlight:p.highlight}; });
+nepData.sort(function(a,b){ return b.val-a.val; });
 buildBars('bar-nep', nepData, 8,
   function(v){ return v.toFixed(2); });
 
 // Costo por habitante USD
-const costoData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.costo_hab, color:p.color, highlight:p.highlight}; })
-  .sort(function(a,b){ return b.val-a.val; });
+var costoData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.costo_hab, color:p.color, highlight:p.highlight}; });
+costoData.sort(function(a,b){ return b.val-a.val; });
 buildBars('bar-costo-hab', costoData, 10,
   function(v){ return 'USD '+v.toFixed(2); });
 
 // Dietas
-const dietaData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.dieta_mes, color:p.color, highlight:p.highlight}; });
+var dietaData = PAISES.map(function(p){ return {nombre:p.nombre, val:p.dieta_mes, color:p.color, highlight:p.highlight}; });
 dietaData.push({nombre:'🇺🇸 EEUU (ref.)', val:14500, color:'#0891b2'});
 dietaData.sort(function(a,b){ return b.val-a.val; });
 buildBars('bar-dietas', dietaData, 15000,

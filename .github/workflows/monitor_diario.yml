@@ -46,13 +46,17 @@ jobs:
       - name: 📄 Actualizar versiones taquigráficas
         run: python scripts/actualizar_versiones_taq_senado.py
 
+      - name: 🌐 Actualizar comparativa internacional
+        run: python scripts/actualizar_comparativa_senado.py
+
       - name: 📤 Commit y push de datos
         run: |
           git config --global user.name  "Monitor Bot"
           git config --global user.email "bot@monitor-senado.ar"
           git add data/ dashboard/senado.html dashboard/indicadores_senadores.html \
                   dashboard/indicadores_bloques_senadores.html \
-                  dashboard/nomina_detalle_senadores.html
+                  dashboard/nomina_detalle_senadores.html \
+                  dashboard/comparativa_senado.html
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
           else
@@ -61,7 +65,8 @@ jobs:
             git stash pop
             git add data/ dashboard/senado.html dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
-                    dashboard/nomina_detalle_senadores.html
+                    dashboard/nomina_detalle_senadores.html \
+                    dashboard/comparativa_senado.html
             git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
             git push
           fi
