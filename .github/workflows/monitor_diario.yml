@@ -53,7 +53,7 @@ jobs:
         run: |
           git config --global user.name  "Monitor Bot"
           git config --global user.email "bot@monitor-senado.ar"
-          git add data/ dashboard/senado.html dashboard/indicadores_senadores.html \
+          git add dashboard/senado.html dashboard/indicadores_senadores.html \
                   dashboard/indicadores_bloques_senadores.html \
                   dashboard/nomina_detalle_senadores.html \
                   dashboard/comparativa_senado.html
@@ -63,7 +63,7 @@ jobs:
             git stash
             git pull --rebase origin main
             git stash pop
-            git add data/ dashboard/senado.html dashboard/indicadores_senadores.html \
+            git add dashboard/senado.html dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
                     dashboard/nomina_detalle_senadores.html \
                     dashboard/comparativa_senado.html
