@@ -12,6 +12,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from api.db_endpoints import router as db_router
 import pandas as pd
 from glob import glob
 
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
+
+app.include_router(db_router)
 
 # Servir dashboard como archivos estáticos
 _DASHBOARD = Path(__file__).parent.parent / "dashboard"
