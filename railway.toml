@@ -1,7 +1,4 @@
-﻿[build]
-builder = "nixpacks"
-
-[deploy]
+﻿[deploy]
 startCommand = "uvicorn api.run_senado:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/salud"
 healthcheckTimeout = 30
