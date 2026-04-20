@@ -22,3 +22,5 @@ psycopg2-binary
 # API
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
+
+# cache-bust: v2
