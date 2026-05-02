@@ -173,7 +173,14 @@ def raiz():
 def salud():
     csv = _latest_csv("senadores_*.csv")
     db_ok = bool(_DB_URL)
-    return {"status": "ok", "csv": csv.name if csv else None, "db_configurada": db_ok}
+    archivos = [f.name for f in _DASHBOARD.iterdir()] if _DASHBOARD.exists() else []
+    return {
+        "status": "ok",
+        "version": "debug-v1",
+        "csv": csv.name if csv else None,
+        "db_configurada": db_ok,
+        "dashboard_archivos": archivos
+    }
 
 @app.get("/senado/senadores")
 def get_senadores():
