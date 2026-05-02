@@ -6,6 +6,7 @@ Docs: http://localhost:8000/docs
 from __future__ import annotations
 import sys
 import os
+import mimetypes
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -13,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, Response
 import psycopg2
 import psycopg2.extras
 import pandas as pd
@@ -69,14 +70,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Dashboard: servido con FileResponse en lugar de StaticFiles ──────────────
+# ── Dashboard: lectura sincrónica directa, sin FileResponse ni aiofiles ──────
 
 @app.get("/dashboard/{filename}")
 def serve_dashboard(filename: str):
     file_path = _DASHBOARD / filename
-    if file_path.exists():
-        return FileResponse(file_path)
-    return JSONResponse(status_code=404, content={"error": f"{filename} no encontrado"})
+    if not file_path.exists():
+        return JSONResponse(status_code=404, content={"error": f"{filename} no encontrado"})
+    mime_type, _ = mimetypes.guess_type(filename)
+    content = file_path.read_bytes()
+    return Response(content=content, media_type=mime_type or "text/html")
 
 # ── Endpoints base de datos ──────────────────────────────────────────────────
 
