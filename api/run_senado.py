@@ -28,6 +28,8 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 _DASHBOARD = Path(__file__).parent.parent / "dashboard"
+_BASE_URL = "https://monitorlegistativosenadores-production.up.railway.app"
+
 print(f"📁 Dashboard path: {_DASHBOARD}, existe: {_DASHBOARD.exists()}")
 
 def _db():
@@ -70,7 +72,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Dashboard: lectura sincrónica directa, sin FileResponse ni aiofiles ──────
+# ── Dashboard: lectura sincrónica directa ────────────────────────────────────
 
 @app.get("/dashboard/{filename}")
 def serve_dashboard(filename: str):
@@ -80,15 +82,6 @@ def serve_dashboard(filename: str):
     mime_type, _ = mimetypes.guess_type(filename)
     content = file_path.read_bytes()
     return Response(content=content, media_type=mime_type or "text/html")
-@app.get("/test-html")
-def test_html():
-    file_path = _DASHBOARD / "senado.html"
-    return JSONResponse({
-        "exists": file_path.exists(),
-        "size": file_path.stat().st_size if file_path.exists() else 0,
-        "path": str(file_path),
-        "readable": file_path.is_file() if file_path.exists() else False
-    })
 
 # ── Endpoints base de datos ──────────────────────────────────────────────────
 
@@ -156,16 +149,17 @@ def raiz():
     return {
         "proyecto": "Monitor Legislativo — Senado Nacional Argentina",
         "version": "1.0.0",
+        "url_base": _BASE_URL,
         "endpoints": {
-            "senadores":          "/senado/senadores",
-            "reporte_partido":    "/senado/reporte-partido",
-            "reporte_provincial": "/senado/reporte-provincial",
-            "db_senadores":       "/db/senadores",
-            "db_fechas":          "/db/fechas",
-            "salud":              "/salud",
-            "docs":               "/docs",
-            "dashboard":          "/dashboard/senado.html",
-            "indicadores":        "/dashboard/indicadores.html",
+            "senadores":          f"{_BASE_URL}/senado/senadores",
+            "reporte_partido":    f"{_BASE_URL}/senado/reporte-partido",
+            "reporte_provincial": f"{_BASE_URL}/senado/reporte-provincial",
+            "db_senadores":       f"{_BASE_URL}/db/senadores",
+            "db_fechas":          f"{_BASE_URL}/db/fechas",
+            "salud":              f"{_BASE_URL}/salud",
+            "docs":               f"{_BASE_URL}/docs",
+            "dashboard":          f"{_BASE_URL}/dashboard/senado.html",
+            "indicadores":        f"{_BASE_URL}/dashboard/indicadores.html",
         },
     }
 
@@ -173,14 +167,7 @@ def raiz():
 def salud():
     csv = _latest_csv("senadores_*.csv")
     db_ok = bool(_DB_URL)
-    archivos = [f.name for f in _DASHBOARD.iterdir()] if _DASHBOARD.exists() else []
-    return {
-        "status": "ok",
-        "version": "debug-v1",
-        "csv": csv.name if csv else None,
-        "db_configurada": db_ok,
-        "dashboard_archivos": archivos
-    }
+    return {"status": "ok", "csv": csv.name if csv else None, "db_configurada": db_ok}
 
 @app.get("/senado/senadores")
 def get_senadores():
