@@ -13,8 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, FileResponse
 import psycopg2
 import psycopg2.extras
 import pandas as pd
@@ -26,6 +25,9 @@ _DB_URL = _raw_db_url.replace("postgres://", "postgresql://", 1)
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+_DASHBOARD = Path(__file__).parent.parent / "dashboard"
+print(f"📁 Dashboard path: {_DASHBOARD}, existe: {_DASHBOARD.exists()}")
 
 def _db():
     if not _DB_URL:
@@ -67,15 +69,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Servir dashboard como archivos estáticos
-_DASHBOARD = Path(__file__).parent.parent / "dashboard"
-print(f"📁 Dashboard path: {_DASHBOARD}")
-print(f"📁 Dashboard existe: {_DASHBOARD.exists()}")
-if _DASHBOARD.exists():
-    print(f"📁 Archivos: {[f.name for f in _DASHBOARD.iterdir()]}")
-    app.mount("/dashboard", StaticFiles(directory=str(_DASHBOARD), html=True), name="dashboard")
-else:
-    print("⚠️  Dashboard directory NOT FOUND en Railway")
+# ── Dashboard: servido con FileResponse en lugar de StaticFiles ──────────────
+
+@app.get("/dashboard/{filename}")
+def serve_dashboard(filename: str):
+    file_path = _DASHBOARD / filename
+    if file_path.exists():
+        return FileResponse(file_path)
+    return JSONResponse(status_code=404, content={"error": f"{filename} no encontrado"})
 
 # ── Endpoints base de datos ──────────────────────────────────────────────────
 
