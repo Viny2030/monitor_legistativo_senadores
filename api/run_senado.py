@@ -25,19 +25,16 @@ _raw_db_url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_
 _DB_URL = _raw_db_url.replace("postgres://", "postgresql://", 1)
 
 DATA_DIR = Path(__file__).parent.parent / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)  # Crea data/ si no existe (Railway no lo incluye)
-
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def _db():
     if not _DB_URL:
         raise RuntimeError("DATABASE_URL no está configurada")
     return psycopg2.connect(_DB_URL)
 
-
 def _latest_csv(pattern: str) -> Path | None:
     files = sorted(glob(str(DATA_DIR / pattern)), reverse=True)
     return Path(files[0]) if files else None
-
 
 # ── Lifespan: inicializa tablas DB al arrancar ───────────────────────────────
 
@@ -53,7 +50,6 @@ async def lifespan(app: FastAPI):
     else:
         print("⚠️  DATABASE_URL no configurada — endpoints /db/* no disponibles")
     yield
-
 
 # ── App ──────────────────────────────────────────────────────────────────────
 
@@ -73,9 +69,13 @@ app.add_middleware(
 
 # Servir dashboard como archivos estáticos
 _DASHBOARD = Path(__file__).parent.parent / "dashboard"
+print(f"📁 Dashboard path: {_DASHBOARD}")
+print(f"📁 Dashboard existe: {_DASHBOARD.exists()}")
 if _DASHBOARD.exists():
+    print(f"📁 Archivos: {[f.name for f in _DASHBOARD.iterdir()]}")
     app.mount("/dashboard", StaticFiles(directory=str(_DASHBOARD), html=True), name="dashboard")
-
+else:
+    print("⚠️  Dashboard directory NOT FOUND en Railway")
 
 # ── Endpoints base de datos ──────────────────────────────────────────────────
 
@@ -94,7 +94,6 @@ def db_senadores(fecha: str = None):
     except Exception as e:
         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
 
-
 @app.get("/db/reporte-partido")
 def db_reporte_partido(fecha: str = None):
     try:
@@ -109,7 +108,6 @@ def db_reporte_partido(fecha: str = None):
         return {"reporte_partido": rows}
     except Exception as e:
         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
-
 
 @app.get("/db/reporte-provincial")
 def db_reporte_provincial(fecha: str = None):
@@ -126,7 +124,6 @@ def db_reporte_provincial(fecha: str = None):
     except Exception as e:
         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
 
-
 @app.get("/db/fechas")
 def db_fechas():
     try:
@@ -138,7 +135,6 @@ def db_fechas():
         return {"fechas": fechas}
     except Exception as e:
         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
-
 
 # ── Endpoints raíz y salud ───────────────────────────────────────────────────
 
@@ -160,13 +156,11 @@ def raiz():
         },
     }
 
-
 @app.get("/salud")
 def salud():
     csv = _latest_csv("senadores_*.csv")
     db_ok = bool(_DB_URL)
     return {"status": "ok", "csv": csv.name if csv else None, "db_configurada": db_ok}
-
 
 @app.get("/senado/senadores")
 def get_senadores():
@@ -200,7 +194,6 @@ def get_senadores():
         })
     return JSONResponse({"ok": True, "total": len(registros), "senadores": registros, "fuente": csv.name})
 
-
 @app.get("/senado/reporte-partido")
 def get_reporte_partido():
     csv = _latest_csv("reporte_partido_senado_*.csv")
@@ -209,7 +202,6 @@ def get_reporte_partido():
     df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
     return JSONResponse({"ok": True, "total": len(df), "partidos": df.to_dict("records"), "fuente": csv.name})
 
-
 @app.get("/senado/reporte-provincial")
 def get_reporte_provincial():
     csv = _latest_csv("reporte_provincial_senado_*.csv")
@@ -217,7 +209,6 @@ def get_reporte_provincial():
         return JSONResponse({"ok": False, "provincias": [], "fuente": "csv_no_encontrado"})
     df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
     return JSONResponse({"ok": True, "total": len(df), "provincias": df.to_dict("records"), "fuente": csv.name})
-
 
 if __name__ == "__main__":
     import uvicorn
