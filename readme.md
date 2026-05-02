@@ -1,165 +1,204 @@
-# 🏛️ Monitor Legislativo — Senado de la Nación Argentina
+# 🏛️ Monitor Legislativo — Senado Nacional Argentina
 
-**Versión 1.0 · Marzo 2026**
+Monitor automático de los **72 senadores nacionales** con indicadores de participación, votaciones y distribución político-territorial. Sin base de datos, sin backend obligatorio — funciona como HTML estático o con FastAPI.
 
-Monitor de eficiencia legislativa y transparencia presupuestaria del Honorable Senado de la Nación Argentina. Analiza la composición y el desempeño de los 72 senadores en ejercicio a partir de registros oficiales del HSN, el SIL y la OPC.
+---
+
+## 📐 Arquitectura
+
+```
+monitor_legistativo_senadores/
+│
+├── dashboard/                   # ◀ Frontend HTML estático (Opción A: abrir directo en browser)
+│   ├── senado.html              #   Nómina de 72 senadores con filtros, tabla y tarjetas
+│   └── indicadores.html         #   KPIs, rankings, gráficos por partido y provincia
+│
+├── api/
+│   ├── main.py                  # API completa (requiere data_loader e indicadores/)
+│   └── run_senado.py            # ◀ API standalone solo-senado (recomendado para pruebas)
+│
+├── core/
+│   └── senadores.py             # Lógica de cálculo de indicadores del Senado
+│
+├── scrapers/
+│   └── senadores.py             # Scraper de argentinadatos.com — Senado
+│
+├── scripts/
+│   ├── actualizacion_tel.py     # Actualiza teléfonos de senadores
+│   ├── actualizar_bipartisan.py # Calcula índices bipartidistas
+│   ├── actualizar_tc.py         # Tasa de conversión proyectos → leyes
+│   ├── calendario.py            # Calendario legislativo
+│   └── monitorear_dieta.py      # Monitor de dieta parlamentaria
+│
+├── data/                        # CSVs generados automáticamente (no editar a mano)
+│   ├── senadores_YYYY-MM-DD.csv           # Nómina completa con votos
+│   ├── reporte_partido_senado_*.csv       # Agregado por bloque político
+│   └── reporte_provincial_senado_*.csv    # Agregado por provincia
+│
+├── scraper_senadores.py         # Entry point del scraper (modo legacy)
+├── pipeline.py                  # Pipeline completo de actualización
+├── requirements.txt
+└── README.md
+```
+
+### Flujo de datos
+
+```
+argentinadatos.com/api
+        │
+        ▼
+scrapers/senadores.py ──► data/senadores_YYYY-MM-DD.csv
+                      ──► data/reporte_partido_senado_*.csv
+                      ──► data/reporte_provincial_senado_*.csv
+                                │
+              ┌─────────────────┴──────────────────┐
+              ▼                                     ▼
+    api/run_senado.py                    dashboard/senado.html
+    GET /senado/senadores                (fallback embebido: 72 senadores)
+    GET /senado/reporte-partido          (Opción B: sin servidor)
+    GET /senado/reporte-provincial
+              │
+              ▼
+    dashboard/senado.html  ◄─ fetch() al servidor
+    dashboard/indicadores.html
+```
+
+---
+
+## 🚀 Inicio rápido
+
+### Opción A — Sin servidor (HTML estático)
+
+Los datos de los 72 senadores están **embebidos directamente** en el HTML como fallback. Basta con abrir el archivo en cualquier browser:
+
+```bash
+# Clonar y abrir
+git clone https://github.com/Viny2030/monitor_legistativo_senadores.git
+cd monitor_legistativo_senadores/dashboard
+open senado.html          # macOS
+xdg-open senado.html      # Linux
+start senado.html         # Windows
+```
+
+Los datos del fallback se actualizan con cada push al repo (ver pipeline más abajo).
+
+---
+
+### Opción B — Con API FastAPI (datos en tiempo real)
+
+```bash
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Levantar la API standalone de Senado
+python api/run_senado.py
+```
+
+La API queda disponible en:
+
+| URL | Descripción |
+|-----|-------------|
+| `http://localhost:8000/docs` | Swagger UI interactivo |
+| `http://localhost:8000/senado/senadores` | 72 senadores con datos completos |
+| `http://localhost:8000/senado/reporte-partido` | Agregado por bloque político |
+| `http://localhost:8000/senado/reporte-provincial` | Agregado por provincia |
+| `http://localhost:8000/dashboard/senado.html` | Dashboard servido por la API |
+| `http://localhost:8000/dashboard/indicadores.html` | Indicadores servidos por la API |
+
+> El dashboard detecta automáticamente si la API está corriendo (`http://localhost:8000`). Si no responde, usa el fallback embebido sin interrumpir la experiencia.
 
 ---
 
 ## 📊 Dashboard
 
-| Archivo | Descripción |
-|---------|-------------|
-| `dashboard/indicadores_senadores.html` | Nómina completa, composición por bloque y provincia, 12 indicadores en 4 dimensiones, donación |
-| `dashboard/indicadores2_senadores.html` | Todos los indicadores de cámara y bloque con datos reales 2025 |
-| `dashboard/indicadores_bloques_senadores.html` | Indicadores calculados automáticamente por bloque, tabla ordenable, 4 rankings |
-| `dashboard/nomina_detalle_senadores.html` | Cards individuales con 8 indicadores activos, vista cards/lista, filtros |
-| `dashboard/metodologia_senadores.html` | Marco institucional, diferencias vs Diputados, fórmulas, fuentes, bibliografía |
-| `dashboard/manual_senadores.html` | Guía completa de uso del monitor |
+### `senado.html`
+- Tabla completa de los 72 senadores con foto, partido, provincia y métricas
+- Filtros en tiempo real: nombre, partido, provincia, rol
+- Ranking por participación
+- KPIs globales: participación promedio, bloques, votos totales
+- Tarjetas por bloque político
+
+### `indicadores.html`
+- KPIs: total senadores, participación promedio, bandas alta/media/baja
+- Tabla por bloque: barras de participación, votos afirmativos/negativos/abstenciones
+- Tabla por provincia: ranking de 24 provincias con participación
+- Ranking Top 15 mayor participación
+- Ranking 15 menor participación (con datos registrados)
 
 ---
 
-## 📐 Indicadores — estado v1.0
-
-### ✅ Activos (datos reales 2025)
-
-| Código | Nombre | Valor 2025 | Fuente |
-|--------|--------|-----------|--------|
-| NEP | Número Efectivo de Partidos | calculado en tiempo real | HSN nómina oficial |
-| IF | Índice de Fragmentación (Rae) | calculado en tiempo real | HSN nómina oficial |
-| IRB | Tasa de Renovación por Tercio | 33,3% (Grupo III — 24 bancas) | CN Art. 56 · elecciones 26/10/2025 |
-| IRG | Representación Geográfica | igualitaria — 3/provincia | CN Art. 54 |
-| CRC | Costo por Ciudadano | ~$2.890 / hab. | DA 3/2025 · INDEC |
-| RLS | Legislación Sustantiva | 72,7% · 3 insistencias históricas | Directorio Legislativo 2025 |
-| COLS | Costo por Ley Sancionada | ~$10.446 MM / ley | DA 3/2025 · Dir. Legislativo |
-| ECO | Efectividad del Control | 3/3 insistencias + 2 pliegos rechazados | senado.gob.ar/votaciones |
-| IAD | Accesibilidad Documental | 4/5 — JSON + Excel disponibles | senado.gob.ar/DatosAbiertos |
-| TVD | Veracidad de Datos | ~98% nómina verificada | JSON oficial HSN |
-
-### ⚠️ Estimación parcial
-
-| Código | Nombre | Estado |
-|--------|--------|--------|
-| IAP | Autonomía Presupuestaria | ~0,92 estimado — ejecución exacta en PDFs trimestrales HSN |
-| RPS | Profesionalización del Staff | pendiente desglose planta/transitorio RRHH HSN |
-| NAPE | Asistencia Efectiva | estimación parcial — dato exacto en estadísticas HSN |
-
-### 🔜 Planificado v2.0
-
-| Código | Nombre | Versión |
-|--------|--------|---------|
-| TPMP | Maduración de Proyectos | v1.1 — requiere SIL |
-| ITC | Trabajo en Comisiones | v1.1 — requiere actas comisión |
-| IPCV | Participación Ciudadana Virtual | v2.0 — módulo ciudadano Q3 2026 |
-
----
-
-## 🏛️ Marco constitucional
-
-| Característica | Senado | Diputados |
-|---|---|---|
-| Composición | 72 senadores | 257 diputados |
-| Representación | 3 por provincia (igualitaria) | Proporcional a la población |
-| Mandato | 6 años | 4 años |
-| Renovación | Por tercios cada 2 años | Por mitades cada 2 años |
-| Quórum | 37 (mayoría de 72) | 129 (mayoría de 257) |
-| Sistema electoral | 2+1 (mayoría + minoría) | D'Hondt proporcional |
-| Open Data | JSON + Excel disponibles | Solo PDF + HTML |
-
-### Grupos de renovación por tercios
-
-- **Grupo I (2021–2027):** Catamarca, Córdoba, Corrientes, Chubut, La Pampa, Mendoza, Santa Fe, Tucumán
-- **Grupo II (2023–2029):** Buenos Aires, Formosa, Jujuy, La Rioja, Misiones, San Juan, San Luis, Santa Cruz
-- **Grupo III (2025–2031):** Chaco, CABA, Entre Ríos, Neuquén, Río Negro, Salta, Santiago del Estero, Tierra del Fuego
-
----
-
-## 🗂️ Estructura del repositorio
-
-```
-monitor_legistativo_senadores/
-├── dashboard/
-│   ├── indicadores_senadores.html
-│   ├── indicadores2_senadores.html
-│   ├── indicadores_bloques_senadores.html
-│   ├── nomina_detalle_senadores.html
-│   ├── metodologia_senadores.html
-│   └── manual_senadores.html
-├── foto.jpg
-└── README.md
-```
-
----
-
-## ⚙️ Uso local
-
-No requiere servidor. Clonar el repositorio y abrir cualquier archivo HTML directamente en el navegador:
+## 🔄 Pipeline de actualización
 
 ```bash
-git clone https://github.com/Viny2030/monitor_legistativo_senadores.git
+# Actualizar datos manualmente
+python pipeline.py
 ```
 
+O con el scraper directo:
+
+```bash
+python scraper_senadores.py
 ```
-file:///ruta/al/repo/dashboard/indicadores_senadores.html
+
+Los CSVs resultantes se guardan en `data/` con la fecha del día. El fallback embebido en los HTML debe actualizarse en cada release (ver sección Contribuir).
+
+### GitHub Actions (automático)
+
+El pipeline corre cada día a las **08:00 hora Argentina** y pushea los nuevos CSVs al repositorio. Ver `.github/workflows/` para la configuración.
+
+---
+
+## 📦 Dependencias
+
+```txt
+requests, beautifulsoup4, lxml, httpx   # scraping
+pandas, numpy, openpyxl                  # datos
+holidays, python-dateutil                # utilitarios
+fastapi, uvicorn                         # API (opcional)
 ```
 
-### Actualización de datos
-
-Los indicadores de composición (NEP, IF, IRB) se recalculan automáticamente en el navegador. Para actualizar la nómina:
-
-1. Descargar el JSON oficial: `senado.gob.ar/micrositios/DatosAbiertos/ExportarListadoSenadores/json`
-2. Reemplazar el array `SENADORES` en los archivos HTML
-3. Los indicadores se recalculan al recargar la página
-
-### Frecuencia recomendada
-
-| Dato | Frecuencia | Evento disparador |
-|------|-----------|-------------------|
-| Nómina de senadores | Por tercios | Renovación de diciembre (años impares) |
-| Cambios de bloque | Mensual | Altas, bajas, fusiones |
-| CRC / COLS | Anual | Aprobación del presupuesto |
-| RLS / ECO | Anual | Balance legislativo de fin de año |
+Instalar todo:
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## 📚 Fuentes de datos
+## 📐 Indicadores calculados
 
-| Fuente | URL | Datos |
-|--------|-----|-------|
-| HSN — Bloques | [senado.gob.ar/senadores](https://www.senado.gob.ar/senadores/listados/agrupados-por-bloques) | Nómina, bloque, provincia |
-| HSN — JSON abierto | [DatosAbiertos/json](https://www.senado.gob.ar/micrositios/DatosAbiertos/ExportarListadoSenadores/json) | Nómina estructurada |
-| HSN — Presupuesto | [administrativo/partida](https://www.senado.gob.ar/administrativo/partida) | Partidas y ejecución trimestral |
-| HSN — Estadísticas | [parlamentario/estadisticas](https://www.senado.gob.ar/parlamentario/estadisticas) | Asistencia, sesiones |
-| OPC | [opc.gob.ar](https://opc.gob.ar) | Análisis presupuestario |
-| Directorio Legislativo | [directoriolegislativo.org](https://directoriolegislativo.org) | Balance legislativo 2025 |
-| INDEC | [indec.gob.ar](https://www.indec.gob.ar) | Proyecciones de población |
+| Campo | Descripción |
+|-------|-------------|
+| `participation_pct` | % votos emitidos sobre total de sesiones en período |
+| `votos_afirmativos` | Total votos a favor |
+| `votos_negativos` | Total votos en contra |
+| `abstenciones` | Abstenciones registradas |
+| `ausencias` | Sesiones sin presencia |
+| `votos_total` | Total sesiones con voto registrado |
 
----
-
-## 📖 Marco teórico
-
-- Laakso, M. y Taagepera, R. (1979). *Effective Number of Parties*. Comparative Political Studies.
-- Rae, D. W. (1967). *The Political Consequences of Electoral Laws*. Yale University Press.
-- Mustapic, A. M. (2002). *Oscillating Relations: President and Congress in Argentina*. Cambridge University Press.
-- IPU — Inter-Parliamentary Union (2022). *Parline Database on National Parliaments*.
-- CPA-Zentralstelle (2019). *Benchmarking and Self-Assessment for Parliaments*.
+La participación se calcula como:
+```
+participation_pct = (votos_afirmativos + votos_negativos + abstenciones) / votos_total × 100
+```
 
 ---
 
-## ⚠️ Aviso legal
+## 🗺️ Fuente de datos
 
-Esta herramienta es de carácter experimental y académico. Los datos provienen de fuentes públicas oficiales del Estado argentino. Los resultados son indicadores algorítmicos — no implican juicio de valor, acusación ni determinación de responsabilidad sobre ninguna empresa, organismo o persona.
-
----
-
-## 👤 Autor
-
-**Ph.D. Vicente Humberto Monteverde**
-Doctor en Ciencias Económicas · Investigador en economía política y fenómenos de corrupción.
-Autor de la teoría de Transferencia Regresiva de Ingresos y desarrollador del algoritmo XAI aplicado al análisis de contrataciones públicas. Publicaciones en *Journal of Financial Crime* (Emerald Publishing).
-
-✉️ vhmonte@retina.ar · viny01958@gmail.com
+- **Nómina y votaciones:** [argentinadatos.com](https://argentinadatos.com) — API pública del Honorable Senado de la Nación Argentina
+- **Fotos:** `https://api.argentinadatos.com/static/senado/senadores/{id}.gif`
+- **Frecuencia de actualización:** diaria (GitHub Actions) o manual con `pipeline.py`
 
 ---
 
-*Monitor Legislativo Senado v1.0 · Marzo 2026 · [github.com/Viny2030/monitor_legistativo_senadores](https://github.com/Viny2030/monitor_legistativo_senadores)*
+## 🤝 Contribuir
+
+1. Fork del repo
+2. Actualizar datos: `python pipeline.py` → nuevos CSVs en `data/`
+3. Regenerar fallback HTML: el script `pipeline.py` actualiza `dashboard/senado.html` e `indicadores.html` automáticamente
+4. PR con los cambios
+
+---
+
+## 📄 Licencia
+
+MIT — datos públicos del Honorable Senado de la Nación Argentina.
