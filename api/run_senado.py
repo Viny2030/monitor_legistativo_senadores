@@ -173,21 +173,24 @@ def db_fechas():
 
 # ── Endpoints raíz y salud ───────────────────────────────────────────────────
 
+_BASE = "https://monitorlegistativosenadores-production.up.railway.app"
+
 @app.get("/")
 def raiz():
     return {
         "proyecto": "Monitor Legislativo — Senado Nacional Argentina",
         "version": "1.0.0",
+        "url_base": _BASE,
         "endpoints": {
-            "senadores":          "/senado/senadores",
-            "reporte_partido":    "/senado/reporte-partido",
-            "reporte_provincial": "/senado/reporte-provincial",
-            "db_senadores":       "/db/senadores",
-            "db_fechas":          "/db/fechas",
-            "salud":              "/salud",
-            "docs":               "/docs",
-            "dashboard":          "/dashboard/senado.html",
-            "indicadores":        "/dashboard/indicadores.html",
+            "senadores":          f"{_BASE}/senado/senadores",
+            "reporte_partido":    f"{_BASE}/senado/reporte-partido",
+            "reporte_provincial": f"{_BASE}/senado/reporte-provincial",
+            "db_senadores":       f"{_BASE}/db/senadores",
+            "db_fechas":          f"{_BASE}/db/fechas",
+            "salud":              f"{_BASE}/salud",
+            "docs":               f"{_BASE}/docs",
+            "dashboard":          f"{_BASE}/dashboard/senado.html",
+            "indicadores":        f"{_BASE}/dashboard/indicadores.html",
         },
     }
 
