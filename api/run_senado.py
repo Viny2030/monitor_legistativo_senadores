@@ -80,6 +80,13 @@ def serve_dashboard(filename: str):
     mime_type, _ = mimetypes.guess_type(filename)
     content = file_path.read_bytes()
     return Response(content=content, media_type=mime_type or "text/html")
+@app.get("/test-html")
+def test_html():
+    file_path = _DASHBOARD / "senado.html"
+    if not file_path.exists():
+        return JSONResponse({"error": "file not found", "path": str(file_path)})
+    content = file_path.read_bytes()
+    return Response(content=content, media_type="text/html")
 
 # ── Endpoints base de datos ──────────────────────────────────────────────────
 
