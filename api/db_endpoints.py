@@ -3,7 +3,8 @@ from fastapi import APIRouter
 import psycopg2
 import psycopg2.extras
 
-DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL")
+_raw = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL") or ""
+DATABASE_URL = _raw.replace("postgres://", "postgresql://", 1)
 
 router = APIRouter(prefix="/db", tags=["base de datos"])
 

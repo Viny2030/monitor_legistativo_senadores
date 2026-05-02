@@ -1,7 +1,8 @@
 import os
 import psycopg2
 
-DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL")
+_raw = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL") or ""
+DATABASE_URL = _raw.replace("postgres://", "postgresql://", 1)
 
 def crear_tablas():
     conn = psycopg2.connect(DATABASE_URL)
