@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DDJJ & Bibliografía – Monitor Legislativo Senado Argentina</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.65; }
+
+header { background: linear-gradient(135deg, #6b0f1a 0%, #8b1a2a 50%, #4a0010 100%); color:#fff; padding:1.4rem 2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap; position:relative; overflow:hidden; }
+header::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.02) 40px,rgba(255,255,255,.02) 80px); }
+header .escudo { font-size:2.4rem; position:relative; z-index:1; }
+header .hw { position:relative; z-index:1; }
+header h1 { font-size:1.35rem; font-weight:700; }
+header p  { font-size:.875rem; opacity:.85; margin-top:.2rem; }
+header nav { margin-left:auto; display:flex; gap:.5rem; flex-wrap:wrap; position:relative; z-index:1; }
+header nav a { color:#fff; text-decoration:none; background:rgba(255,255,255,.18); padding:.4rem 1rem; border-radius:20px; font-size:.82rem; font-weight:600; transition:background .15s; border:1px solid rgba(255,255,255,.15); }
+header nav a:hover { background:rgba(255,255,255,.35); }
+header nav a.active { background:rgba(255,255,255,.4); border-color:rgba(255,255,255,.6); }
+
+/* ── Tabs ── */
+.tabs {
+  background:#fff; border-bottom: 2px solid #e2e8f0;
+  display:flex; flex-wrap:wrap; padding:0 1.5rem;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+.tab-btn {
+  background:none; border:none; cursor:pointer;
+  font-size:.88rem; font-weight:600; color:#64748b;
+  padding:.85rem 1.4rem; border-bottom:3px solid transparent;
+  margin-bottom:-2px; transition:color .15s, border-color .15s;
+  white-space:nowrap;
+}
+.tab-btn.active { color:#6b0f1a; border-bottom-color:#6b0f1a; }
+.tab-btn:hover  { color:#6b0f1a; }
+.tab-btn.donar  { color:#c9973a !important; }
+
+.tab-content { display:none; padding:1.8rem 2rem 3rem; max-width:960px; margin:0 auto; }
+.tab-content.active { display:block; }
+
+/* ── DDJJ ── */
+.ddjj-box {
+  background:#fff8e1; border:1.5px solid #f0b429;
+  border-radius:8px; padding:1.3rem 1.5rem; margin-bottom:1.5rem;
+}
+.ddjj-box h3 { font-size:1rem; font-weight:700; color:#7a5000; margin-bottom:.5rem; }
+.ddjj-box p  { font-size:.88rem; color:#555; margin-bottom:.8rem; }
+.ddjj-box p:last-child { margin-bottom:0; }
+
+.link-list { list-style:none; display:flex; flex-direction:column; gap:.75rem; }
+.link-list li {
+  background:#fff; border-radius:8px; border:1px solid #dde2ec;
+  padding:.85rem 1.1rem; transition:box-shadow .15s;
+}
+.link-list li:hover { box-shadow:0 2px 10px rgba(107,15,26,.1); }
+.link-list li a { font-size:.88rem; font-weight:700; color:#6b0f1a; text-decoration:none; }
+.link-list li a:hover { text-decoration:underline; }
+.link-list li .desc { font-size:.78rem; color:#64748b; margin-top:.3rem; }
+
+.alerta-verde {
+  margin-top:1.5rem; background:#e8f5e9;
+  border-left:4px solid #2e7d32; padding:.9rem 1.2rem;
+  border-radius:5px; font-size:.85rem;
+}
+.alerta-azul {
+  margin-top:1rem; background:#e3f2fd;
+  border-left:4px solid #1565c0; padding:.9rem 1.2rem;
+  border-radius:5px; font-size:.85rem;
+}
+
+/* ── Bibliografía ── */
+.biblio-section { margin-bottom:2rem; }
+.biblio-section h3 {
+  font-size:.95rem; font-weight:700; color:#6b0f1a;
+  margin-bottom:1rem; padding-bottom:.4rem;
+  border-bottom:2px solid #e8c5ca;
+}
+.biblio-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:.75rem; }
+.biblio-card {
+  background:#fff; border-radius:7px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+  padding:.9rem 1rem; border-top:3px solid #6b0f1a;
+}
+.biblio-card .btype { font-size:.68rem; font-weight:700; color:#6b0f1a; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.3rem; }
+.biblio-card .btitle { font-size:.88rem; font-weight:600; color:#1a1a2e; margin-bottom:.2rem; line-height:1.35; }
+.biblio-card .bauthor { font-size:.78rem; color:#555; margin-bottom:.3rem; }
+.biblio-card .blink a { font-size:.78rem; color:#6b0f1a; text-decoration:none; word-break:break-all; }
+.biblio-card .blink a:hover { text-decoration:underline; }
+
+/* ── Donación footer ── */
+.footer-nota { background:#1e293b; color:#94a3b8; font-size:.75rem; padding:1rem 1.5rem; line-height:1.7; }
+.footer-nota strong { color:#e2e8f0; }
+.footer-credits { background:#0f172a; color:#475569; text-align:center; padding:.5rem; font-size:.72rem; }
+.footer-credits a { color:#60a5fa; text-decoration:none; }
+.footer-donacion { background:#0f172a; padding:2rem 1.5rem; text-align:center; }
+
+/* ── Modal Donación ── */
+.don-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem; }
+.don-overlay.open { display:flex; }
+.don-modal { background:#0f172a; border-radius:16px; max-width:860px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.5); animation:donIn .2s ease; }
+@keyframes donIn { from{opacity:0;transform:translateY(20px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.don-header { background:linear-gradient(135deg,#1e293b,#0f172a); padding:1.4rem 1.5rem 1rem; border-bottom:1px solid #1e293b; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; }
+.don-header-txt h2 { color:#e2e8f0; font-size:1rem; font-weight:700; }
+.don-header-txt p  { color:#64748b; font-size:.78rem; margin-top:.2rem; }
+.don-cerrar { background:rgba(255,255,255,.1); border:none; color:#94a3b8; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+.don-cerrar:hover { background:rgba(255,255,255,.2); color:#fff; }
+.don-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(195px,1fr)); gap:.85rem; padding:1.2rem 1.4rem; }
+.don-card { background:#1e293b; border-radius:10px; padding:1rem 1.1rem; border:1px solid #334155; }
+.don-card-title { font-size:.72rem; font-weight:700; color:#38bdf8; margin-bottom:.75rem; letter-spacing:.07em; }
+.don-field { margin-bottom:.55rem; }
+.don-label { font-size:.62rem; color:#64748b; text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:.1rem; }
+.don-value { font-size:.8rem; color:#e2e8f0; }
+.don-value.hl { color:#34d399; font-weight:700; font-family:'Courier New',monospace; word-break:break-all; }
+.don-copy { background:none; border:1px solid #334155; color:#94a3b8; border-radius:4px; padding:.1rem .4rem; font-size:.65rem; cursor:pointer; margin-left:.35rem; }
+.don-copy:hover { background:#334155; color:#fff; }
+.don-autor { display:flex; align-items:center; gap:.85rem; }
+.don-foto-au { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #334155; }
+.don-autor-nombre { font-size:.88rem; font-weight:700; color:#e2e8f0; }
+.don-autor-rol { font-size:.72rem; color:#64748b; }
+.don-autor-links a { color:#38bdf8; font-size:.75rem; text-decoration:none; display:block; margin-top:.25rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="escudo">🏛️</span>
+  <div class="hw">
+    <h1>Monitor Legislativo · DDJJ & Bibliografía — Senado Nacional</h1>
+    <p>Declaraciones Juradas Patrimoniales · Fuentes · Marco Normativo · Literatura</p>
+  </div>
+  <nav>
+    <a href="https://monitorlegistativo-production.up.railway.app/dashboard/" target="_blank">🏠 Diputados ↗</a>
+    <a href="senado.html">🏛️ Senado</a>
+    <a href="indicadores.html">📊 Indicadores</a>
+    <a href="nomina_detalle_senadores.html">👥 Detalle</a>
+    <a href="metodologia.html">📚 Metodología</a>
+    <a href="ddjj_senadores.html" class="active">📋 DDJJ</a>
+    <a href="#" onclick="abrirDonacion();return false;" style="background:rgba(255,165,0,.25);border:1px solid rgba(255,165,0,.5);">💙 Donar</a>
+  </nav>
+</header>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('ddjj',event)">📋 DDJJ Legisladores</button>
+  <button class="tab-btn" onclick="showTab('bibliografia',event)">📚 Bibliografía</button>
+  <button class="tab-btn" onclick="showTab('normativa',event)">⚖️ Marco Normativo</button>
+  <button class="tab-btn donar" onclick="abrirDonacion();return false;">💙 Donar</button>
+</div>
+
+<!-- ══ TAB DDJJ ══ -->
+<div id="tab-ddjj" class="tab-content active">
+
+  <div class="ddjj-box">
+    <h3>⚠️ Sobre el acceso a las DDJJ del Senado</h3>
+    <p>El portal del Senado no ofrece descarga programática de declaraciones juradas: requiere navegación manual y no expone una API pública accesible. Por esa razón, este monitor <strong>no extrae DDJJ directamente</strong> del sitio oficial.</p>
+    <p>Las Declaraciones Juradas Patrimoniales Integrales (DJPI) de los senadores nacionales son administradas por la <strong>Oficina Anticorrupción (OA)</strong> en el marco de la Ley N° 25.188 y su modificatoria Ley N° 26.857. La parte pública puede ser consultada de forma gratuita en los portales oficiales:</p>
+  </div>
+
+  <h3 style="font-size:.95rem;font-weight:700;color:#6b0f1a;margin-bottom:1rem;">🔗 Portales oficiales para consultar DDJJ de Senadores</h3>
+  <ul class="link-list">
+    <li>
+      <a href="https://www.argentina.gob.ar/servicio/consultar-declaraciones-juradas-de-funcionarios-publicos" target="_blank">🏛️ Consultar DDJJ – Oficina Anticorrupción (OA)</a>
+      <div class="desc">Portal oficial de la OA para consulta ciudadana de DJPI de funcionarios públicos, incluyendo senadores nacionales.</div>
+    </li>
+    <li>
+      <a href="https://www.senado.gob.ar/institucional/transparencia/declaraciones_juradas" target="_blank">📋 DDJJ – Honorable Senado de la Nación (HCSN)</a>
+      <div class="desc">Página de transparencia del Senado con información sobre el procedimiento y acceso a las declaraciones juradas patrimoniales.</div>
+    </li>
+    <li>
+      <a href="https://datos.gob.ar/dataset/justicia-declaraciones-juradas-patrimoniales-integrales-caracter-publico" target="_blank">📂 Dataset DDJJ en formato abierto – datos.gob.ar</a>
+      <div class="desc">Las DJPI en formato abierto. Incluye legisladores nacionales desde 2012.</div>
+    </li>
+    <li>
+      <a href="https://www.argentina.gob.ar/anticorrupcion" target="_blank">🔍 Oficina Anticorrupción – Portal principal</a>
+      <div class="desc">Organismo responsable del Sistema DJPI. Publica listados de funcionarios cumplidores e incumplidores.</div>
+    </li>
+    <li>
+      <a href="https://www.senado.gob.ar/institucional/transparencia" target="_blank">🏛️ Portal de Transparencia – Senado de la Nación</a>
+      <div class="desc">Sección completa de transparencia del Senado: presupuesto, nómina de personal, contratos y DDJJ.</div>
+    </li>
+    <li>
+      <a href="https://www.agn.gob.ar/informes" target="_blank">🔎 Auditoría General de la Nación – Informes sobre el Senado</a>
+      <div class="desc">Informes de auditoría sobre la gestión del Honorable Senado de la Nación.</div>
+    </li>
+  </ul>
+
+  <div class="alerta-verde">
+    <strong>📌 Dato clave:</strong> Según la Ley N° 26.857, la parte pública de las DJPI debe publicarse dentro de los <strong>10 días hábiles</strong> desde su presentación. El vencimiento anual opera el <strong>30 de mayo</strong> de cada año.
+  </div>
+
+  <div class="alerta-azul">
+    <strong>📊 Indicador IAD en desarrollo:</strong> Este monitor trabaja en el <strong>Índice de Apertura de Datos (IAD)</strong> que evaluará el nivel de cumplimiento y calidad de la publicación de DDJJ por parte de cada senador/a. Disponible en v1.1.
+  </div>
+
+  <!-- Buscador por senador -->
+  <div style="margin-top:2rem;">
+    <h3 style="font-size:.95rem;font-weight:700;color:#6b0f1a;margin-bottom:1rem;">🔍 Buscar DDJJ por senador/a</h3>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <input type="text" id="buscar-ddjj" placeholder="Escribir apellido del senador/a..."
+        style="flex:1;min-width:220px;padding:.5rem .9rem;border:1px solid #dde2ec;border-radius:8px;font-size:.85rem;outline:none;"
+        oninput="buscarDDJJ()" onfocus="this.style.borderColor='#6b0f1a'" onblur="this.style.borderColor='#dde2ec'">
+      <button onclick="window.open('https://www.argentina.gob.ar/servicio/consultar-declaraciones-juradas-de-funcionarios-publicos','_blank')"
+        style="background:#6b0f1a;color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;">
+        Ir al portal OA →
+      </button>
+    </div>
+    <div id="ddjj-resultados" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.65rem;"></div>
+  </div>
+
+</div>
+
+<!-- ══ TAB BIBLIOGRAFÍA ══ -->
+<div id="tab-bibliografia" class="tab-content">
+
+  <div class="biblio-section">
+    <h3>📡 Fuentes de Datos Oficiales — Senado</h3>
+    <div class="biblio-grid">
+      <div class="biblio-card"><div class="btype">Portal Oficial</div><div class="btitle">Senado de la Nación Argentina</div><div class="bauthor">HCSN</div><div class="blink"><a href="https://www.senado.gob.ar" target="_blank">senado.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">API Pública</div><div class="btitle">ArgentinaDatos.com – Senado API</div><div class="bauthor">Proyecto open-source</div><div class="blink"><a href="https://api.argentinadatos.com/v1/senado" target="_blank">api.argentinadatos.com</a></div></div>
+      <div class="biblio-card"><div class="btype">Sistema Legislativo</div><div class="btitle">InfoLEG – Información Legislativa</div><div class="bauthor">Ministerio de Justicia</div><div class="blink"><a href="https://www.infoleg.gob.ar/" target="_blank">infoleg.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Presupuesto</div><div class="btitle">Presupuesto Abierto – Senado</div><div class="bauthor">Secretaría de Hacienda</div><div class="blink"><a href="https://www.presupuestoabierto.gob.ar/sici/datos-abiertos" target="_blank">presupuestoabierto.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Estadísticas</div><div class="btitle">Censo Nacional de Población 2022</div><div class="bauthor">INDEC</div><div class="blink"><a href="https://www.indec.gob.ar" target="_blank">indec.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Auditoría</div><div class="btitle">Informes AGN sobre el Senado</div><div class="bauthor">Auditoría General de la Nación</div><div class="blink"><a href="https://www.agn.gob.ar/informes" target="_blank">agn.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Normas</div><div class="btitle">Boletín Oficial de la República Argentina</div><div class="bauthor">Secretaría Legal y Técnica</div><div class="blink"><a href="https://www.boletinoficial.gob.ar/" target="_blank">boletinoficial.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Presupuesto Legislativo</div><div class="btitle">Ley 27.798 – Presupuesto 2026</div><div class="bauthor">H. Congreso · dic. 2025</div><div class="blink"><a href="https://www.argentina.gob.ar/economia/sechacienda/proyecto-de-ley-de-presupuesto-2026-sintesis-mensaje-y-articulado" target="_blank">argentina.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Transparencia</div><div class="btitle">Portal de Transparencia – HCSN</div><div class="bauthor">Honorable Senado de la Nación</div><div class="blink"><a href="https://www.senado.gob.ar/institucional/transparencia" target="_blank">senado.gob.ar/transparencia</a></div></div>
+    </div>
+  </div>
+
+  <div class="biblio-section">
+    <h3>📖 Literatura Académica y de Referencia</h3>
+    <div class="biblio-grid">
+      <div class="biblio-card"><div class="btype">Artículo</div><div class="btitle">Effective Number of Parties: A Measure with Application to West Europe</div><div class="bauthor">Laakso, M. & Taagepera, R. – Comparative Political Studies, 1979</div><div class="blink"><a href="https://journals.sagepub.com/doi/10.1177/001041407901200101" target="_blank">Comparative Political Studies</a></div></div>
+      <div class="biblio-card"><div class="btype">Libro</div><div class="btitle">Building Democratic Institutions: Party Systems in Latin America</div><div class="bauthor">Mainwaring, S. & Scully, T. – Stanford UP, 1995</div><div class="blink"><a href="https://www.sup.org" target="_blank">Stanford University Press</a></div></div>
+      <div class="biblio-card"><div class="btype">Artículo</div><div class="btitle">Oscillating Relations: President and Congress in Argentina</div><div class="bauthor">Mustapic, A. M. – Legislative Studies Quarterly, 2002</div><div class="blink"><a href="https://www.jstor.org" target="_blank">JSTOR</a></div></div>
+      <div class="biblio-card"><div class="btype">Libro</div><div class="btitle">La nueva política de partidos en la Argentina</div><div class="bauthor">Calvo, E. & Escolar, M. – Prometeo, 2005</div><div class="blink"><a href="https://www.prometeoeditorial.com" target="_blank">Prometeo</a></div></div>
+      <div class="biblio-card"><div class="btype">Libro</div><div class="btitle">Todos los caballos del rey</div><div class="bauthor">Leiras, M. – Prometeo, 2007</div><div class="blink"><a href="https://www.prometeoeditorial.com" target="_blank">Prometeo</a></div></div>
+      <div class="biblio-card"><div class="btype">Informe</div><div class="btitle">Legislative Performance: An Index of Effectiveness</div><div class="bauthor">Inter-Parliamentary Union (IPU), 2022</div><div class="blink"><a href="https://www.ipu.org" target="_blank">ipu.org</a></div></div>
+      <div class="biblio-card"><div class="btype">Informe</div><div class="btitle">Índices de Desempeño Parlamentario en América Latina</div><div class="bauthor">PNUD, 2021</div><div class="blink"><a href="https://www.undp.org/latin-america" target="_blank">undp.org</a></div></div>
+      <div class="biblio-card"><div class="btype">Informe</div><div class="btitle">Open Government Data: The Book</div><div class="bauthor">Tauberer, J. (Ed. 2023)</div><div class="blink"><a href="https://opengovdata.io/" target="_blank">opengovdata.io</a></div></div>
+      <div class="biblio-card"><div class="btype">Paper</div><div class="btitle">Measuring Legislative Productivity and Quality</div><div class="bauthor">Rueda & Stegmueller – Comp. Political Studies, 2019</div><div class="blink"><a href="https://journals.sagepub.com/home/cps" target="_blank">Comp. Political Studies</a></div></div>
+      <div class="biblio-card"><div class="btype">Libro</div><div class="btitle">Política y transparencia: la corrupción como problema público</div><div class="bauthor">Pereyra, S. – Siglo XXI, 2013</div><div class="blink"><a href="https://www.sigloxxieditores.com.ar" target="_blank">Siglo XXI</a></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ TAB NORMATIVA ══ -->
+<div id="tab-normativa" class="tab-content">
+
+  <div class="biblio-section">
+    <h3>⚖️ Marco Normativo — DDJJ y Transparencia</h3>
+    <div class="biblio-grid">
+      <div class="biblio-card"><div class="btype">Ley Nacional</div><div class="btitle">Ley N° 25.188 – Ética en la Función Pública</div><div class="bauthor">H. Congreso, 1999</div><div class="blink"><a href="https://www.infoleg.gob.ar/infolegInternet/anexos/60000-64999/60847/norma.htm" target="_blank">InfoLEG</a></div></div>
+      <div class="biblio-card"><div class="btype">Ley Nacional</div><div class="btitle">Ley N° 26.857 – Publicidad de DDJJ Patrimoniales</div><div class="bauthor">H. Congreso, 2013</div><div class="blink"><a href="https://www.infoleg.gob.ar/infolegInternet/anexos/210000-214999/212411/norma.htm" target="_blank">InfoLEG</a></div></div>
+      <div class="biblio-card"><div class="btype">Ley Nacional</div><div class="btitle">Ley N° 27.275 – Acceso a la Información Pública</div><div class="bauthor">H. Congreso, 2016</div><div class="blink"><a href="https://www.infoleg.gob.ar/infolegInternet/anexos/265000-269999/265949/norma.htm" target="_blank">InfoLEG</a></div></div>
+      <div class="biblio-card"><div class="btype">Ley Nacional</div><div class="btitle">Ley N° 24.600 – Reglamento del Senado</div><div class="bauthor">H. Senado, 1996</div><div class="blink"><a href="https://www.infoleg.gob.ar" target="_blank">InfoLEG</a></div></div>
+      <div class="biblio-card"><div class="btype">Reglamento</div><div class="btitle">Reglamento del H. Senado de la Nación</div><div class="bauthor">HCSN – actualización 2024</div><div class="blink"><a href="https://www.senado.gob.ar/institucional/reglamento" target="_blank">senado.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Decreto</div><div class="btitle">Dec. 164/99 – Reglamentación Ley 25.188</div><div class="bauthor">Poder Ejecutivo, 1999</div><div class="blink"><a href="https://www.infoleg.gob.ar" target="_blank">InfoLEG</a></div></div>
+      <div class="biblio-card"><div class="btype">Constitución</div><div class="btitle">Art. 54–62 CN – Cámara de Senadores</div><div class="bauthor">Constitución Nacional, 1994</div><div class="blink"><a href="https://www.argentina.gob.ar/sites/default/files/constitucion_nacional_argentina_0.pdf" target="_blank">argentina.gob.ar</a></div></div>
+      <div class="biblio-card"><div class="btype">Resolución</div><div class="btitle">Resolución OA 1/2000 – DJPI</div><div class="bauthor">Oficina Anticorrupción, 2000</div><div class="blink"><a href="https://www.argentina.gob.ar/anticorrupcion" target="_blank">anticorrupcion.gob.ar</a></div></div>
+    </div>
+  </div>
+
+  <div class="biblio-section">
+    <h3>🏛️ Constitución Nacional — El Senado</h3>
+    <div style="background:#fff;border-radius:10px;border:1px solid #dde2ec;padding:1.2rem 1.5rem;font-size:.82rem;color:#475569;line-height:1.7;">
+      <p><strong style="color:#6b0f1a;">Art. 54:</strong> El Senado se compondrá de tres senadores por cada provincia y tres por la Ciudad de Buenos Aires, elegidos en forma directa y conjunta, correspondiendo dos bancas al partido político que obtenga el mayor número de votos, y la restante al partido político que le siga en número de votos.</p>
+      <p style="margin-top:.65rem;"><strong style="color:#6b0f1a;">Art. 56:</strong> Los senadores duran seis años en el ejercicio de su mandato, y son reelegibles indefinidamente; pero el Senado se renovará a razón de una tercera parte de los distritos electorales cada dos años.</p>
+      <p style="margin-top:.65rem;"><strong style="color:#6b0f1a;">Art. 57:</strong> El vicepresidente de la Nación será presidente del Senado; pero no tendrá voto sino en el caso que haya empate en la votación.</p>
+      <p style="margin-top:.65rem;"><strong style="color:#6b0f1a;">Art. 62:</strong> Cuando vacase alguna plaza de senador por muerte, renuncia u otra causa, el Gobierno a que corresponda la vacante hace proceder inmediatamente a la elección de un nuevo miembro.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer-nota">
+  <strong>⚠️ Nota:</strong> Esta herramienta es de carácter <strong>experimental y académico</strong>.
+  Los datos provienen de fuentes públicas oficiales del Estado argentino.
+  Los resultados son indicadores algorítmicos de riesgo — no implican juicio de valor, acusación ni determinación
+  de responsabilidad sobre ninguna empresa, organismo o persona.
+  El objetivo es promover la <strong>transparencia y el debate informado</strong> sobre el gasto público.
+</div>
+
+<div class="footer-donacion">
+  <div style="color:#94a3b8;font-size:.8rem;margin-bottom:.5rem;">💙 APOYÁ ESTE PROYECTO — DONACIONES VOLUNTARIAS</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;max-width:1000px;margin:0 auto;">
+    <div style="background:#1e293b;border-radius:10px;padding:1.1rem 1.2rem;text-align:left;border:1px solid #334155;">
+      <div style="font-size:.72rem;font-weight:700;color:#38bdf8;margin-bottom:.75rem;">🇦🇷 Argentina · Pesos (ARS)</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;">CBU</div>
+      <div style="font-size:.82rem;color:#34d399;font-weight:700;margin-bottom:.5rem;">0140005203400552652310</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;">ALIAS</div>
+      <div style="font-size:.82rem;color:#34d399;font-weight:700;">ALGORIT.MONTE.PESOS</div>
+    </div>
+    <div style="background:#1e293b;border-radius:10px;padding:1.1rem 1.2rem;text-align:left;border:1px solid #334155;">
+      <div style="font-size:.72rem;font-weight:700;color:#38bdf8;margin-bottom:.75rem;">🇦🇷 Argentina · Dólares (USD)</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;">CBU</div>
+      <div style="font-size:.82rem;color:#34d399;font-weight:700;margin-bottom:.5rem;">0140005204400550329709</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;">ALIAS</div>
+      <div style="font-size:.82rem;color:#34d399;font-weight:700;">ALGO.MONTE.DOLARES</div>
+    </div>
+    <div style="background:#1e293b;border-radius:10px;padding:1.1rem 1.2rem;text-align:left;border:1px solid #334155;">
+      <div style="font-size:.72rem;font-weight:700;color:#38bdf8;margin-bottom:.75rem;">🌐 Exterior (USD Wire)</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;">SWIFT / CUENTA</div>
+      <div style="font-size:.82rem;color:#34d399;font-weight:700;">BSCHUYMM / 005200183500</div>
+      <div style="font-size:.65rem;color:#64748b;text-transform:uppercase;margin-bottom:.1rem;margin-top:.5rem;">BANCO</div>
+      <div style="font-size:.82rem;color:#e2e8f0;">Banco Santander Montevideo</div>
+    </div>
+    <div style="background:#1e293b;border-radius:10px;padding:1.1rem 1.2rem;text-align:left;border:1px solid #334155;">
+      <div style="font-size:.72rem;font-weight:700;color:#38bdf8;margin-bottom:.75rem;">👤 Autor y Contacto</div>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;">
+        <img src="img/foto.jpg" onerror="this.style.display='none'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #334155;" alt="Vicente">
+        <div><div style="font-size:.88rem;font-weight:700;color:#e2e8f0;">Vicente Humberto Monteverde</div><div style="font-size:.72rem;color:#64748b;">Investigador · Desarrollador</div></div>
+      </div>
+      <a href="mailto:vhmonte@retina.ar" style="color:#38bdf8;font-size:.78rem;text-decoration:none;display:block;">✉️ vhmonte@retina.ar</a>
+      <a href="https://github.com/Viny2030" target="_blank" style="color:#38bdf8;font-size:.78rem;text-decoration:none;display:block;margin-top:.25rem;">🐙 github.com/Viny2030</a>
+    </div>
+  </div>
+</div>
+
+<div class="footer-credits">
+  Monitor Legislativo Argentina · <a href="https://github.com/Viny2030/monitor_legistativo_senadores" target="_blank">GitHub</a>
+</div>
+
+<!-- Modal Donación -->
+<div class="don-overlay" id="don-overlay" onclick="if(event.target===this)cerrarDonacion()">
+  <div class="don-modal">
+    <div class="don-header">
+      <div class="don-header-txt">
+        <h2>💙 Apoyá este proyecto — Donaciones voluntarias</h2>
+        <p>Herramienta independiente y académica para la transparencia pública</p>
+      </div>
+      <button class="don-cerrar" onclick="cerrarDonacion()">✕</button>
+    </div>
+    <div class="don-grid">
+      <div class="don-card">
+        <div class="don-card-title">🇦🇷 Argentina · Pesos (ARS)</div>
+        <div class="don-field"><span class="don-label">CBU</span><span class="don-value hl" id="cbu-ars">0140005203400552652310</span><button class="don-copy" onclick="copiar('cbu-ars')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Alias</span><span class="don-value hl" id="alias-ars">ALGORIT.MONTE.PESOS</span><button class="don-copy" onclick="copiar('alias-ars')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Titular</span><span class="don-value">Vicente Humberto Monteverde · CUIL 20-12034411-1</span></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">🇦🇷 Argentina · Dólares (USD)</div>
+        <div class="don-field"><span class="don-label">CBU</span><span class="don-value hl" id="cbu-usd">0140005204400550329709</span><button class="don-copy" onclick="copiar('cbu-usd')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Alias</span><span class="don-value hl" id="alias-usd">ALGO.MONTE.DOLARES</span><button class="don-copy" onclick="copiar('alias-usd')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Titular</span><span class="don-value">Vicente Humberto Monteverde · CUIL 20-12034411-1</span></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">🌐 Exterior (USD Wire)</div>
+        <div class="don-field"><span class="don-label">Banco</span><span class="don-value">Banco Santander Montevideo</span></div>
+        <div class="don-field"><span class="don-label">Cuenta USD</span><span class="don-value hl" id="cuenta-wire">005200183500</span><button class="don-copy" onclick="copiar('cuenta-wire')">copiar</button></div>
+        <div class="don-field"><span class="don-label">SWIFT</span><span class="don-value hl" id="swift-d">BSCHUYMM</span><button class="don-copy" onclick="copiar('swift-d')">copiar</button></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">👤 Autor y Contacto</div>
+        <div class="don-autor">
+          <img class="don-foto-au" src="img/foto.jpg" onerror="this.style.display='none'" alt="Vicente Monteverde">
+          <div><div class="don-autor-nombre">Vicente Humberto Monteverde</div><div class="don-autor-rol">Investigador · Desarrollador</div></div>
+        </div>
+        <div class="don-autor-links" style="margin-top:.75rem;">
+          <a href="mailto:vhmonte@retina.ar">✉️ vhmonte@retina.ar</a>
+          <a href="mailto:viny01958@gmail.com">✉️ viny01958@gmail.com</a>
+          <a href="https://github.com/Viny2030" target="_blank">🐙 github.com/Viny2030</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function showTab(id, e) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (e && e.target) e.target.classList.add('active');
+}
+
+// ── Buscador DDJJ ─────────────────────────────────────────────────────────────
+const SENADORES_DDJJ = [
+  {nombre:"Abad, Maximiliano",          provincia:"Buenos Aires",    id:546},
+  {nombre:"De Pedro, Eduardo Enrique",   provincia:"Buenos Aires",    id:545},
+  {nombre:"di Tullio, Juliana",          provincia:"Buenos Aires",    id:999},
+  {nombre:"Andrada, Guillermo Eduardo",  provincia:"Catamarca",       id:519},
+  {nombre:"Corpacci, Lucia Benigna",     provincia:"Catamarca",       id:398},
+  {nombre:"Fama, Flavio Sergio",         provincia:"Catamarca",       id:520},
+  {nombre:"Capitanich, Jorge Milton",    provincia:"Chaco",           id:285},
+  {nombre:"Godoy, Juan Cruz",            provincia:"Chaco",           id:578},
+  {nombre:"Schneider, Silvana Lorena",   provincia:"Chaco",           id:579},
+  {nombre:"Cristina, Andrea Marcela",    provincia:"Chubut",          id:570},
+  {nombre:"Terenzi, Edith Elizabeth",    provincia:"Chubut",          id:528},
+  {nombre:"Linares, Carlos Alberto",     provincia:"Chubut",          id:529},
+  {nombre:"Bullrich, Patricia",          provincia:"CABA",            id:580},
+  {nombre:"Monteverde, Agustín Aníbal",  provincia:"CABA",            id:581},
+  {nombre:"Recalde, Mariano",            provincia:"CABA",            id:498},
+  {nombre:"Espínola, Carlos Mauricio",   provincia:"Corrientes",      id:461},
+  {nombre:"Valenzuela, Mercedes Gabriela",provincia:"Corrientes",     id:525},
+  {nombre:"Vischi, Eduardo Alejandro",   provincia:"Corrientes",      id:524},
+  {nombre:"Alvarez Rivero, Carmen",      provincia:"Córdoba",         id:522},
+  {nombre:"Juez, Luis Alfredo",          provincia:"Córdoba",         id:400},
+  {nombre:"Vigo, Alejandra María",       provincia:"Córdoba",         id:523},
+  {nombre:"Almeida, Romina María",       provincia:"Entre Ríos",      id:583},
+  {nombre:"Bahl, Adán Humberto",         provincia:"Entre Ríos",      id:584},
+  {nombre:"Benegas Lynch, Joaquín Alberto",provincia:"Entre Ríos",    id:582},
+  {nombre:"González, María Teresa",      provincia:"Formosa",         id:477},
+  {nombre:"Mayans, José Miguel Ángel",   provincia:"Formosa",         id:294},
+  {nombre:"Paoltroni, Francisco Manuel", provincia:"Formosa",         id:551},
+  {nombre:"Atauche, Ezequiel",           provincia:"Jujuy",           id:552},
+  {nombre:"Bedia, Vilma Facunda",        provincia:"Jujuy",           id:553},
+  {nombre:"Moises, María Carolina",      provincia:"Jujuy",           id:554},
+  {nombre:"Bensusán, Daniel Pablo",      provincia:"La Pampa",        id:532},
+  {nombre:"Huala, María Victoria",       provincia:"La Pampa",        id:531},
+  {nombre:"Kroneberger, Daniel Ricardo", provincia:"La Pampa",        id:530},
+  {nombre:"López, María Florencia",      provincia:"La Rioja",        id:555},
+  {nombre:"Pagotto, Juan Carlos",        provincia:"La Rioja",        id:557},
+  {nombre:"Rejal, Jesús Fernando",       provincia:"La Rioja",        id:556},
+  {nombre:"Cornejo, Alfredo Victor",     provincia:"Mendoza",         id:533},
+  {nombre:"Fernández Sagasti, Anabel",   provincia:"Mendoza",         id:468},
+  {nombre:"Suárez, Rodolfo Alejandro",   provincia:"Mendoza",         id:571},
+  {nombre:"Arce, Carlos Omar",           provincia:"Misiones",        id:558},
+  {nombre:"Goerling Lara, Enrique Martin",provincia:"Misiones",       id:560},
+  {nombre:"Rojas Decut, Sonia Elizabeth",provincia:"Misiones",        id:559},
+  {nombre:"Cervi, Mario Pablo",          provincia:"Neuquén",         id:586},
+  {nombre:"Corroza, Julieta",            provincia:"Neuquén",         id:587},
+  {nombre:"Márquez, Nadia Judith",       provincia:"Neuquén",         id:585},
+  {nombre:"Fullone, Enzo Paolo",         provincia:"Río Negro",       id:998},
+  {nombre:"Marks, Ana Inés",             provincia:"Río Negro",       id:589},
+  {nombre:"Soria, Martin Ignacio",       provincia:"Río Negro",       id:588},
+  {nombre:"Guzmán Coraita, Gonzalo",     provincia:"Salta",           id:592},
+  {nombre:"Orozco, María Emilia",        provincia:"Salta",           id:591},
+  {nombre:"Royón, Flavia Gabriela",      provincia:"Salta",           id:593},
+  {nombre:"Giménez Navarro, María Celeste",provincia:"San Juan",      id:562},
+  {nombre:"Olivera Lucero, Bruno Antonio",provincia:"San Juan",       id:563},
+  {nombre:"Uñac, Sergio Mauricio",       provincia:"San Juan",        id:561},
+  {nombre:"Abdala, Bartolomé Esteban",   provincia:"San Luis",        id:564},
+  {nombre:"Arrascaeta, Ivanna Marcela",  provincia:"San Luis",        id:565},
+  {nombre:"Salino, Fernando Aldo",       provincia:"San Luis",        id:566},
+  {nombre:"Carambia, José María",        provincia:"Santa Cruz",      id:567},
+  {nombre:"Gadano, Natalia Elena",       provincia:"Santa Cruz",      id:568},
+  {nombre:"Kirchner, Alicia Margarita Antonia",provincia:"Santa Cruz",id:366},
+  {nombre:"Galaretto, Eduardo Horacio",  provincia:"Santa Fe",        id:573},
+  {nombre:"Lewandowski, Marcelo Nestor", provincia:"Santa Fe",        id:538},
+  {nombre:"Losada, Carolina",            provincia:"Santa Fe",        id:536},
+  {nombre:"Moreno, Elia Esther del Carmen",provincia:"Santiago del Estero",id:594},
+  {nombre:"Neder, José Emilio",          provincia:"Santiago del Estero",id:510},
+  {nombre:"Zamora, Gerardo",             provincia:"Santiago del Estero",id:450},
+  {nombre:"Coto, Agustín Pedro",         provincia:"Tierra del Fuego",id:595},
+  {nombre:"López, Cándida Cristina",     provincia:"Tierra del Fuego",id:574},
+  {nombre:"Monte de Oca, María Belen",   provincia:"Tierra del Fuego",id:596},
+  {nombre:"Avila, Beatriz Luisa",        provincia:"Tucumán",         id:541},
+  {nombre:"Manzur, Juan Luis",           provincia:"Tucumán",         id:576},
+  {nombre:"Mendoza, Sandra Mariela",     provincia:"Tucumán",         id:540},
+];
+
+function buscarDDJJ() {
+  const q = document.getElementById('buscar-ddjj').value.toLowerCase().trim();
+  const res = document.getElementById('ddjj-resultados');
+  if (!q) { res.innerHTML=''; return; }
+  const lista = SENADORES_DDJJ.filter(s =>
+    s.nombre.toLowerCase().includes(q) || s.provincia.toLowerCase().includes(q)
+  );
+  if (!lista.length) {
+    res.innerHTML = '<div style="color:#94a3b8;font-size:.82rem;padding:.5rem;">Sin resultados para "' + q + '"</div>';
+    return;
+  }
+  const urlOA = 'https://www.argentina.gob.ar/servicio/consultar-declaraciones-juradas-de-funcionarios-publicos';
+  const urlSen = (id) => `https://www.senado.gob.ar/senadores/detalle/${id}`;
+  res.innerHTML = lista.map(s => `
+    <div style="background:#fff;border-radius:8px;border:1px solid #dde2ec;padding:.8rem 1rem;display:flex;flex-direction:column;gap:.4rem;">
+      <div style="font-weight:700;font-size:.85rem;color:#1e293b;">${s.nombre}</div>
+      <div style="font-size:.75rem;color:#64748b;">📍 ${s.provincia}</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem;">
+        <a href="${urlOA}" target="_blank"
+          style="font-size:.72rem;background:#6b0f1a;color:#fff;padding:.25rem .6rem;border-radius:5px;text-decoration:none;font-weight:600;">
+          Ver DDJJ OA →
+        </a>
+        <a href="${urlSen(s.id)}" target="_blank"
+          style="font-size:.72rem;background:#f1f5f9;color:#475569;padding:.25rem .6rem;border-radius:5px;text-decoration:none;font-weight:600;border:1px solid #dde2ec;">
+          Perfil oficial →
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Donación ──────────────────────────────────────────────────────────────────
+function abrirDonacion() { document.getElementById('don-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+function cerrarDonacion() { document.getElementById('don-overlay').classList.remove('open'); document.body.style.overflow=''; }
+function copiar(id) {
+  const txt = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector('[onclick="copiar(\''+id+'\')"]');
+    const orig = btn.textContent; btn.textContent='✅'; btn.style.color='#34d399';
+    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; }, 1500);
+  });
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarDonacion(); });
+</script>
+</body>
+</html>
