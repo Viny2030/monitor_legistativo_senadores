@@ -1,0 +1,59 @@
+name: 🏛️ Pipeline Diario — Senado Nacional
+
+on:
+  schedule:
+    # Corre todos los días a las 06:00 AM hora Argentina (UTC-3 → 09:00 UTC)
+    - cron: '0 9 * * *'
+
+  # Permite correrlo manualmente desde GitHub Actions
+  workflow_dispatch:
+    inputs:
+      force_reload:
+        description: 'Forzar recarga aunque no haya cambios'
+        required: false
+        default: 'false'
+
+jobs:
+  pipeline:
+    name: Scraper + Carga DB
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: 🏛️ Correr pipeline (scraper + CSVs)
+        run: python pipeline.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 📦 Cargar CSVs a PostgreSQL
+        run: python cargar_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 💾 Guardar CSVs como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: senado-data-${{ github.run_number }}
+          path: data/*.csv
+          retention-days: 30
+
+      - name: 📢 Notificar resultado
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Pipeline completado exitosamente — $(date '+%d/%m/%Y %H:%M')"
+          else
+            echo "❌ Pipeline falló — revisar logs"
+          fi
