@@ -1137,8 +1137,10 @@ function getFiltrados() {
 function renderTabla() {
   const datos = getFiltrados();
   filtrados = datos;
+  const sinDatos = datos.filter(s => s.votos_total === 0).length;
   document.getElementById('tabla-count').textContent     = datos.length + ' senadores';
-  document.getElementById('tabla-count-fil').textContent = datos.length + ' de ' + SENADORES.length;
+  document.getElementById('tabla-count-fil').textContent = datos.length + ' de ' + SENADORES.length
+    + (sinDatos > 0 ? ' · ⚠️ ' + sinDatos + ' sin actas (asumieron dic. 2025)' : '');
 
   const tbody = document.getElementById('tbody-principal');
   if (!datos.length) {
