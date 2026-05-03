@@ -237,6 +237,70 @@ td { padding: .45rem .8rem; vertical-align: middle; }
 .don-autor-nombre { font-size: .88rem; font-weight: 700; color: #e2e8f0; }
 .don-autor-rol    { font-size: .72rem; color: #64748b; }
 .don-autor-links a { color: #38bdf8; font-size: .75rem; text-decoration: none; display: block; margin-top: .25rem; }
+
+/* ── Modal Senador ── */
+.sen-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:900;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(3px);
+  align-items:center; justify-content:center; padding:1rem;
+}
+.sen-modal-overlay.open { display:flex; }
+.sen-modal {
+  background:#fff; border-radius:16px;
+  max-width:580px; width:100%; max-height:90vh; overflow-y:auto;
+  box-shadow:0 24px 64px rgba(0,0,0,.25);
+  animation:senIn .2s ease;
+}
+@keyframes senIn { from{opacity:0;transform:translateY(18px) scale(.97)} to{opacity:1;transform:none} }
+.sen-modal-head {
+  background:linear-gradient(135deg,#5a0b18,#8b1a2a);
+  color:#fff; padding:1.4rem 1.5rem 1rem;
+  border-radius:16px 16px 0 0;
+  display:flex; gap:1rem; align-items:flex-start; position:relative;
+}
+.sen-modal-foto {
+  width:72px; height:72px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.15); overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.6rem; font-weight:800; flex-shrink:0; color:#fff;
+}
+.sen-modal-foto img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.sen-modal-nombre { font-size:1.1rem; font-weight:700; margin-bottom:.25rem; }
+.sen-modal-meta   { font-size:.78rem; opacity:.8; line-height:1.6; }
+.sen-modal-cerrar {
+  position:absolute; top:.85rem; right:.85rem;
+  background:rgba(255,255,255,.2); border:none; color:#fff;
+  width:28px; height:28px; border-radius:50%; cursor:pointer;
+  font-size:.9rem; display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.sen-modal-cerrar:hover { background:rgba(255,255,255,.4); }
+.sen-modal-body { padding:1.2rem 1.4rem; }
+.sen-modal-kpis {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:.6rem; margin-bottom:1rem;
+}
+.smkpi { background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; padding:.65rem .75rem; text-align:center; }
+.smkpi .mv { font-size:1.35rem; font-weight:900; line-height:1; }
+.smkpi .ml { font-size:.62rem; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-top:.2rem; }
+.sen-modal-barra-bg { height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden; margin:.4rem 0 .75rem; }
+.sen-modal-barra-fill { height:100%; border-radius:6px; transition:width .6s ease; }
+.sen-modal-donut-wrap { display:flex; align-items:center; gap:1.2rem; margin-bottom:.85rem; flex-wrap:wrap; }
+.sen-modal-legend-item { display:flex; align-items:center; gap:.4rem; font-size:.75rem; margin-bottom:.35rem; }
+.sen-modal-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.sen-modal-contact { background:#f8fafc; border-radius:8px; padding:.7rem 1rem; font-size:.8rem; border:1px solid #e2e8f0; }
+.sen-modal-contact a { color:#6b0f1a; text-decoration:none; font-weight:600; }
+.sen-modal-contact a:hover { text-decoration:underline; }
+.sen-modal-actions { display:flex; gap:.6rem; margin-top:.85rem; flex-wrap:wrap; }
+.sen-modal-btn {
+  flex:1; text-align:center; padding:.5rem .75rem; border-radius:8px;
+  font-size:.78rem; font-weight:700; text-decoration:none; cursor:pointer;
+  border:none; transition:opacity .15s;
+}
+.sen-modal-btn:hover { opacity:.85; }
+.sen-modal-btn.primary { background:#6b0f1a; color:#fff; }
+.sen-modal-btn.secondary { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
 </style>
 </head>
 <body>
@@ -652,7 +716,7 @@ function renderTablaSenadores(lista) {
     const part  = s.participation_pct;
     const partColor = colorParticipacion(part);
 
-    return `<tr>
+    return `<tr onclick="abrirModalSenador(${JSON.stringify(s).replace(/'/g,'&#39;')})" style="cursor:pointer;" title="Ver detalle">
       <td style="color:#94a3b8; font-size:.75rem;">${i + 1}</td>
       <td style="font-weight:600;">${s.nombre}</td>
       <td style="color:#475569;">${s.provincia}</td>
@@ -994,6 +1058,104 @@ async function recargarTodo() {
 // ─── Inicio ───────────────────────────────────────────────────────────────────
 cargarDatos();
 
+
+// ─── Modal Senador ────────────────────────────────────────────────────────────
+function colPct(p) {
+  if (p >= 80) return '#15803d';
+  if (p >= 60) return '#d97706';
+  if (p >= 40) return '#ea580c';
+  if (p > 0)   return '#dc2626';
+  return '#94a3b8';
+}
+
+function abrirModalSenador(s) {
+  // Foto
+  const fotoEl = document.getElementById('sm-foto');
+  const fotoUrl = s.foto || `https://api.argentinadatos.com/static/senado/senadores/${s.id}.gif`;
+  const ini = s.nombre.split(',').map((p,i) => p.trim()[0]).join('').toUpperCase().slice(0,2);
+  fotoEl.innerHTML = `<img src="${fotoUrl}" alt="${s.nombre}"
+    onerror="this.parentElement.innerHTML='<span style=font-size:.9rem;font-weight:800>${ini}</span>'">`;
+
+  // Nombre y meta
+  const c = colorBloque(s.partido);
+  document.getElementById('sm-nombre').textContent = s.nombre;
+  document.getElementById('sm-meta').innerHTML =
+    `${s.provincia} &nbsp;·&nbsp; <span style="font-weight:700">${s.partido}</span> &nbsp;·&nbsp; ${s.rol_provincial || '—'}`;
+
+  // KPIs
+  const pct = s.participation_pct || 0;
+  const pc  = colPct(pct);
+  document.getElementById('sm-kpis').innerHTML = `
+    <div class="smkpi"><div class="mv" style="color:${pc}">${pct > 0 ? pct.toFixed(1)+'%' : '—'}</div><div class="ml">Participación</div></div>
+    <div class="smkpi"><div class="mv" style="color:#15803d">${s.votos_afirmativos ?? 0}</div><div class="ml">V. Afirmativos</div></div>
+    <div class="smkpi"><div class="mv" style="color:#dc2626">${s.votos_negativos ?? 0}</div><div class="ml">V. Negativos</div></div>
+    <div class="smkpi"><div class="mv" style="color:#d97706">${s.abstenciones ?? 0}</div><div class="ml">Abstenciones</div></div>
+    <div class="smkpi"><div class="mv" style="color:#64748b">${s.ausencias ?? 0}</div><div class="ml">Ausencias</div></div>
+    <div class="smkpi"><div class="mv">${s.votos_total ?? 0}</div><div class="ml">Sesiones</div></div>
+  `;
+
+  // Barra participación
+  document.getElementById('sm-part-val').textContent = pct > 0 ? pct.toFixed(2)+'%' : 'Sin datos';
+  document.getElementById('sm-part-bar').style.cssText = `width:${pct}%;background:${pc}`;
+
+  // Donut
+  const svg = document.getElementById('sm-donut');
+  const legend = document.getElementById('sm-donut-legend');
+  if (s.votos_total > 0) {
+    const segs = [
+      {lbl:'Afirmativos', val:s.votos_afirmativos||0, col:'#15803d'},
+      {lbl:'Negativos',   val:s.votos_negativos||0,   col:'#dc2626'},
+      {lbl:'Abstenciones',val:s.abstenciones||0,       col:'#d97706'},
+      {lbl:'Ausencias',   val:s.ausencias||0,           col:'#94a3b8'},
+    ].filter(sg => sg.val > 0);
+    const tot = segs.reduce((a,sg) => a+sg.val, 0);
+    let angle = -Math.PI/2;
+    const cx=55,cy=55,r=42,ri=26;
+    let paths = '';
+    segs.forEach(sg => {
+      const a = (sg.val/tot)*2*Math.PI;
+      const ea = angle+a;
+      const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+      const x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+      const xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle);
+      const xi2=cx+ri*Math.cos(ea),yi2=cy+ri*Math.sin(ea);
+      const lg = a>Math.PI?1:0;
+      paths += `<path d="M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${lg} 1 ${x2} ${y2} L${xi2} ${yi2} A${ri} ${ri} 0 ${lg} 0 ${xi1} ${yi1}Z" fill="${sg.col}" opacity=".9"/>`;
+      angle = ea;
+    });
+    svg.innerHTML = paths;
+    legend.innerHTML = segs.map(sg => `
+      <div class="sen-modal-legend-item">
+        <span class="sen-modal-dot" style="background:${sg.col}"></span>
+        <span>${sg.lbl}: <strong>${sg.val}</strong> <span style="color:#94a3b8">(${((sg.val/tot)*100).toFixed(1)}%)</span></span>
+      </div>`).join('');
+  } else {
+    svg.innerHTML = '<text x="55" y="60" text-anchor="middle" fill="#94a3b8" font-size="11">Sin datos</text>';
+    legend.innerHTML = '<p style="font-size:.75rem;color:#94a3b8">Senador/a sin registros de votación disponibles.<br>Mandato iniciado dic. 2025.</p>';
+  }
+
+  // Contacto
+  document.getElementById('sm-contact').innerHTML = s.email && s.email !== 'null'
+    ? `📧 <a href="mailto:${s.email}">${s.email}</a>`
+    + (s.telefono && s.telefono !== 'null' ? ` &nbsp;·&nbsp; 📞 ${s.telefono}` : '')
+    : '<span style="color:#94a3b8">Contacto no disponible</span>';
+
+  // Acciones
+  document.getElementById('sm-actions').innerHTML = `
+    <a class="sen-modal-btn primary" href="https://www.senado.gob.ar/senadores/detalle/${s.id}" target="_blank">🏛️ Ver perfil oficial</a>
+    <a class="sen-modal-btn secondary" href="nomina_detalle_senadores.html">👥 Ver en nómina detalle</a>
+  `;
+
+  document.getElementById('sen-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalSenador() {
+  document.getElementById('sen-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') { cerrarModalSenador(); cerrarDonacion(); } });
+
 // ─── Modal Donación ──────────────────────────────────────────────────────────
 function abrirDonacion() {
   document.getElementById('don-overlay').classList.add('open');
@@ -1015,5 +1177,37 @@ function copiar(id) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarDonacion(); });
 </script>
+
+<!-- Modal Senador -->
+<div class="sen-modal-overlay" id="sen-modal-overlay" onclick="if(event.target===this)cerrarModalSenador()">
+  <div class="sen-modal">
+    <div class="sen-modal-head">
+      <div class="sen-modal-foto" id="sm-foto">👤</div>
+      <div style="flex:1">
+        <div class="sen-modal-nombre" id="sm-nombre">—</div>
+        <div class="sen-modal-meta" id="sm-meta">—</div>
+      </div>
+      <button class="sen-modal-cerrar" onclick="cerrarModalSenador()">✕</button>
+    </div>
+    <div class="sen-modal-body">
+      <div class="sen-modal-kpis" id="sm-kpis"></div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:.8rem;font-weight:600;margin-bottom:.2rem;">
+          <span>Participación</span>
+          <span id="sm-part-val" style="font-family:monospace"></span>
+        </div>
+        <div class="sen-modal-barra-bg">
+          <div class="sen-modal-barra-fill" id="sm-part-bar"></div>
+        </div>
+      </div>
+      <div class="sen-modal-donut-wrap">
+        <svg id="sm-donut" width="110" height="110" viewBox="0 0 110 110" flex-shrink="0"></svg>
+        <div id="sm-donut-legend" style="flex:1;min-width:120px;"></div>
+      </div>
+      <div class="sen-modal-contact" id="sm-contact"></div>
+      <div class="sen-modal-actions" id="sm-actions"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
