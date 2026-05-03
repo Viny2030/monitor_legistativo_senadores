@@ -251,6 +251,7 @@ td { padding: .45rem .8rem; vertical-align: middle; }
     <a href="https://monitorlegistativo-production.up.railway.app/dashboard/" target="_blank">🏠 Diputados ↗</a>
     <a href="senado.html" class="active">🏛️ Senado</a>
     <a href="indicadores.html">📊 Indicadores</a>
+    <a href="nomina_detalle_senadores.html">👥 Detalle</a>
     <a href="metodologia.html">📚 Metodología</a>
     <a href="#" onclick="abrirDonacion(); return false;" style="background:rgba(255,165,0,.25); border:1px solid rgba(255,165,0,.5);">💙 Donar</a>
   </nav>
@@ -671,8 +672,10 @@ function renderTablaSenadores(lista) {
 
   const validos = lista.filter(s => s.participation_pct > 0);
   const prom    = validos.length ? Math.round(validos.reduce((a, s) => a + s.participation_pct, 0) / validos.length) : 0;
+  const sinDatos = lista.filter(s => s.votos_total === 0).length;
   document.getElementById('tabla-footer-sen').innerHTML =
-    `Mostrando <strong>${lista.length}</strong> senadores/as · Participación promedio: <strong>${prom}%</strong>`;
+    `Mostrando <strong>${lista.length}</strong> senadores/as · Participación promedio: <strong>${prom}%</strong>`
+    + (sinDatos > 0 ? ` · <span style="color:#f59e0b;">⚠️ ${sinDatos} sin datos de votación (mandato iniciado dic. 2025 — actas aún no disponibles)</span>` : '');
 }
 
 // ─── Render provincial ────────────────────────────────────────────────────────
