@@ -1,7 +1,7 @@
 """
 api/run_senado.py — API standalone del módulo Senado
-Uso: python api/run_senado.py
-Docs: http://localhost:8000/docs
+Uso: uvicorn api.run_senado:app --host 0.0.0.0 --port $PORT
+Docs: /docs
 """
 from __future__ import annotations
 import sys
@@ -15,16 +15,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-import psycopg2
-import psycopg2.extras
-import pandas as pd
 from glob import glob
+
+# ── Corrección Railway: "postgres://" → "postgresql://" ──────────────────────
+_raw_db_url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL") or ""
+_DB_URL = _raw_db_url.replace("postgres://", "postgresql://", 1)
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)  # crea data/ si no existe
 
 
 def _serialize(obj):
-    """Convierte tipos no-JSON-serializables de PostgreSQL."""
     if isinstance(obj, (datetime.date, datetime.datetime)):
         return obj.isoformat()
     if isinstance(obj, decimal.Decimal):
@@ -32,8 +35,7 @@ def _serialize(obj):
     return str(obj)
 
 
-def _rows_to_json(rows: list[dict]) -> list[dict]:
-    """Serializa una lista de RealDictRow a lista de dicts puros."""
+def _rows_to_json(rows):
     result = []
     for row in rows:
         clean = {}
@@ -51,43 +53,37 @@ def _rows_to_json(rows: list[dict]) -> list[dict]:
         result.append(clean)
     return result
 
-# ── Corrección: Railway usa "postgres://" pero psycopg2 requiere "postgresql://" ──
-_raw_db_url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_PUBLIC_URL") or ""
-_DB_URL = _raw_db_url.replace("postgres://", "postgresql://", 1)
-
-DATA_DIR = Path(__file__).parent.parent / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)  # Crea data/ si no existe (Railway no lo incluye)
-
 
 def _db():
     if not _DB_URL:
         raise RuntimeError("DATABASE_URL no está configurada")
+    import psycopg2
+    import psycopg2.extras
     return psycopg2.connect(_DB_URL)
 
 
-def _latest_csv(pattern: str) -> Path | None:
+def _latest_csv(pattern: str):
     files = sorted(glob(str(DATA_DIR / pattern)), reverse=True)
     return Path(files[0]) if files else None
 
 
-# ── Lifespan: inicializa tablas DB al arrancar ───────────────────────────────
-
+# ── Lifespan ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Intentar inicializar DB — nunca crashear si falla
     if _DB_URL:
         try:
             from db.schema import crear_tablas
             crear_tablas()
             print("✅ Tablas DB inicializadas")
         except Exception as e:
-            print(f"⚠️  No se pudo inicializar DB al arrancar: {e}")
+            print(f"⚠️  DB al arrancar (no crítico): {e}")
     else:
-        print("⚠️  DATABASE_URL no configurada — endpoints /db/* no disponibles")
+        print("ℹ️  DATABASE_URL no configurada — /db/* no disponible, CSV/fallback activo")
     yield
 
 
-# ── App ──────────────────────────────────────────────────────────────────────
-
+# ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Monitor Legislativo — Senado Nacional",
     description="72 senadores · participación, votos y reportes por partido/provincia",
@@ -106,13 +102,16 @@ app.add_middleware(
 _DASHBOARD = Path(__file__).parent.parent / "dashboard"
 if _DASHBOARD.exists():
     app.mount("/dashboard", StaticFiles(directory=str(_DASHBOARD), html=True), name="dashboard")
+    print(f"✅ Dashboard montado desde {_DASHBOARD}")
+else:
+    print(f"⚠️  Carpeta dashboard/ no encontrada en {_DASHBOARD}")
 
 
-# ── Endpoints base de datos ──────────────────────────────────────────────────
-
+# ── Endpoints DB ──────────────────────────────────────────────────────────────
 @app.get("/db/senadores")
 def db_senadores(fecha: str = None):
     try:
+        import psycopg2.extras
         conn = _db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         if fecha:
@@ -129,6 +128,7 @@ def db_senadores(fecha: str = None):
 @app.get("/db/reporte-partido")
 def db_reporte_partido(fecha: str = None):
     try:
+        import psycopg2.extras
         conn = _db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         if fecha:
@@ -145,6 +145,7 @@ def db_reporte_partido(fecha: str = None):
 @app.get("/db/reporte-provincial")
 def db_reporte_provincial(fecha: str = None):
     try:
+        import psycopg2.extras
         conn = _db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         if fecha:
@@ -171,17 +172,94 @@ def db_fechas():
         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
 
 
-# ── Endpoints raíz y salud ───────────────────────────────────────────────────
+# ── Endpoints CSV ─────────────────────────────────────────────────────────────
+@app.get("/senado/senadores")
+def get_senadores():
+    try:
+        import pandas as pd
+        csv = _latest_csv("senadores_*.csv")
+        if not csv:
+            return JSONResponse({"ok": False, "senadores": [], "fuente": "csv_no_encontrado",
+                                 "mensaje": "No hay CSV en data/. Ejecutar pipeline.py primero."})
+        df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
+        registros = []
+        for _, row in df.iterrows():
+            def safe_int(v):
+                try: return int(float(v)) if pd.notna(v) else 0
+                except: return 0
+            def safe_float(v):
+                try: return float(v) if pd.notna(v) else None
+                except: return None
+            registros.append({
+                "id":                str(row.get("id", "")),
+                "nombre":            str(row.get("nombre", "—")),
+                "provincia":         str(row.get("provincia", "—")),
+                "partido":           str(row.get("partido_normalizado", row.get("partido", "—"))),
+                "rol_provincial":    str(row.get("rol_provincial", "—")),
+                "votos_total":       safe_int(row.get("votos_total")),
+                "votos_afirmativos": safe_int(row.get("votos_afirmativos")),
+                "votos_negativos":   safe_int(row.get("votos_negativos")),
+                "abstenciones":      safe_int(row.get("abstenciones")),
+                "ausencias":         safe_int(row.get("ausencias")),
+                "participation_pct": safe_float(row.get("participation_pct")),
+                "foto":              str(row.get("foto", "")),
+                "email":             str(row.get("email", "")),
+                "fuente":            "csv_real",
+            })
+        return JSONResponse({"ok": True, "total": len(registros), "senadores": registros, "fuente": csv.name})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
 
-_BASE = "https://monitorlegistativosenadores-production.up.railway.app"
+
+@app.get("/senado/reporte-partido")
+def get_reporte_partido():
+    try:
+        import pandas as pd
+        csv = _latest_csv("reporte_partido_senado_*.csv")
+        if not csv:
+            return JSONResponse({"ok": False, "partidos": [], "fuente": "csv_no_encontrado"})
+        df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
+        return JSONResponse({"ok": True, "total": len(df), "partidos": df.to_dict("records"), "fuente": csv.name})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+
+
+@app.get("/senado/reporte-provincial")
+def get_reporte_provincial():
+    try:
+        import pandas as pd
+        csv = _latest_csv("reporte_provincial_senado_*.csv")
+        if not csv:
+            return JSONResponse({"ok": False, "provincias": [], "fuente": "csv_no_encontrado"})
+        df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
+        return JSONResponse({"ok": True, "total": len(df), "provincias": df.to_dict("records"), "fuente": csv.name})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
+
+
+# ── Raíz y salud ──────────────────────────────────────────────────────────────
+_BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+_BASE = f"https://{_BASE}" if _BASE else "https://monitorlegislativosenadores-production.up.railway.app"
+
 
 @app.get("/")
 def raiz():
+    """Redirige al dashboard principal."""
+    return RedirectResponse(url="/dashboard/senado.html", status_code=302)
+
+
+@app.get("/info")
+def info():
+    csv = _latest_csv("senadores_*.csv")
     return {
         "proyecto": "Monitor Legislativo — Senado Nacional Argentina",
         "version": "1.0.0",
         "url_base": _BASE,
+        "db_configurada": bool(_DB_URL),
+        "csv_disponible": csv.name if csv else None,
         "endpoints": {
+            "dashboard":          f"{_BASE}/dashboard/senado.html",
+            "indicadores":        f"{_BASE}/dashboard/indicadores.html",
             "senadores":          f"{_BASE}/senado/senadores",
             "reporte_partido":    f"{_BASE}/senado/reporte-partido",
             "reporte_provincial": f"{_BASE}/senado/reporte-provincial",
@@ -189,8 +267,6 @@ def raiz():
             "db_fechas":          f"{_BASE}/db/fechas",
             "salud":              f"{_BASE}/salud",
             "docs":               f"{_BASE}/docs",
-            "dashboard":          f"{_BASE}/dashboard/senado.html",
-            "indicadores":        f"{_BASE}/dashboard/indicadores.html",
         },
     }
 
@@ -198,59 +274,12 @@ def raiz():
 @app.get("/salud")
 def salud():
     csv = _latest_csv("senadores_*.csv")
-    db_ok = bool(_DB_URL)
-    return {"status": "ok", "csv": csv.name if csv else None, "db_configurada": db_ok}
-
-
-@app.get("/senado/senadores")
-def get_senadores():
-    csv = _latest_csv("senadores_*.csv")
-    if not csv:
-        return JSONResponse({"ok": False, "senadores": [], "fuente": "csv_no_encontrado"})
-    df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
-    registros = []
-    for _, row in df.iterrows():
-        def safe_int(v):
-            try: return int(float(v)) if pd.notna(v) else 0
-            except: return 0
-        def safe_float(v):
-            try: return float(v) if pd.notna(v) else None
-            except: return None
-        registros.append({
-            "id":                str(row.get("id", "")),
-            "nombre":            str(row.get("nombre", "—")),
-            "provincia":         str(row.get("provincia", "—")),
-            "partido":           str(row.get("partido_normalizado", row.get("partido", "—"))),
-            "rol_provincial":    str(row.get("rol_provincial", "—")),
-            "votos_total":       safe_int(row.get("votos_total")),
-            "votos_afirmativos": safe_int(row.get("votos_afirmativos")),
-            "votos_negativos":   safe_int(row.get("votos_negativos")),
-            "abstenciones":      safe_int(row.get("abstenciones")),
-            "ausencias":         safe_int(row.get("ausencias")),
-            "participation_pct": safe_float(row.get("participation_pct")),
-            "foto":              str(row.get("foto", "")),
-            "email":             str(row.get("email", "")),
-            "fuente":            "csv_real",
-        })
-    return JSONResponse({"ok": True, "total": len(registros), "senadores": registros, "fuente": csv.name})
-
-
-@app.get("/senado/reporte-partido")
-def get_reporte_partido():
-    csv = _latest_csv("reporte_partido_senado_*.csv")
-    if not csv:
-        return JSONResponse({"ok": False, "partidos": [], "fuente": "csv_no_encontrado"})
-    df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
-    return JSONResponse({"ok": True, "total": len(df), "partidos": df.to_dict("records"), "fuente": csv.name})
-
-
-@app.get("/senado/reporte-provincial")
-def get_reporte_provincial():
-    csv = _latest_csv("reporte_provincial_senado_*.csv")
-    if not csv:
-        return JSONResponse({"ok": False, "provincias": [], "fuente": "csv_no_encontrado"})
-    df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
-    return JSONResponse({"ok": True, "total": len(df), "provincias": df.to_dict("records"), "fuente": csv.name})
+    return {
+        "status": "ok",
+        "csv": csv.name if csv else None,
+        "db_configurada": bool(_DB_URL),
+        "dashboard": _DASHBOARD.exists(),
+    }
 
 
 if __name__ == "__main__":
