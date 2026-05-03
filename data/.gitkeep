@@ -1,0 +1,2 @@
+# Esta carpeta almacena los CSV generados por el scraper.
+# No eliminar este archivo — asegura que data/ exista en el deploy.
