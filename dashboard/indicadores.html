@@ -454,6 +454,31 @@ footer a { color: var(--rojo); text-decoration: none; }
   .filtros-bar input { width: 100%; }
   .modal-kpis { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ── Modal Donación ── */
+.don-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem; }
+.don-overlay.open { display:flex; }
+.don-modal { background:#0f172a; border-radius:16px; max-width:860px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.5); animation:donIn .2s ease; }
+@keyframes donIn { from{opacity:0;transform:translateY(20px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.don-header { background:linear-gradient(135deg,#1e293b,#0f172a); padding:1.4rem 1.5rem 1rem; border-bottom:1px solid #1e293b; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; }
+.don-header-txt h2 { color:#e2e8f0; font-size:1rem; font-weight:700; }
+.don-header-txt p  { color:#64748b; font-size:.78rem; margin-top:.2rem; }
+.don-cerrar { background:rgba(255,255,255,.1); border:none; color:#94a3b8; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .15s; flex-shrink:0; }
+.don-cerrar:hover { background:rgba(255,255,255,.2); color:#fff; }
+.don-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(195px,1fr)); gap:.85rem; padding:1.2rem 1.4rem; }
+.don-card { background:#1e293b; border-radius:10px; padding:1rem 1.1rem; border:1px solid #334155; }
+.don-card-title { font-size:.72rem; font-weight:700; color:#38bdf8; margin-bottom:.75rem; letter-spacing:.07em; }
+.don-field { margin-bottom:.55rem; }
+.don-label { font-size:.62rem; color:#64748b; text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:.1rem; }
+.don-value { font-size:.8rem; color:#e2e8f0; }
+.don-value.hl { color:#34d399; font-weight:700; font-family:'Courier New',monospace; word-break:break-all; }
+.don-copy { background:none; border:1px solid #334155; color:#94a3b8; border-radius:4px; padding:.1rem .4rem; font-size:.65rem; cursor:pointer; margin-left:.35rem; transition:all .15s; }
+.don-copy:hover { background:#334155; color:#fff; }
+.don-autor { display:flex; align-items:center; gap:.85rem; }
+.don-foto { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #334155; flex-shrink:0; }
+.don-autor-nombre { font-size:.88rem; font-weight:700; color:#e2e8f0; }
+.don-autor-rol    { font-size:.72rem; color:#64748b; }
+.don-autor-links a { color:#38bdf8; font-size:.75rem; text-decoration:none; display:block; margin-top:.25rem; }
 </style>
 </head>
 <body>
@@ -468,6 +493,7 @@ footer a { color: var(--rojo); text-decoration: none; }
     <a href="https://monitorlegistativo-production.up.railway.app/dashboard/" target="_blank">🏠 Diputados ↗</a>
     <a href="senado.html">🏛️ Senado</a>
     <a href="indicadores.html" class="active">📊 Indicadores</a>
+    <a href="#" onclick="abrirDonacion(); return false;" style="background:rgba(255,165,0,.25); border:1px solid rgba(255,165,0,.5);">💙 Donar</a>
   </nav>
 </header>
 
@@ -1459,6 +1485,74 @@ renderTabla();
 buildPartidos();
 buildProvincias();
 buildRankings();
+</script>
+
+<!-- Modal Donación -->
+<div class="don-overlay" id="don-overlay" onclick="if(event.target===this)cerrarDonacion()">
+  <div class="don-modal">
+    <div class="don-header">
+      <div class="don-header-txt">
+        <h2>💙 Apoyá este proyecto — Donaciones voluntarias</h2>
+        <p>Herramienta independiente y académica para la transparencia pública</p>
+      </div>
+      <button class="don-cerrar" onclick="cerrarDonacion()">✕</button>
+    </div>
+    <div class="don-grid">
+      <div class="don-card">
+        <div class="don-card-title">🇦🇷 Argentina · Pesos (ARS)</div>
+        <div class="don-field"><span class="don-label">Tipo</span><span class="don-value">Caja de Ahorro</span></div>
+        <div class="don-field"><span class="don-label">CBU</span><span class="don-value hl" id="cbu-ars">0140005203400552652310</span><button class="don-copy" onclick="copiar('cbu-ars')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Alias</span><span class="don-value hl" id="alias-ars">ALGORIT.MONTE.PESOS</span><button class="don-copy" onclick="copiar('alias-ars')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Titular</span><span class="don-value">Vicente Humberto Monteverde</span></div>
+        <div class="don-field"><span class="don-label">CUIL</span><span class="don-value">20-12034411-1</span></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">🇦🇷 Argentina · Dólares (USD)</div>
+        <div class="don-field"><span class="don-label">Tipo</span><span class="don-value">Caja de Ahorro Dólares</span></div>
+        <div class="don-field"><span class="don-label">CBU</span><span class="don-value hl" id="cbu-usd">0140005204400550329709</span><button class="don-copy" onclick="copiar('cbu-usd')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Alias</span><span class="don-value hl" id="alias-usd">ALGO.MONTE.DOLARES</span><button class="don-copy" onclick="copiar('alias-usd')">copiar</button></div>
+        <div class="don-field"><span class="don-label">Titular</span><span class="don-value">Vicente Humberto Monteverde</span></div>
+        <div class="don-field"><span class="don-label">CUIL</span><span class="don-value">20-12034411-1</span></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">🌐 Exterior (USD Wire)</div>
+        <div class="don-field"><span class="don-label">Banco</span><span class="don-value">Banco Santander Montevideo</span></div>
+        <div class="don-field"><span class="don-label">Beneficiario</span><span class="don-value">Vicente Humberto Monteverde</span></div>
+        <div class="don-field"><span class="don-label">Cuenta USD</span><span class="don-value hl" id="cuenta-wire">005200183500</span><button class="don-copy" onclick="copiar('cuenta-wire')">copiar</button></div>
+        <div class="don-field"><span class="don-label">SWIFT</span><span class="don-value hl" id="swift2">BSCHUYMM</span><button class="don-copy" onclick="copiar('swift2')">copiar</button></div>
+        <div class="don-field"><span class="don-label">CUIL</span><span class="don-value">20-12034411-1</span></div>
+      </div>
+      <div class="don-card">
+        <div class="don-card-title">👤 Autor y Contacto</div>
+        <div class="don-autor">
+          <img class="don-foto" src="img/foto.jpg" onerror="this.style.display='none'" alt="Vicente Monteverde">
+          <div>
+            <div class="don-autor-nombre">Vicente Humberto Monteverde</div>
+            <div class="don-autor-rol">Investigador · Desarrollador</div>
+          </div>
+        </div>
+        <div class="don-autor-links" style="margin-top:.75rem;">
+          <a href="mailto:vhmonte@retina.ar">✉️ vhmonte@retina.ar</a>
+          <a href="mailto:viny01958@gmail.com">✉️ viny01958@gmail.com</a>
+          <a href="https://github.com/Viny2030" target="_blank">🐙 github.com/Viny2030</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirDonacion() { document.getElementById('don-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+function cerrarDonacion() { document.getElementById('don-overlay').classList.remove('open'); document.body.style.overflow=''; }
+function copiar(id) {
+  const txt = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector('[onclick="copiar(\'' + id + '\')"]');
+    const orig = btn.textContent; btn.textContent='✅'; btn.style.color='#34d399';
+    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; }, 1500);
+  });
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarDonacion(); });
 </script>
 </body>
 </html>
