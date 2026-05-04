@@ -73,20 +73,20 @@ def _mock_csv(content: str):
 class TestRaiz:
 
     def test_retorna_200(self):
-        resp = client.get("/")
+        resp = client.get("/info")          # ← antes "/"
         assert resp.status_code == 200
 
     def test_tiene_proyecto(self):
-        data = client.get("/").json()
+        data = client.get("/info").json()   # ← antes "/"
         assert "proyecto" in data
 
     def test_tiene_endpoints(self):
-        data = client.get("/").json()
+        data = client.get("/info").json()   # ← antes "/"
         assert "endpoints" in data
         assert "senadores" in data["endpoints"]
 
     def test_version_presente(self):
-        data = client.get("/").json()
+        data = client.get("/info").json()   # ← antes "/"
         assert "version" in data
 
 
