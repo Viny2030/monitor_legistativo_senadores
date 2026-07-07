@@ -493,6 +493,7 @@ footer a { color: var(--rojo); text-decoration: none; }
     <a href="https://monitorlegistativo-production.up.railway.app/dashboard/" target="_blank">🏠 Diputados ↗</a>
     <a href="senado.html">🏛️ Senado</a>
     <a href="indicadores.html" class="active">📊 Indicadores</a>
+    <a href="comparativa_senado.html">🌐 Comparativa</a>
     <a href="#" onclick="abrirDonacion(); return false;" style="background:rgba(255,165,0,.25); border:1px solid rgba(255,165,0,.5);">💙 Donar</a>
   </nav>
 </header>
@@ -1558,7 +1559,4 @@ function copiar(id) {
     setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; }, 1500);
   });
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarDonacion(); });
-</script>
-</body>
-</html>
+document.addEventListener('keydown', e => { if(e.key==
