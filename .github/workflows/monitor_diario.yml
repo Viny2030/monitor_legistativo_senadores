@@ -96,4 +96,10 @@ jobs:
                     dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
                     dashboard/nomina_detalle_senadores.html \
+                    dashboard/comparativa_senado.html
+            git add -f data/*.csv 2>/dev/null || true
+            add_si_existe tc.json dieta.json data/dieta_historial.csv
+            git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
+            git push
+          fi
 
