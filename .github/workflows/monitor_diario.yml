@@ -31,6 +31,12 @@ jobs:
       - name: 🏛️ Ejecutar Monitor de Senadores
         run: python pipeline.py
 
+      - name: 📦 Cargar CSVs a PostgreSQL
+        run: python cargar_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        continue-on-error: true
+
       - name: 🔄 Actualizar fallback en senado.html
         run: python scripts/actualizar_fallback_senado.py
 
@@ -77,6 +83,7 @@ jobs:
                   dashboard/indicadores_bloques_senadores.html \
                   dashboard/nomina_detalle_senadores.html \
                   dashboard/comparativa_senado.html
+          git add -f data/*.csv 2>/dev/null || true
           add_si_existe tc.json dieta.json data/dieta_historial.csv
 
           if git diff --staged --quiet; then
@@ -89,9 +96,4 @@ jobs:
                     dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
                     dashboard/nomina_detalle_senadores.html \
-                    dashboard/comparativa_senado.html
-            add_si_existe tc.json dieta.json data/dieta_historial.csv
-            git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
-            git push
-          fi
 
