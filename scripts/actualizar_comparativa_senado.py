@@ -79,9 +79,16 @@ def generar_kpi_comparativa(datos: dict) -> str:
 def generar_dietas_usd(datos: dict) -> str:
     """
     Genera la tabla de dietas en dólares.
-    datos esperados: dieta_bruta_con, dieta_neta_con, dieta_usd_con,
-                     dieta_bruta_sin, dieta_neta_sin, dieta_usd_sin,
-                     tc, leyes_fuente
+    datos esperados (todos derivados del recibo oficial PDF + TC real, ver
+    scripts/monitorear_dieta.py y scripts/actualizar_tc.py):
+      dieta_bruta_con, dieta_neta_con, dieta_usd_con   → paquete completo (2500+1000+500 módulos)
+      dieta_base_bruto, dieta_base_neto, dieta_base_usd → solo dieta (2500 módulos)
+      gastos_bruto, gastos_usd                          → gastos de representación (1000 módulos)
+      desarraigo_bruto, desarraigo_usd                  → desarraigo (500 módulos)
+      tc, fuente, periodo
+    Las filas "sin aumento" (senadores desacoplados del ajuste automático) y
+    "costo por sesión" NO tienen fuente pública parseable identificada todavía
+    — quedan como referencia manual, marcadas explícitamente como tal.
     """
     bruto_con  = datos.get("dieta_bruta_con",  "$9.990.000")
     neto_con   = datos.get("dieta_neta_con",   "~$8.100.000")
@@ -89,11 +96,23 @@ def generar_dietas_usd(datos: dict) -> str:
     bruto_sin  = datos.get("dieta_bruta_sin",  "$9.500.000")
     neto_sin   = datos.get("dieta_neta_sin",   "~$7.800.000")
     usd_sin    = datos.get("dieta_usd_sin",    "~USD 5.380")
-    tc         = datos.get("tc",               "~$1.450 ARS/USD")
-    fuente     = datos.get("fuente",           "iProfesional, oct.2025")
+
+    base_bruto = datos.get("dieta_base_bruto", "~$6.250.000")
+    base_neto  = datos.get("dieta_base_neto",  "~$5.100.000")
+    base_usd   = datos.get("dieta_base_usd",   "~USD 3.520")
+
+    gastos_bruto = datos.get("gastos_bruto", "~$2.500.000")
+    gastos_usd   = datos.get("gastos_usd",   "~USD 1.720")
+
+    desarraigo_bruto = datos.get("desarraigo_bruto", "~$1.250.000")
+    desarraigo_usd    = datos.get("desarraigo_usd",   "~USD 860")
+
+    tc      = datos.get("tc",      "~$1.450 ARS/USD")
+    fuente  = datos.get("fuente",  "iProfesional, oct.2025")
+    periodo = datos.get("periodo", "")
 
     return f"""  <div class="panel">
-    <h3>Dietas de senadores en dólares — 2025</h3>
+    <h3>Dietas de senadores en dólares{f' — {periodo}' if periodo else ' — 2025'}</h3>
     <table class="tbl">
       <thead><tr>
         <th>Concepto</th>
@@ -103,44 +122,44 @@ def generar_dietas_usd(datos: dict) -> str:
       </tr></thead>
       <tbody>
         <tr class="highlight">
-          <td>Senador con aumento (jul.2025)</td>
+          <td>Senador con aumento{f' ({periodo})' if periodo else ''}</td>
           <td class="num">{bruto_con}</td>
           <td class="num">{neto_con}</td>
           <td class="num"><strong>{usd_con}</strong></td>
         </tr>
         <tr>
-          <td>Senador sin aumento (desacoplado)</td>
+          <td>Senador sin aumento (desacoplado) <span title="Sin fuente pública parseable — referencia manual">*</span></td>
           <td class="num">{bruto_sin}</td>
           <td class="num">{neto_sin}</td>
           <td class="num">{usd_sin}</td>
         </tr>
         <tr>
           <td>Dieta base (2.500 módulos)</td>
-          <td class="num">~$6.250.000</td>
-          <td class="num">~$5.100.000</td>
-          <td class="num">~USD 3.520</td>
+          <td class="num">{base_bruto}</td>
+          <td class="num">{base_neto}</td>
+          <td class="num">{base_usd}</td>
         </tr>
         <tr>
           <td>Gastos representación (1.000 mód.)</td>
-          <td class="num">~$2.500.000</td>
+          <td class="num">{gastos_bruto}</td>
           <td class="num">—</td>
-          <td class="num">~USD 1.720</td>
+          <td class="num">{gastos_usd}</td>
         </tr>
         <tr>
           <td>Desarraigo +100km CABA (500 mód.)</td>
-          <td class="num">~$1.250.000</td>
+          <td class="num">{desarraigo_bruto}</td>
           <td class="num">—</td>
-          <td class="num">~USD 860</td>
+          <td class="num">{desarraigo_usd}</td>
         </tr>
         <tr>
-          <td>Costo por sesión (72 sen.)</td>
+          <td>Costo por sesión (72 sen.) <span title="Sin fuente pública parseable — referencia manual">*</span></td>
           <td class="num">~$611.800.000</td>
           <td class="num">—</td>
           <td class="num">~USD 421.900</td>
         </tr>
       </tbody>
     </table>
-    <p class="nota-fuente">Fuente: {fuente}. TC {tc} (TC oficial jul.2025).</p>
+    <p class="nota-fuente">Fuente: {fuente}. TC {tc}. <span title="Sin fuente pública parseable">*</span> = referencia manual, no automatizada.</p>
   </div>"""
 
 
@@ -315,15 +334,19 @@ def actualizar_comparativa(datos_kpi: dict = None,
 
 # ── Entry point ────────────────────────────────────────────────────────────
 
-# Dieta bruta de referencia en ARS (senador con aumento, resolución DR 8/24,
-# jul.2025 — fuente iProfesional). El scraper de monitorear_dieta.py todavía
-# no puede leer un valor confiable desde senado.gob.ar/dietas porque la página
-# solo describe "2500 módulos" y remite a la escala salarial, sin publicar un
-# monto en pesos parseable. Hasta resolver ese scraper, este monto ARS se
-# mantiene como referencia manual — lo que SÍ se vuelve dinámico acá es la
-# conversión a USD, que ahora usa el tipo de cambio real (BCRA/dolarapi).
-DIETA_ARS_BRUTA_REFERENCIA = 9_990_000
-DIETA_ARS_NETA_REFERENCIA  = 8_100_000   # neto tras descuentos — base real del "USD 5.580" original
+# Dieta "sin aumento" (senadores desacoplados del ajuste automático) y "costo
+# por sesión": no hay fuente pública parseable identificada todavía para estos
+# dos casos puntuales -- quedan como referencia manual (ver aviso "*" en la
+# tabla generada). Todo lo demás en esta tabla sale del recibo oficial real
+# (scripts/monitorear_dieta.py, PDF de senado.gob.ar) + TC real (BCRA/dolarapi).
+DIETA_SIN_AUMENTO_BRUTO = 9_500_000
+DIETA_SIN_AUMENTO_NETO  = 7_800_000
+
+def _fmt_ars(v) -> str:
+    return f"${v:,.0f}".replace(",", ".")
+
+def _fmt_usd(v) -> str:
+    return f"USD {v:,.0f}".replace(",", ".")
 
 if __name__ == "__main__":
     # Tipo de cambio real — cascada dolarapi → bluelytics → argentinadatos
@@ -335,25 +358,62 @@ if __name__ == "__main__":
         print(f"[WARN] No se pudo cargar TC real ({e}); usando referencia 1420.0")
         tc_actual = 1420.0
 
-    dieta_usd_valor = round(DIETA_ARS_NETA_REFERENCIA / tc_actual)
-    dieta_usd_fmt   = f"USD {dieta_usd_valor:,}".replace(",", ".")
-    tc_fmt          = f"${tc_actual:,.0f} ARS/USD".replace(",", ".")
+    # Dieta real (módulo + montos) desde el recibo oficial en PDF.
+    try:
+        from monitorear_dieta import cargar_dieta_detalle
+        dieta = cargar_dieta_detalle()
+    except Exception as e:
+        print(f"[WARN] No se pudo cargar dieta real ({e}); usando referencia estática")
+        dieta = {
+            "dieta_base_bruto": 6_250_000, "dieta_base_neto": 5_100_000,
+            "gastos_bruto": 2_500_000, "desarraigo_bruto": 1_250_000,
+            "bruto_con_aumento": 9_990_000, "neto_con_aumento": 8_100_000,
+            "periodo": "", "fuente": "referencia estática",
+        }
+
+    tc_fmt = f"${tc_actual:,.0f} ARS/USD".replace(",", ".")
+
+    bruto_con = dieta["bruto_con_aumento"]
+    neto_con  = dieta.get("neto_con_aumento") or DIETA_SIN_AUMENTO_NETO
+    usd_con   = round(neto_con / tc_actual)
+
+    base_bruto = dieta["dieta_base_bruto"]
+    base_neto  = dieta.get("dieta_base_neto") or base_bruto
+    base_usd   = round(base_neto / tc_actual)
+
+    gastos_bruto     = dieta.get("gastos_bruto")
+    desarraigo_bruto = dieta.get("desarraigo_bruto")
+    gastos_usd       = round(gastos_bruto / tc_actual) if gastos_bruto else None
+    desarraigo_usd   = round(desarraigo_bruto / tc_actual) if desarraigo_bruto else None
+
+    dieta_usd_fmt = _fmt_usd(usd_con)
 
     datos_kpi_ejemplo = {
         "presupuesto_usd": "USD 94M",        # sin scraper propio aún — referencia manual
         "crc_usd":         "USD 2,0",        # requiere dato de población — referencia manual
-        "dieta_usd":       dieta_usd_fmt,    # ← ahora calculado con TC real (BCRA/dolarapi)
+        "dieta_usd":       dieta_usd_fmt,    # ← módulo real (PDF) + TC real
         "bancas":          72,
         "nep":             "5,06",
         "leyes_2025":      13,               # sin scraper de leyes sancionadas aún — referencia manual
         "subtitulo_leyes": "mínimo histórico",
     }
     datos_dietas_ejemplo = {
-        "dieta_bruta_con": f"${DIETA_ARS_BRUTA_REFERENCIA:,}".replace(",", "."),
-        "dieta_neta_con":  f"~${DIETA_ARS_NETA_REFERENCIA:,}".replace(",", "."),
+        "dieta_bruta_con": _fmt_ars(bruto_con),
+        "dieta_neta_con":  f"~{_fmt_ars(neto_con)}",
         "dieta_usd_con":   f"~{dieta_usd_fmt}",
+        "dieta_bruta_sin": _fmt_ars(DIETA_SIN_AUMENTO_BRUTO),
+        "dieta_neta_sin":  f"~{_fmt_ars(DIETA_SIN_AUMENTO_NETO)}",
+        "dieta_usd_sin":   f"~{_fmt_usd(round(DIETA_SIN_AUMENTO_NETO / tc_actual))}",
+        "dieta_base_bruto": _fmt_ars(base_bruto),
+        "dieta_base_neto":  f"~{_fmt_ars(base_neto)}",
+        "dieta_base_usd":   f"~{_fmt_usd(base_usd)}",
+        "gastos_bruto":     _fmt_ars(gastos_bruto) if gastos_bruto else "~$2.500.000",
+        "gastos_usd":       f"~{_fmt_usd(gastos_usd)}" if gastos_usd else "~USD 1.720",
+        "desarraigo_bruto": _fmt_ars(desarraigo_bruto) if desarraigo_bruto else "~$1.250.000",
+        "desarraigo_usd":   f"~{_fmt_usd(desarraigo_usd)}" if desarraigo_usd else "~USD 860",
         "tc":              tc_fmt,
-        "fuente":          "iProfesional, oct.2025 (ARS) + TC en vivo (BCRA/dolarapi)",
+        "fuente":          f"{dieta.get('fuente', 'referencia')} (ARS) + TC en vivo (BCRA/dolarapi)",
+        "periodo":         dieta.get("periodo", ""),
     }
     datos_leyes_ejemplo = {
         "leyes_2024_arg": "38",
@@ -364,7 +424,7 @@ if __name__ == "__main__":
         "arg_hab_sen":   652000,
         "arg_nep":       5.06,
         "arg_costo_hab": 1.99,
-        "arg_dieta_mes": dieta_usd_valor,   # ← también calculado con TC real
+        "arg_dieta_mes": usd_con,   # ← también calculado con dieta y TC reales
     }
 
     actualizar_comparativa(
