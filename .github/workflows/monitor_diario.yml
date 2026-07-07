@@ -34,6 +34,9 @@ jobs:
       - name: 🔄 Actualizar fallback en senado.html
         run: python scripts/actualizar_fallback_senado.py
 
+      - name: 📊 Actualizar array en indicadores.html (pagina real del menu)
+        run: python scripts/actualizar_indicadores_raw_senado.py
+
       - name: 📊 Actualizar array en indicadores_senadores.html
         run: python scripts/actualizar_indicadores_senado.py
 
@@ -69,7 +72,8 @@ jobs:
             return 0
           }
 
-          git add dashboard/senado.html dashboard/indicadores_senadores.html \
+          git add dashboard/senado.html dashboard/indicadores.html \
+                  dashboard/indicadores_senadores.html \
                   dashboard/indicadores_bloques_senadores.html \
                   dashboard/nomina_detalle_senadores.html \
                   dashboard/comparativa_senado.html
@@ -81,7 +85,8 @@ jobs:
             git stash
             git pull --rebase origin main
             git stash pop
-            git add dashboard/senado.html dashboard/indicadores_senadores.html \
+            git add dashboard/senado.html dashboard/indicadores.html \
+                    dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
                     dashboard/nomina_detalle_senadores.html \
                     dashboard/comparativa_senado.html
