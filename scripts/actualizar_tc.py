@@ -31,7 +31,7 @@ from datetime import datetime
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TC_JSON      = "tc.json"
-TC_HARDCODED = 1420.0      # BNA venta 25/03/2026 — actualizar si pasa más de 1 semana
+TC_HARDCODED = 1510.0      # BNA venta 06/07/2026 — actualizar si pasa más de 1 semana
 SSL_VERIFY   = False        # Servidores .gob.ar con cert chain incompleto en Windows
 
 import urllib3
