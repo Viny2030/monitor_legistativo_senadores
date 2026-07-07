@@ -58,3 +58,13 @@ jobs:
         with:
           name: senado-data-${{ github.run_number }}
           path: data/*.csv
+          retention-days: 30
+
+      - name: 📢 Notificar resultado
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Pipeline completado exitosamente — $(date '+%d/%m/%Y %H:%M')"
+          else
+            echo "❌ Pipeline falló — revisar logs"
+          fi
