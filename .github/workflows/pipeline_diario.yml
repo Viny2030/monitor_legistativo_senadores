@@ -1,10 +1,12 @@
-name: 🏛️ Pipeline Diario — Senado Nacional
+name: 🏛️ Pipeline Diario — Senado Nacional (manual)
 
+# NOTA: este workflow ya NO corre en schedule automático — quedó consolidado
+# dentro de monitor_diario.yml (08:10 ART), que ahora también hace
+# `cargar_db.py` y commitea data/*.csv. Correr pipeline.py en dos workflows
+# separados generaba doble commit/push casi en simultáneo y riesgo de
+# conflictos de git. Este workflow queda solo para forzar una recarga manual
+# puntual (ej. si el run diario falló) — no se dispara solo.
 on:
-  schedule:
-    # Corre todos los días a las 06:00 AM hora Argentina (UTC-3 → 09:00 UTC)
-    - cron: '0 9 * * *'
-
   workflow_dispatch:
     inputs:
       force_reload:
@@ -56,13 +58,3 @@ jobs:
         with:
           name: senado-data-${{ github.run_number }}
           path: data/*.csv
-          retention-days: 30
-
-      - name: 📢 Notificar resultado
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Pipeline completado exitosamente — $(date '+%d/%m/%Y %H:%M')"
-          else
-            echo "❌ Pipeline falló — revisar logs"
-          fi
