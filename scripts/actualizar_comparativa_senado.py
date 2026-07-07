@@ -315,17 +315,45 @@ def actualizar_comparativa(datos_kpi: dict = None,
 
 # ── Entry point ────────────────────────────────────────────────────────────
 
+# Dieta bruta de referencia en ARS (senador con aumento, resolución DR 8/24,
+# jul.2025 — fuente iProfesional). El scraper de monitorear_dieta.py todavía
+# no puede leer un valor confiable desde senado.gob.ar/dietas porque la página
+# solo describe "2500 módulos" y remite a la escala salarial, sin publicar un
+# monto en pesos parseable. Hasta resolver ese scraper, este monto ARS se
+# mantiene como referencia manual — lo que SÍ se vuelve dinámico acá es la
+# conversión a USD, que ahora usa el tipo de cambio real (BCRA/dolarapi).
+DIETA_ARS_BRUTA_REFERENCIA = 9_990_000
+DIETA_ARS_NETA_REFERENCIA  = 8_100_000   # neto tras descuentos — base real del "USD 5.580" original
+
 if __name__ == "__main__":
-    # Ejemplo de uso con datos del scraper.
-    # En producción estos dicts los arma pipeline_senado.py con datos reales.
+    # Tipo de cambio real — cascada dolarapi → bluelytics → argentinadatos
+    # → BCRA API v4 → último tc.json guardado → hardcoded (ver actualizar_tc.py).
+    try:
+        from actualizar_tc import cargar_tc
+        tc_actual = cargar_tc()
+    except Exception as e:
+        print(f"[WARN] No se pudo cargar TC real ({e}); usando referencia 1420.0")
+        tc_actual = 1420.0
+
+    dieta_usd_valor = round(DIETA_ARS_NETA_REFERENCIA / tc_actual)
+    dieta_usd_fmt   = f"USD {dieta_usd_valor:,}".replace(",", ".")
+    tc_fmt          = f"${tc_actual:,.0f} ARS/USD".replace(",", ".")
+
     datos_kpi_ejemplo = {
-        "presupuesto_usd": "USD 94M",
-        "crc_usd":         "USD 2,0",
-        "dieta_usd":       "USD 5.500",
+        "presupuesto_usd": "USD 94M",        # sin scraper propio aún — referencia manual
+        "crc_usd":         "USD 2,0",        # requiere dato de población — referencia manual
+        "dieta_usd":       dieta_usd_fmt,    # ← ahora calculado con TC real (BCRA/dolarapi)
         "bancas":          72,
         "nep":             "5,06",
-        "leyes_2025":      13,
+        "leyes_2025":      13,               # sin scraper de leyes sancionadas aún — referencia manual
         "subtitulo_leyes": "mínimo histórico",
+    }
+    datos_dietas_ejemplo = {
+        "dieta_bruta_con": f"${DIETA_ARS_BRUTA_REFERENCIA:,}".replace(",", "."),
+        "dieta_neta_con":  f"~${DIETA_ARS_NETA_REFERENCIA:,}".replace(",", "."),
+        "dieta_usd_con":   f"~{dieta_usd_fmt}",
+        "tc":              tc_fmt,
+        "fuente":          "iProfesional, oct.2025 (ARS) + TC en vivo (BCRA/dolarapi)",
     }
     datos_leyes_ejemplo = {
         "leyes_2024_arg": "38",
@@ -336,11 +364,12 @@ if __name__ == "__main__":
         "arg_hab_sen":   652000,
         "arg_nep":       5.06,
         "arg_costo_hab": 1.99,
-        "arg_dieta_mes": 5580,
+        "arg_dieta_mes": dieta_usd_valor,   # ← también calculado con TC real
     }
 
     actualizar_comparativa(
         datos_kpi=datos_kpi_ejemplo,
+        datos_dietas=datos_dietas_ejemplo,
         datos_leyes=datos_leyes_ejemplo,
         datos_paises=datos_paises_ejemplo,
     )

@@ -111,20 +111,23 @@ def _desde_argentinadatos() -> dict | None:
 
 def _desde_bcra() -> dict | None:
     try:
+        # v2.0 y v3.0 fueron dadas de baja por el BCRA ("deprecado" → HTTP 410).
+        # Endpoint vigente: v4.0/Monetarias (idVariable 4 = TC minorista promedio vendedor).
+        # Doc: https://principales-variables.bcra.apidocs.ar/
         r = requests.get(
-            "https://api.bcra.gob.ar/estadisticas/v2.0/principalesvariables",
+            "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias",
             headers=HEADERS, timeout=10, verify=SSL_VERIFY
         )
         r.raise_for_status()
         for var in r.json().get("results", []):
             if var.get("idVariable") == 4:
-                val = float(var.get("valor", 0))
+                val = float(var.get("ultValorInformado", 0))
                 if val > 500:
                     return {
                         "oficial_venta":  val,
                         "oficial_compra": round(val * 0.965, 2),
                         "blue_venta":     None,
-                        "fuente":         "BCRA API v2",
+                        "fuente":         "BCRA API v4",
                     }
     except Exception as e:
         print(f"  ⚠️  BCRA: {e}")
