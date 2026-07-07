@@ -65,11 +65,15 @@ def generar_kpi_comparativa(datos: dict) -> str:
     nep         = datos.get("nep", "5,06")
     leyes       = datos.get("leyes_2025", 13)
     subtitulo_leyes = datos.get("subtitulo_leyes", "mínimo histórico")
+    # Subtítulo de la dieta: usa el período real del recibo (ej. "Julio 2026")
+    # si está disponible; si no, un texto genérico que no queda desactualizado.
+    periodo = datos.get("periodo", "")
+    subtitulo_dieta = f"promedio {periodo}" if periodo else "último recibo disponible"
 
     return f"""<div class="kpi-bar">
   <div class="kpi-card"><div class="kv">{presupuesto}</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
   <div class="kpi-card"><div class="kv">{crc}</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
-  <div class="kpi-card"><div class="kv">{dieta}</div><div class="kl">Dieta neta senador</div><div class="ks">promedio jul.2025</div></div>
+  <div class="kpi-card"><div class="kv">{dieta}</div><div class="kl">Dieta neta senador</div><div class="ks">{subtitulo_dieta}</div></div>
   <div class="kpi-card"><div class="kv">{bancas}</div><div class="kl">Bancas</div><div class="ks">3 por provincia</div></div>
   <div class="kpi-card"><div class="kv">{nep}</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
   <div class="kpi-card"><div class="kv">{leyes}</div><div class="kl">Leyes 2025</div><div class="ks">{subtitulo_leyes}</div></div>
@@ -396,6 +400,7 @@ if __name__ == "__main__":
         "nep":             "5,06",
         "leyes_2025":      13,               # sin scraper de leyes sancionadas aún — referencia manual
         "subtitulo_leyes": "mínimo histórico",
+        "periodo":         dieta.get("periodo", ""),  # ← período real del recibo (evita etiqueta desactualizada)
     }
     datos_dietas_ejemplo = {
         "dieta_bruta_con": _fmt_ars(bruto_con),
@@ -420,16 +425,3 @@ if __name__ == "__main__":
         "leyes_2025_arg": "13",
         "sesiones_arg":   "12",
     }
-    datos_paises_ejemplo = {
-        "arg_hab_sen":   652000,
-        "arg_nep":       5.06,
-        "arg_costo_hab": 1.99,
-        "arg_dieta_mes": usd_con,   # ← también calculado con dieta y TC reales
-    }
-
-    actualizar_comparativa(
-        datos_kpi=datos_kpi_ejemplo,
-        datos_dietas=datos_dietas_ejemplo,
-        datos_leyes=datos_leyes_ejemplo,
-        datos_paises=datos_paises_ejemplo,
-    )
