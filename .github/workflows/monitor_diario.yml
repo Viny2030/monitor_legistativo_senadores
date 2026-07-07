@@ -66,7 +66,7 @@ jobs:
           add_si_existe() {
             for f in "$@"; do
               if [ -f "$f" ]; then
-                git add "$f"
+                git add -f "$f"
               fi
             done
             return 0
