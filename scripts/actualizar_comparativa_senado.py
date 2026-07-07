@@ -425,3 +425,16 @@ if __name__ == "__main__":
         "leyes_2025_arg": "13",
         "sesiones_arg":   "12",
     }
+    datos_paises_ejemplo = {
+        "arg_hab_sen":   652000,
+        "arg_nep":       5.06,
+        "arg_costo_hab": 1.99,
+        "arg_dieta_mes": usd_con,   # ← también calculado con dieta y TC reales
+    }
+
+    actualizar_comparativa(
+        datos_kpi=datos_kpi_ejemplo,
+        datos_dietas=datos_dietas_ejemplo,
+        datos_leyes=datos_leyes_ejemplo,
+        datos_paises=datos_paises_ejemplo,
+    )
