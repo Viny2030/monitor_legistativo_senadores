@@ -59,11 +59,22 @@ jobs:
         run: |
           git config --global user.name  "Monitor Bot"
           git config --global user.email "bot@monitor-senado.ar"
+
+          add_si_existe() {
+            for f in "$@"; do
+              if [ -f "$f" ]; then
+                git add "$f"
+              fi
+            done
+            return 0
+          }
+
           git add dashboard/senado.html dashboard/indicadores_senadores.html \
                   dashboard/indicadores_bloques_senadores.html \
                   dashboard/nomina_detalle_senadores.html \
-                  dashboard/comparativa_senado.html \
-                  tc.json dieta.json data/dieta_historial.csv
+                  dashboard/comparativa_senado.html
+          add_si_existe tc.json dieta.json data/dieta_historial.csv
+
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
           else
@@ -73,8 +84,8 @@ jobs:
             git add dashboard/senado.html dashboard/indicadores_senadores.html \
                     dashboard/indicadores_bloques_senadores.html \
                     dashboard/nomina_detalle_senadores.html \
-                    dashboard/comparativa_senado.html \
-                    tc.json dieta.json data/dieta_historial.csv
+                    dashboard/comparativa_senado.html
+            add_si_existe tc.json dieta.json data/dieta_historial.csv
             git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
             git push
           fi
