@@ -927,7 +927,7 @@ async function cargarDatos() {
 // ─── Fallback con datos del CSV del 26/03/2026 ───────────────────────────────
 function usarFallback() {
 // FALLBACK:START
-  // Datos generados automáticamente el 2026-07-15 — no editar a mano
+  // Datos generados automáticamente el 2026-07-16 — no editar a mano
   PARTIDOS_DATA =   [
     { partido:"Unión por la Patria", bancas:21, participation_pct:43.3, 'Mayoría':12, 'Primera Minoría':9, votos_afirmativos:477, votos_negativos:926, abstenciones:15 },
     { partido:"La Libertad Avanza", bancas:18, participation_pct:45.3, 'Mayoría':14, 'Primera Minoría':4, votos_afirmativos:1198, votos_negativos:57, abstenciones:16 },
@@ -972,7 +972,7 @@ function usarFallback() {
     { provincia:"Tierra del Fuego, Antártida e Islas del Atlántico Sur", senadores:2, participation_pct:0.0, votos_total:0, partidos:"La Libertad Avanza", 'Mayoría':2, 'Primera Minoría':0 }
   ];
 
-  // FALLBACK: 71 senadores reales (CSV 2026-07-15) — usado cuando la API no responde
+  // FALLBACK: 71 senadores reales (CSV 2026-07-16) — usado cuando la API no responde
   SENADORES_DATA =   [
     { id:546.0, nombre:"Abad, Maximiliano", provincia:"Buenos Aires", partido:"Unión Cívica Radical", rol_provincial:"Primera Minoría", participation_pct:49.36, votos_afirmativos:65, votos_negativos:12, ausencias:8, abstenciones:0, votos_total:85, foto:"https://api.argentinadatos.com/static/senado/senadores/546.gif", email:"maximiliano.abad@senado.gob.ar", telefono:"(+54 11) 28223000", fuente:'fallback' },
     { id:545.0, nombre:"De Pedro, Eduardo Enrique", provincia:"Buenos Aires", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:54.49, votos_afirmativos:20, votos_negativos:64, ausencias:0, abstenciones:1, votos_total:85, foto:"https://api.argentinadatos.com/static/senado/senadores/545.gif", email:null, telefono:null, fuente:'fallback' },
