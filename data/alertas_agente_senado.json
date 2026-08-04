@@ -1,0 +1,210 @@
+{
+  "generado_en": "2026-08-04T11:52:30.363044+00:00",
+  "total_senadores": 72,
+  "analisis": {
+    "generado_en": "2026-08-04T11:52:30.363044+00:00",
+    "total_hallazgos": 21,
+    "por_severidad": {
+      "alta": 10,
+      "media": 1,
+      "baja": 10
+    },
+    "hallazgos": [
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Corpacci, Lucía Benigna (Unión por la Patria, Catamarca): participación 0.0%.",
+        "senador": "Corpacci, Lucía Benigna"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Alvarez Rivero, Carmen (Unión Cívica Radical, Córdoba): participación 0.0%.",
+        "senador": "Alvarez Rivero, Carmen"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Moises, María Carolina (Unión por la Patria, Jujuy): participación 0.0%.",
+        "senador": "Moises, María Carolina"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Huala, María Victoria (Unión Cívica Radical, La Pampa): participación 0.0%.",
+        "senador": "Huala, María Victoria"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Cornejo, Alfredo Victor (Frente Cambia Mendoza, Mendoza): participación 0.0%.",
+        "senador": "Cornejo, Alfredo Victor"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Márquez, Nadia Judith (La Libertad Avanza, Neuquén): participación 0.0%.",
+        "senador": "Márquez, Nadia Judith"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Soria, Martin Ignacio (Fuerza Patria, Río Negro): participación 0.0%.",
+        "senador": "Soria, Martin Ignacio"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Royon, Flavia Gabriela (Primero Los Salteños, Salta): participación 0.0%.",
+        "senador": "Royon, Flavia Gabriela"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Moreno, Elia Esther del Carmen (Frente Cívico por Santiago, Santiago del Estero): participación 0.0%.",
+        "senador": "Moreno, Elia Esther del Carmen"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Coto, Agustín Pedro (La Libertad Avanza, Tierra del Fuego, Antártida e Islas del Atlántico Sur): participación 0.0%.",
+        "senador": "Coto, Agustín Pedro"
+      },
+      {
+        "tipo": "recibo_oficial_desactualizado",
+        "severidad": "media",
+        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (215 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Corpacci, Lucía Benigna: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Corpacci, Lucía Benigna"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Cristina, Andrea Marcela: participación 38.51%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Cristina, Andrea Marcela"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Alvarez Rivero, Carmen: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Alvarez Rivero, Carmen"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Moises, María Carolina: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Moises, María Carolina"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Huala, María Victoria: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Huala, María Victoria"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Cornejo, Alfredo Victor: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Cornejo, Alfredo Victor"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Márquez, Nadia Judith: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Márquez, Nadia Judith"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Soria, Martin Ignacio: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Soria, Martin Ignacio"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Royon, Flavia Gabriela: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Royon, Flavia Gabriela"
+      },
+      {
+        "tipo": "outlier_estadistico_participacion",
+        "severidad": "baja",
+        "detalle": "Moreno, Elia Esther del Carmen: participación 0.0%, por debajo del piso estadístico (39.38%) del resto del cuerpo.",
+        "senador": "Moreno, Elia Esther del Carmen"
+      }
+    ]
+  },
+  "narrativa": {
+    "disponible": false,
+    "motivo": "Hallazgos estructurados generados sin problema (no requieren IA); la redacción narrativa está deshabilitada porque no hay ANTHROPIC_API_KEY."
+  },
+  "alerta": {
+    "requiere_alerta": true,
+    "criterio": "siempre para eventos puntuales; solo si es nuevo para estados por senador/provincia",
+    "hallazgos_relevantes": [
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Corpacci, Lucía Benigna (Unión por la Patria, Catamarca): participación 0.0%.",
+        "senador": "Corpacci, Lucía Benigna"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Alvarez Rivero, Carmen (Unión Cívica Radical, Córdoba): participación 0.0%.",
+        "senador": "Alvarez Rivero, Carmen"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Moises, María Carolina (Unión por la Patria, Jujuy): participación 0.0%.",
+        "senador": "Moises, María Carolina"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Huala, María Victoria (Unión Cívica Radical, La Pampa): participación 0.0%.",
+        "senador": "Huala, María Victoria"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Cornejo, Alfredo Victor (Frente Cambia Mendoza, Mendoza): participación 0.0%.",
+        "senador": "Cornejo, Alfredo Victor"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Márquez, Nadia Judith (La Libertad Avanza, Neuquén): participación 0.0%.",
+        "senador": "Márquez, Nadia Judith"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Soria, Martin Ignacio (Fuerza Patria, Río Negro): participación 0.0%.",
+        "senador": "Soria, Martin Ignacio"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Royon, Flavia Gabriela (Primero Los Salteños, Salta): participación 0.0%.",
+        "senador": "Royon, Flavia Gabriela"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Moreno, Elia Esther del Carmen (Frente Cívico por Santiago, Santiago del Estero): participación 0.0%.",
+        "senador": "Moreno, Elia Esther del Carmen"
+      },
+      {
+        "tipo": "participacion_critica",
+        "severidad": "alta",
+        "detalle": "Coto, Agustín Pedro (La Libertad Avanza, Tierra del Fuego, Antártida e Islas del Atlántico Sur): participación 0.0%.",
+        "senador": "Coto, Agustín Pedro"
+      }
+    ]
+  }
+}
