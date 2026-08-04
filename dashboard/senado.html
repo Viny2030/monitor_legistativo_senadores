@@ -301,6 +301,41 @@ td { padding: .45rem .8rem; vertical-align: middle; }
 .sen-modal-btn:hover { opacity:.85; }
 .sen-modal-btn.primary { background:#6b0f1a; color:#fff; }
 .sen-modal-btn.secondary { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+
+/* ── Panel del Agente autónomo ── */
+.agente-resumen-bar {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: .75rem; margin-bottom: 1.25rem;
+}
+.agente-kpi { background:#fff; border-radius:8px; border:1px solid #e2e8f0; padding:.85rem 1rem; text-align:center; }
+.agente-kpi .av { font-size:1.5rem; font-weight:900; line-height:1; }
+.agente-kpi .al { font-size:.68rem; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-top:.25rem; }
+.agente-kpi.alta .av { color:#dc2626; }
+.agente-kpi.media .av { color:#d97706; }
+.agente-kpi.baja .av { color:#64748b; }
+.agente-narrativa {
+  background:#1a0a1a; color:#cbd5e1; border-radius:10px; border:1px solid #3a1a1f;
+  padding:1rem 1.25rem; margin-bottom:1.25rem; font-size:.85rem; line-height:1.65;
+}
+.agente-narrativa .an-label {
+  color:#f0b429; font-weight:700; font-size:.72rem; text-transform:uppercase;
+  letter-spacing:.05em; margin-bottom:.5rem; display:block;
+}
+.hallazgo-card {
+  background:#fff; border-radius:8px; border:1px solid #e2e8f0; border-left:4px solid #94a3b8;
+  padding:.75rem 1rem; margin-bottom:.6rem; font-size:.82rem; line-height:1.5;
+}
+.hallazgo-card.alta  { border-left-color:#dc2626; }
+.hallazgo-card.media { border-left-color:#d97706; }
+.hallazgo-card.baja  { border-left-color:#94a3b8; }
+.hallazgo-sev {
+  display:inline-block; font-size:.65rem; font-weight:800; text-transform:uppercase;
+  letter-spacing:.04em; padding:.1rem .5rem; border-radius:10px; margin-right:.5rem;
+}
+.hallazgo-sev.alta  { background:#fee2e2; color:#dc2626; }
+.hallazgo-sev.media { background:#fef3c7; color:#b45309; }
+.hallazgo-sev.baja  { background:#f1f5f9; color:#64748b; }
+.hallazgo-tipo { font-weight:700; color:#334155; }
 </style>
 </head>
 <body>
@@ -328,6 +363,7 @@ td { padding: .45rem .8rem; vertical-align: middle; }
   <a href="#" onclick="cambiarSeccion('senadores', this); return false;">👤 Senadores</a>
   <a href="#" onclick="cambiarSeccion('provincial', this); return false;">🗺️ Por Provincia</a>
   <a href="#" onclick="cambiarSeccion('renovaciones', this); return false;">📅 Renovaciones</a>
+  <a href="#" onclick="cambiarSeccion('agente', this); return false;">🤖 Agente</a>
 </div>
 
 <!-- Status bar -->
@@ -423,6 +459,21 @@ td { padding: .45rem .8rem; vertical-align: middle; }
     </p>
     <div class="renovacion-grid" id="renovacion-grid">
       <div style="text-align:center; padding:2rem; color:#94a3b8;">⏳ Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECCIÓN: AGENTE AUTÓNOMO ══ -->
+<div id="sec-agente" class="seccion">
+  <div class="container">
+    <div class="sec-titulo">🤖 Agente de Monitoreo</div>
+    <p style="font-size:.78rem; color:#64748b; margin-bottom:1rem;">
+      Detección automática de anomalías (sin IA, siempre activa) sobre la nómina y la dieta
+      legislativa: participación crítica, composición incompleta, datos desactualizados y
+      demoras del recibo oficial de sueldos. Corre después de cada actualización diaria.
+    </p>
+    <div id="agente-contenido">
+      <div style="text-align:center; padding:2rem; color:#94a3b8;">⏳ Consultando al agente...</div>
     </div>
   </div>
 </div>
@@ -637,11 +688,74 @@ function colorParticipacion(pct) {
 }
 
 // ─── Navegación ───────────────────────────────────────────────────────────────
+let AGENTE_CARGADO = false;
+
 function cambiarSeccion(id, el) {
   document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
   document.querySelectorAll('.nav-interna a').forEach(a => a.classList.remove('activo'));
   document.getElementById('sec-' + id).classList.add('activa');
   if (el) el.classList.add('activo');
+  if (id === 'agente' && !AGENTE_CARGADO) {
+    AGENTE_CARGADO = true;
+    cargarAgente();
+  }
+}
+
+// ─── Agente autónomo de monitoreo ──────────────────────────────────────────────
+async function cargarAgente() {
+  const cont = document.getElementById('agente-contenido');
+  cont.innerHTML = '<div style="text-align:center; padding:2rem; color:#94a3b8;">⏳ Consultando al agente...</div>';
+  try {
+    const r = await fetch(`${API_URL}/ia/resumen`, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (d.ok === false) {
+      cont.innerHTML = `<div style="text-align:center; padding:2rem; color:#94a3b8;">⚠️ ${d.mensaje || 'El agente no está disponible.'}</div>`;
+      return;
+    }
+    renderAgente(d);
+  } catch (e) {
+    cont.innerHTML = `<div style="text-align:center; padding:2rem; color:#94a3b8;">
+      ⚠️ No se pudo conectar con el agente. Esta sección necesita que la API
+      (<code>api/run_senado.py</code>) esté corriendo — el dashboard estático solo,
+      sin API, no puede correr el análisis en vivo.
+    </div>`;
+  }
+}
+
+function renderAgente(d) {
+  const cont = document.getElementById('agente-contenido');
+  const an = d.analisis || {};
+  const sev = an.por_severidad || { alta: 0, media: 0, baja: 0 };
+  let html = '';
+
+  html += `<div class="agente-resumen-bar">
+    <div class="agente-kpi"><div class="av">${an.total_hallazgos ?? 0}</div><div class="al">Hallazgos totales</div></div>
+    <div class="agente-kpi alta"><div class="av">${sev.alta}</div><div class="al">Severidad alta</div></div>
+    <div class="agente-kpi media"><div class="av">${sev.media}</div><div class="al">Severidad media</div></div>
+    <div class="agente-kpi baja"><div class="av">${sev.baja}</div><div class="al">Severidad baja</div></div>
+  </div>`;
+
+  if (d.narrativa && d.narrativa.disponible) {
+    html += `<div class="agente-narrativa"><span class="an-label">🤖 Resumen ejecutivo</span>${d.narrativa.explicacion}</div>`;
+  } else if (d.narrativa && d.narrativa.motivo) {
+    html += `<div class="agente-narrativa" style="color:#94a3b8;"><span class="an-label">ℹ️ Resumen narrativo no disponible</span>${d.narrativa.motivo}</div>`;
+  }
+
+  const hallazgos = an.hallazgos || [];
+  if (!hallazgos.length) {
+    html += `<div style="text-align:center; padding:1.5rem; color:#16a34a; font-weight:700;">✅ Sin anomalías detectadas en la corrida más reciente.</div>`;
+  } else {
+    html += hallazgos.map(h => `
+      <div class="hallazgo-card ${h.severidad}">
+        <span class="hallazgo-sev ${h.severidad}">${h.severidad}</span>
+        <span class="hallazgo-tipo">${h.tipo}</span><br>
+        ${h.detalle}
+      </div>`).join('');
+  }
+
+  html += `<div style="font-size:.7rem; color:#94a3b8; margin-top:.75rem;">Generado: ${d.generado_en || '—'}</div>`;
+  cont.innerHTML = html;
 }
 
 // ─── Mini bar ─────────────────────────────────────────────────────────────────
@@ -1057,6 +1171,10 @@ async function recargarTodo() {
   document.getElementById('partido-grid').innerHTML = '<div style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">⏳ Recargando...</div>';
   document.getElementById('tbody-senadores').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">⏳ Cargando...</td></tr>';
   await cargarDatos();
+  if (document.getElementById('sec-agente').classList.contains('activa')) {
+    AGENTE_CARGADO = true;
+    cargarAgente();
+  }
 }
 
 // ─── Inicio ───────────────────────────────────────────────────────────────────

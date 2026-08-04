@@ -120,12 +120,15 @@ Wireado en:
   su función; lo dejé porque no genera ningún riesgo, pero se puede borrar
   si no lo vas a volver a necesitar.
 
-## 6. Pendiente / no verificable en esta sesión
+## 6. Actualización — URL de Railway confirmada
 
-La URL de Railway de este repo
-(`https://monitorlegislativosenadores-production.up.railway.app`) no devolvió
-respuesta al verificarla — puede ser el servicio dormido/no desplegado
-todavía, o un nombre de dominio distinto. Conviene confirmarla desde el
-propio dashboard de Railway y, si hace falta, configurar ahí los secrets
-`ANTHROPIC_API_KEY` (opcional, para las explicaciones narrativas) y
-`DATABASE_URL` (si se quiere usar Postgres en vez de CSV).
+La URL real es `https://monitorlegistativosenadores-production.up.railway.app`
+(con la misma variante tipográfica "legistativo" que usa el repo hermano de
+Diputados) — no `monitorlegislativosenadores...` como tenía anotado, por eso
+no respondía en las verificaciones de esta sesión. Corregida en
+`api/run_senado.py` (fallback de `_BASE`) e `INSTRUCCIONES.md`.
+
+Confirmado además: la nueva sección "🤖 Agente" del dashboard
+(`dashboard/senado.html`) ya muestra los hallazgos del agente en vivo
+(`GET /ia/resumen`), incluyendo el resumen narrativo si está configurado
+`ANTHROPIC_API_KEY` en Railway.

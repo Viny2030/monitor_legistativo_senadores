@@ -44,6 +44,6 @@ git push origin main
 
 ## Resultado esperado
 
-- `https://monitorlegislativosenadores-production.up.railway.app/` → redirige a `/dashboard/senado.html`
+- `https://monitorlegistativosenadores-production.up.railway.app/` → redirige a `/dashboard/senado.html`
 - `/salud` → `{"status":"ok", "dashboard":true, ...}` ← healthcheck pasa
 - Si no hay DB ni CSV → el dashboard carga igual con datos embebidos de fallback

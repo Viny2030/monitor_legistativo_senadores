@@ -348,7 +348,7 @@ def ia_resumen():
 
 # ── Raíz y salud ──────────────────────────────────────────────────────────────
 _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
-_BASE = f"https://{_BASE}" if _BASE else "https://monitorlegislativosenadores-production.up.railway.app"
+_BASE = f"https://{_BASE}" if _BASE else "https://monitorlegistativosenadores-production.up.railway.app"
 
 
 @app.get("/")
