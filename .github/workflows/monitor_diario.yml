@@ -64,6 +64,20 @@ jobs:
       - name: 🌐 Actualizar comparativa internacional
         run: python scripts/actualizar_comparativa_senado.py
 
+      # ── Agente autónomo de monitoreo ────────────────────────────────────────
+      # Corre después del scraping, sobre los CSV de data/ y dieta.json ya
+      # actualizados. No depende de ANTHROPIC_API_KEY (si no está seteada,
+      # igual detecta anomalías con reglas estadísticas — solo se pierde el
+      # resumen en lenguaje natural). Exit code 1 = encontró hallazgos de
+      # severidad alta nuevos; no debe tumbar el job, así que se captura con
+      # continue-on-error y se decide la alerta en el step de abajo.
+      - name: 🤖 Agente de monitoreo (detección de anomalías)
+        id: agente
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/agente_monitor.py
+
       - name: 📤 Commit y push de datos
         run: |
           git config --global user.name  "Monitor Bot"
@@ -84,7 +98,7 @@ jobs:
                   dashboard/nomina_detalle_senadores.html \
                   dashboard/comparativa_senado.html
           git add -f data/*.csv 2>/dev/null || true
-          add_si_existe tc.json dieta.json data/dieta_historial.csv
+          add_si_existe tc.json dieta.json data/dieta_historial.csv data/alertas_agente_senado.json
 
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
@@ -98,8 +112,73 @@ jobs:
                     dashboard/nomina_detalle_senadores.html \
                     dashboard/comparativa_senado.html
             git add -f data/*.csv 2>/dev/null || true
-            add_si_existe tc.json dieta.json data/dieta_historial.csv
+            add_si_existe tc.json dieta.json data/dieta_historial.csv data/alertas_agente_senado.json
             git commit -m "Monitor Senado — $(date '+%Y-%m-%d')"
             git push
           fi
+
+      - name: 📋 Resumen
+        if: always()
+        run: |
+          echo "### Monitor Senado" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/alertas_agente_senado.json ]; then
+            python -c "import json; d = json.load(open('data/alertas_agente_senado.json')); a = d.get('analisis', {}); sev = a.get('por_severidad', {}); print('- **Agente de monitoreo**: %d hallazgos (alta: %d, media: %d, baja: %d)' % (a.get('total_hallazgos', 0), sev.get('alta', 0), sev.get('media', 0), sev.get('baja', 0)))" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ── Alerta del agente ────────────────────────────────────────────────────
+      # Se dispara sola cuando el agente encuentra severidad alta nueva (exit
+      # code 1 de scripts/agente_monitor.py) — nadie tiene que pedirla ni
+      # revisar el dashboard a mano para enterarse.
+      - name: 🚨 Notificar hallazgos de severidad alta
+        if: steps.agente.outcome == 'failure'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USER }}
+          password: ${{ secrets.MAIL_PASS }}
+          to: viny01958@gmail.com
+          from: Agente Monitor Legislativo — Senado <${{ secrets.MAIL_USER }}>
+          subject: "🚨 Agente: hallazgo nuevo o urgente — Monitor Senado"
+          body: |
+            El agente de monitoreo (scripts/agente_monitor.py) encontró algo que amerita
+            este mail: o es un evento puntual (datos muy desactualizados, composición
+            incompleta, caída fuerte de participación global, recibo oficial de dieta
+            desactualizado), o es un estado por senador/provincia (participación crítica)
+            que NO estaba en la corrida anterior — o sea, no es el mismo aviso repetido
+            por una condición que ya conocés.
+
+            Detalle completo (incluye qué hallazgos disparó exactamente la alerta, en
+            "alerta.hallazgos_relevantes") en data/alertas_agente_senado.json (commiteado
+            en este mismo run) y en el log del step "🤖 Agente de monitoreo (detección de
+            anomalías)":
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Nota: requiere que los secrets MAIL_USER y MAIL_PASS estén configurados
+            (ya lo están si tests_diarios.yml te manda notificaciones). El resumen
+            narrativo en lenguaje natural solo aparece si además está configurado el
+            secret ANTHROPIC_API_KEY — si no, el agente igual detecta y lista los
+            hallazgos, solo que sin la redacción de Claude.
+
+      # ── Alerta por falla ──────────────────────────────────────────────────
+      - name: ⚠️ Notificar falla del pipeline
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USER }}
+          password: ${{ secrets.MAIL_PASS }}
+          to: viny01958@gmail.com
+          from: Monitor Legislativo — Senado <${{ secrets.MAIL_USER }}>
+          subject: "⚠️ Monitor Diario Senado FALLÓ — revisar"
+          body: |
+            El pipeline diario (pipeline.py y los scripts de actualización) falló hoy.
+
+            Ver logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Nota: requiere que los secrets MAIL_USER y MAIL_PASS estén configurados
+            en este repo (Settings → Secrets → Actions), igual que en tests_diarios.yml.
 

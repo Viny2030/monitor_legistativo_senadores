@@ -25,4 +25,7 @@ aiofiles>=23.0.0
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 
+# Agentic AI (opcional — degrada con gracia si no está la API key)
+anthropic>=0.40.0
+
 # cache-bust: v2

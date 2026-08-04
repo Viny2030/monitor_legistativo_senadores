@@ -94,7 +94,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -237,6 +237,115 @@ def get_reporte_provincial():
         return JSONResponse(status_code=500, content={"ok": False, "error": str(e)})
 
 
+# ── Endpoints Agentic AI ──────────────────────────────────────────────────────
+# agentic_ai.py está en la raíz del repo (mismo patrón que monitor_legistativo/
+# Diputados): explicaciones en lenguaje natural (Claude, opcional) + detección
+# autónoma de anomalías con reglas estadísticas (siempre disponible — es el
+# mismo análisis que corre scripts/agente_monitor.py en el workflow diario,
+# expuesto acá para verlo on-demand).
+from pydantic import BaseModel
+from agentic_ai import explicar, ia_disponible, detectar_anomalias, resumen_diario  # noqa: E402
+
+
+class ExplicarIARequest(BaseModel):
+    tipo: str = "senador"
+    datos: dict = {}
+
+
+def _cargar_datos_para_ia():
+    """Nómina actual + anterior (los dos senadores_*.csv más recientes) y
+    dieta.json — mismo criterio que scripts/agente_monitor.py, reimplementado
+    acá sin importar scripts/ para no acoplar la API a un módulo pensado para
+    correr standalone en CI."""
+    import re
+    import json
+    import pandas as pd
+
+    archivos = sorted(glob(str(DATA_DIR / "senadores_*.csv")), reverse=True)
+    if not archivos:
+        return None, None, None, None
+    csv_actual = Path(archivos[0])
+    csv_anterior = Path(archivos[1]) if len(archivos) > 1 else None
+
+    def cargar(path):
+        df = pd.read_csv(path, encoding="utf-8-sig", on_bad_lines="skip")
+
+        def safe_int(v):
+            try: return int(float(v)) if pd.notna(v) else 0
+            except Exception: return 0
+
+        def safe_float(v):
+            try: return float(v) if pd.notna(v) else None
+            except Exception: return None
+
+        return [{
+            "nombre":            str(row.get("nombre", "—")),
+            "provincia":         str(row.get("provincia", "—")),
+            "partido":           str(row.get("partido_normalizado", row.get("partido", "—"))),
+            "rol_provincial":    str(row.get("rol_provincial", "—")),
+            "votos_total":       safe_int(row.get("votos_total")),
+            "votos_afirmativos": safe_int(row.get("votos_afirmativos")),
+            "votos_negativos":   safe_int(row.get("votos_negativos")),
+            "abstenciones":      safe_int(row.get("abstenciones")),
+            "ausencias":         safe_int(row.get("ausencias")),
+            "participation_pct": safe_float(row.get("participation_pct")),
+        } for _, row in df.iterrows()]
+
+    senadores_actual = cargar(csv_actual)
+    senadores_anterior = cargar(csv_anterior) if csv_anterior else None
+    m = re.search(r"senadores_(\d{4}-\d{2}-\d{2})\.csv$", csv_actual.name)
+    fecha_datos = m.group(1) if m else None
+
+    dieta_path = Path(__file__).parent.parent / "dieta.json"
+    dieta = None
+    if dieta_path.exists():
+        try:
+            dieta = json.load(open(dieta_path, encoding="utf-8"))
+        except Exception:
+            dieta = None
+
+    return senadores_actual, senadores_anterior, dieta, fecha_datos
+
+
+@app.get("/ia/status")
+def ia_status():
+    return {"disponible": ia_disponible()}
+
+
+@app.post("/ia/explicar")
+def ia_explicar(req: ExplicarIARequest):
+    return explicar(req.tipo, req.datos)
+
+
+@app.get("/ia/anomalias")
+def ia_anomalias():
+    """
+    Agente autónomo (parte 1): corre las reglas de detección de anomalías
+    sobre los CSV actuales de data/. No depende de Claude/ANTHROPIC_API_KEY
+    — siempre devuelve hallazgos estructurados (participación crítica,
+    composición incompleta, outliers estadísticos, datos desactualizados,
+    recibo oficial de dieta desactualizado).
+    """
+    senadores, senadores_ant, dieta, fecha_datos = _cargar_datos_para_ia()
+    if senadores is None:
+        return JSONResponse({"ok": False, "mensaje": "No hay CSV en data/. Ejecutar pipeline.py primero."})
+    return detectar_anomalias(senadores, senadores_ant, dieta, fecha_datos)
+
+
+@app.get("/ia/resumen")
+def ia_resumen():
+    """
+    Agente autónomo (parte 2): además de los hallazgos, si hay
+    ANTHROPIC_API_KEY configurada le pide a Claude un resumen ejecutivo en
+    lenguaje natural. Es el mismo análisis que corre scripts/agente_monitor.py
+    en el workflow diario, expuesto para verlo on-demand desde el dashboard.
+    """
+    senadores, senadores_ant, dieta, fecha_datos = _cargar_datos_para_ia()
+    if senadores is None:
+        return JSONResponse({"ok": False, "mensaje": "No hay CSV en data/. Ejecutar pipeline.py primero."})
+    return resumen_diario(senadores, senadores_ant, dieta, fecha_datos)
+
+
 # ── Raíz y salud ──────────────────────────────────────────────────────────────
 _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 _BASE = f"https://{_BASE}" if _BASE else "https://monitorlegislativosenadores-production.up.railway.app"
@@ -265,6 +374,9 @@ def info():
             "reporte_provincial": f"{_BASE}/senado/reporte-provincial",
             "db_senadores":       f"{_BASE}/db/senadores",
             "db_fechas":          f"{_BASE}/db/fechas",
+            "ia_status":          f"{_BASE}/ia/status",
+            "ia_anomalias":       f"{_BASE}/ia/anomalias",
+            "ia_resumen":         f"{_BASE}/ia/resumen",
             "salud":              f"{_BASE}/salud",
             "docs":               f"{_BASE}/docs",
         },
