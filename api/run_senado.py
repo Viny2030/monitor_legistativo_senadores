@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -244,7 +244,9 @@ def get_reporte_provincial():
 # mismo análisis que corre scripts/agente_monitor.py en el workflow diario,
 # expuesto acá para verlo on-demand).
 from pydantic import BaseModel
-from agentic_ai import explicar, ia_disponible, detectar_anomalias, resumen_diario  # noqa: E402
+from agentic_ai import (  # noqa: E402
+    explicar, ia_disponible, detectar_anomalias, resumen_diario, chat_con_tools,
+)
 
 
 class ExplicarIARequest(BaseModel):
@@ -346,6 +348,190 @@ def ia_resumen():
     return resumen_diario(senadores, senadores_ant, dieta, fecha_datos)
 
 
+# ── Chat interactivo del agente (tool-calling) ────────────────────────────────
+# Widget "🤖 Agente" del dashboard: preguntas puntuales en lenguaje natural
+# ("¿cómo viene tal senador?", "¿qué bloque tiene más bancas?", "¿cuál es la
+# dieta actual?"). Reutiliza los mismos datos que el resto de /ia/*, sin
+# recalcular nada — cada tool es de solo lectura sobre los CSV/JSON ya
+# generados por el pipeline diario. Rate-limit por IP para controlar costo.
+CHAT_RATE_LIMIT_DIARIO = int(os.getenv("CHAT_RATE_LIMIT_DIARIO", "30"))
+_chat_contador: dict = {}  # ip -> (fecha_iso, cantidad_hoy)
+
+
+def _chat_rate_limit_ok(ip: str) -> bool:
+    hoy = datetime.date.today().isoformat()
+    fecha, cantidad = _chat_contador.get(ip, (hoy, 0))
+    if fecha != hoy:
+        fecha, cantidad = hoy, 0
+    if cantidad >= CHAT_RATE_LIMIT_DIARIO:
+        _chat_contador[ip] = (fecha, cantidad)
+        return False
+    _chat_contador[ip] = (fecha, cantidad + 1)
+    return True
+
+
+def _cargar_partidos_para_chat() -> list:
+    import pandas as pd
+    csv = _latest_csv("reporte_partido_senado_*.csv")
+    if not csv:
+        return []
+    df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
+    return df.to_dict("records")
+
+
+def _cargar_provincias_para_chat() -> list:
+    import pandas as pd
+    csv = _latest_csv("reporte_provincial_senado_*.csv")
+    if not csv:
+        return []
+    df = pd.read_csv(csv, encoding="utf-8-sig", on_bad_lines="skip")
+    return df.to_dict("records")
+
+
+def _tool_buscar_senadores(query: str) -> dict:
+    senadores, _, _, _ = _cargar_datos_para_ia()
+    if not senadores:
+        return {"error": "No hay CSV de senadores cargado en data/."}
+    q = (query or "").strip().lower()
+    resultados = [
+        s for s in senadores
+        if q in str(s.get("nombre", "")).lower()
+        or q in str(s.get("provincia", "")).lower()
+        or q in str(s.get("partido", "")).lower()
+    ]
+    return {"total": len(resultados), "senadores": resultados[:10]}
+
+
+def _tool_buscar_partido(query: str) -> dict:
+    partidos = _cargar_partidos_para_chat()
+    q = (query or "").strip().lower()
+    resultados = [p for p in partidos if q in str(p.get("partido", "")).lower()]
+    return {"total": len(resultados), "partidos": resultados[:10]}
+
+
+def _tool_buscar_provincia(query: str) -> dict:
+    provincias = _cargar_provincias_para_chat()
+    q = (query or "").strip().lower()
+    resultados = [p for p in provincias if q in str(p.get("provincia", "")).lower()]
+    return {"total": len(resultados), "provincias": resultados[:10]}
+
+
+def _tool_consultar_dieta() -> dict:
+    import json as _json
+    dieta_path = Path(__file__).parent.parent / "dieta.json"
+    if not dieta_path.exists():
+        return {"error": "dieta.json no disponible en este entorno."}
+    try:
+        return _json.load(open(dieta_path, encoding="utf-8"))
+    except Exception as e:
+        return {"error": f"No se pudo leer dieta.json: {e}"}
+
+
+def _tool_consultar_anomalias() -> dict:
+    senadores, senadores_ant, dieta, fecha_datos = _cargar_datos_para_ia()
+    if senadores is None:
+        return {"error": "No hay CSV de senadores en data/."}
+    return detectar_anomalias(senadores, senadores_ant, dieta, fecha_datos)
+
+
+TOOLS_SCHEMA_CHAT = [
+    {
+        "name": "buscar_senadores",
+        "description": "Busca senadores por nombre, provincia o partido (coincidencia parcial, "
+                        "no requiere el nombre completo). Devuelve hasta 10 resultados con "
+                        "participación en votaciones, votos afirmativos/negativos, abstenciones y ausencias.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "Texto a buscar"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "buscar_partido",
+        "description": "Busca bloques/partidos políticos del Senado por nombre (coincidencia parcial). "
+                        "Devuelve bancas, participación promedio y votos agregados del bloque.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "Nombre del bloque o partido"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "buscar_provincia",
+        "description": "Busca datos agregados por provincia (coincidencia parcial). Devuelve cantidad "
+                        "de senadores registrados, partidos representados y participación promedio.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "Nombre de la provincia"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "consultar_dieta",
+        "description": "Devuelve los datos oficiales más recientes de la dieta (sueldo) parlamentaria "
+                        "de los senadores, parseados del recibo oficial en PDF de senado.gob.ar.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "consultar_anomalias",
+        "description": "Devuelve los hallazgos del agente autónomo de monitoreo (participación crítica, "
+                        "datos desactualizados, composición incompleta, outliers) de la corrida más reciente.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+]
+
+
+def _ejecutar_tool_chat(nombre: str, args: dict):
+    args = args or {}
+    if nombre == "buscar_senadores":
+        return _tool_buscar_senadores(args.get("query", ""))
+    if nombre == "buscar_partido":
+        return _tool_buscar_partido(args.get("query", ""))
+    if nombre == "buscar_provincia":
+        return _tool_buscar_provincia(args.get("query", ""))
+    if nombre == "consultar_dieta":
+        return _tool_consultar_dieta()
+    if nombre == "consultar_anomalias":
+        return _tool_consultar_anomalias()
+    return {"error": f"Herramienta desconocida: {nombre}"}
+
+
+SYSTEM_PROMPT_CHAT = (
+    "Sos un asistente de transparencia legislativa del Senado de la Nación Argentina, "
+    "disponible en el dashboard público del Monitor Legislativo. Respondés en español "
+    "rioplatense, de forma breve y concreta (6-8 líneas salvo que el usuario pida una lista). "
+    "Tenés herramientas de solo lectura para buscar senadores, partidos, provincias, la dieta "
+    "parlamentaria oficial y los hallazgos del agente de monitoreo — usalas siempre que la "
+    "pregunta involucre un dato concreto, nunca inventes cifras ni nombres. No acusás a nadie "
+    "de mal desempeño: describís lo que dicen los datos y, si corresponde, qué convendría "
+    "contextualizar antes de sacar conclusiones. Si no encontrás el dato pedido, decilo con "
+    "claridad en vez de especular."
+)
+
+
+class ChatIn(BaseModel):
+    mensaje: str
+    historial: list = []
+
+
+@app.post("/ia/chat")
+def ia_chat(req: ChatIn, request: Request):
+    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+          or (request.client.host if request.client else "desconocido"))
+    if not _chat_rate_limit_ok(ip):
+        return JSONResponse(status_code=429, content={
+            "ok": False,
+            "error": f"Límite diario de {CHAT_RATE_LIMIT_DIARIO} consultas alcanzado. Probá de nuevo mañana.",
+        })
+    mensaje = (req.mensaje or "").strip()
+    if not mensaje:
+        return JSONResponse(status_code=400, content={"ok": False, "error": "El mensaje está vacío."})
+    resultado = chat_con_tools(
+        mensaje, req.historial, TOOLS_SCHEMA_CHAT, _ejecutar_tool_chat, SYSTEM_PROMPT_CHAT,
+    )
+    return JSONResponse({"ok": True, **resultado})
+
+
 # ── Raíz y salud ──────────────────────────────────────────────────────────────
 _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 _BASE = f"https://{_BASE}" if _BASE else "https://monitorlegistativosenadores-production.up.railway.app"
@@ -377,6 +563,7 @@ def info():
             "ia_status":          f"{_BASE}/ia/status",
             "ia_anomalias":       f"{_BASE}/ia/anomalias",
             "ia_resumen":         f"{_BASE}/ia/resumen",
+            "ia_chat":            f"{_BASE}/ia/chat",
             "salud":              f"{_BASE}/salud",
             "docs":               f"{_BASE}/docs",
         },

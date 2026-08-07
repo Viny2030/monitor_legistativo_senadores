@@ -20,6 +20,7 @@ redacte esos hallazgos en lenguaje natural; si no, el agente sigue siendo
 (cron/GitHub Action) en scripts/agente_monitor.py.
 """
 
+import json
 import os
 import re
 import statistics
@@ -421,3 +422,71 @@ puntual: encuadralo como control de calidad de datos y seguimiento de transparen
 
     resultado["narrativa"] = _pedir_a_claude(_SYSTEM_BASE, prompt, max_tokens=400)
     return resultado
+
+
+# ---------------------------------------------------------------------------
+# Chat interactivo con tool-calling — para el widget "🤖 Agente" del dashboard.
+# Genérico: no conoce CSVs ni pandas, eso lo resuelve quien llama (api/run_senado.py)
+# pasando el schema de herramientas y una función que las ejecuta. Mismo patrón
+# de tool-use loop que el repo hermano jefatura_gabinete1.
+# ---------------------------------------------------------------------------
+def chat_con_tools(mensaje: str, historial: list, tools: list, ejecutar_tool,
+                    system: str, max_iteraciones: int = 4, max_tokens: int = 700) -> dict:
+    """
+    mensaje: pregunta nueva del usuario.
+    historial: lista de mensajes previos [{"role": "user"|"assistant", "content": str}, ...]
+                (se le suma el mensaje nuevo antes de llamar a Claude).
+    tools: lista de tool schemas (formato Anthropic tools API).
+    ejecutar_tool: callable(nombre: str, args: dict) -> Any (se serializa a JSON como
+                   resultado de la tool antes de devolvérselo a Claude).
+    Devuelve {"disponible": True, "respuesta": str} o {"disponible": False, "motivo": str}
+    — nunca levanta excepción hacia quien llama.
+    """
+    if not ia_disponible():
+        if anthropic is None:
+            return _no_disponible("La librería 'anthropic' no está instalada en este entorno.")
+        return _no_disponible(
+            "ANTHROPIC_API_KEY no está configurada — el chat del agente está deshabilitado."
+        )
+
+    messages = list(historial or [])
+    messages.append({"role": "user", "content": mensaje})
+
+    try:
+        for _ in range(max_iteraciones):
+            resp = _client.messages.create(
+                model=MODEL,
+                max_tokens=max_tokens,
+                system=system,
+                tools=tools,
+                messages=messages,
+            )
+
+            if resp.stop_reason != "tool_use":
+                texto = "".join(
+                    bloque.text for bloque in resp.content if getattr(bloque, "type", "") == "text"
+                )
+                return {"disponible": True, "respuesta": texto.strip()}
+
+            messages.append({"role": "assistant", "content": resp.content})
+            resultados_tools = []
+            for bloque in resp.content:
+                if getattr(bloque, "type", "") == "tool_use":
+                    try:
+                        resultado = ejecutar_tool(bloque.name, bloque.input or {})
+                    except Exception as e:
+                        resultado = {"error": str(e)}
+                    resultados_tools.append({
+                        "type": "tool_result",
+                        "tool_use_id": bloque.id,
+                        "content": json.dumps(resultado, ensure_ascii=False, default=str),
+                    })
+            messages.append({"role": "user", "content": resultados_tools})
+
+        return {
+            "disponible": True,
+            "respuesta": "No pude terminar de resolver la consulta en los pasos permitidos — "
+                         "probá una pregunta más puntual (por ejemplo, el nombre de un senador o partido).",
+        }
+    except Exception as e:
+        return _no_disponible(f"Error al consultar la IA: {e}")

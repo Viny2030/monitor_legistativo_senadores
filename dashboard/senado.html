@@ -328,6 +328,28 @@ td { padding: .45rem .8rem; vertical-align: middle; }
 .hallazgo-card.alta  { border-left-color:#dc2626; }
 .hallazgo-card.media { border-left-color:#d97706; }
 .hallazgo-card.baja  { border-left-color:#94a3b8; }
+/* ── Chat interactivo del agente ── */
+.agente-chat-box {
+  background:#fff; border-radius:10px; border:1px solid #e2e8f0; padding:1rem 1.25rem;
+  margin-top:1.5rem;
+}
+.ac-titulo { font-size:.85rem; font-weight:800; color:#1a0a1a; margin-bottom:.25rem; }
+.ac-historial {
+  max-height:320px; overflow-y:auto; margin-bottom:.75rem; display:flex; flex-direction:column; gap:.5rem;
+}
+.ac-msg { padding:.55rem .8rem; border-radius:10px; font-size:.82rem; line-height:1.5; max-width:85%; white-space:pre-wrap; }
+.ac-msg.user { background:#6b0f1a; color:#fff; align-self:flex-end; border-bottom-right-radius:2px; }
+.ac-msg.bot  { background:#f1f5f9; color:#1a0a1a; align-self:flex-start; border-bottom-left-radius:2px; }
+.ac-msg.bot.error { background:#fef2f2; color:#b91c1c; }
+.ac-input-row { display:flex; gap:.5rem; }
+.ac-input-row input {
+  flex:1; padding:.55rem .8rem; border:1px solid #cbd5e1; border-radius:8px; font-size:.82rem;
+}
+.ac-input-row button {
+  padding:.55rem 1.1rem; border:none; border-radius:8px; background:#6b0f1a; color:#fff;
+  font-size:.8rem; font-weight:700; cursor:pointer;
+}
+.ac-input-row button:disabled { background:#cbd5e1; cursor:not-allowed; }
 .hallazgo-sev {
   display:inline-block; font-size:.65rem; font-weight:800; text-transform:uppercase;
   letter-spacing:.04em; padding:.1rem .5rem; border-radius:10px; margin-right:.5rem;
@@ -474,6 +496,21 @@ td { padding: .45rem .8rem; vertical-align: middle; }
     </p>
     <div id="agente-contenido">
       <div style="text-align:center; padding:2rem; color:#94a3b8;">⏳ Consultando al agente...</div>
+    </div>
+
+    <div class="agente-chat-box">
+      <div class="ac-titulo">💬 Preguntale al agente</div>
+      <p style="font-size:.72rem; color:#94a3b8; margin-bottom:.6rem;">
+        Preguntas puntuales en lenguaje natural — ej. "¿cómo viene tal senador?",
+        "¿qué bloque tiene más bancas?", "¿cuál es la dieta actual?". Requiere que la
+        API tenga <code>ANTHROPIC_API_KEY</code> configurada.
+      </p>
+      <div id="chat-historial" class="ac-historial"></div>
+      <div class="ac-input-row">
+        <input id="chat-input" type="text" placeholder="Escribí tu pregunta..." maxlength="300"
+               onkeydown="if(event.key==='Enter'){event.preventDefault(); enviarChatAgente();}">
+        <button id="chat-btn" onclick="enviarChatAgente()">Enviar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -758,6 +795,71 @@ function renderAgente(d) {
   cont.innerHTML = html;
 }
 
+// ─── Chat interactivo del agente ───────────────────────────────────────────────
+let CHAT_HISTORIAL = [];   // [{role, content}, ...] — se manda tal cual a /ia/chat
+let CHAT_ENVIANDO = false;
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+function pintarMensajeChat(rol, texto, esError = false) {
+  const cont = document.getElementById('chat-historial');
+  const div = document.createElement('div');
+  div.className = 'ac-msg ' + (rol === 'user' ? 'user' : 'bot') + (esError ? ' error' : '');
+  div.textContent = texto;   // textContent, no innerHTML — evita cualquier inyección
+  cont.appendChild(div);
+  cont.scrollTop = cont.scrollHeight;
+}
+
+async function enviarChatAgente() {
+  if (CHAT_ENVIANDO) return;
+  const input = document.getElementById('chat-input');
+  const mensaje = input.value.trim();
+  if (!mensaje) return;
+
+  const btn = document.getElementById('chat-btn');
+  CHAT_ENVIANDO = true;
+  btn.disabled = true;
+  input.value = '';
+  pintarMensajeChat('user', mensaje);
+
+  try {
+    const r = await fetch(`${API_URL}/ia/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje, historial: CHAT_HISTORIAL }),
+      signal: AbortSignal.timeout(30000),
+    });
+    const d = await r.json();
+
+    if (r.status === 429) {
+      pintarMensajeChat('bot', d.error || 'Límite diario de consultas alcanzado.', true);
+      return;
+    }
+    if (!r.ok || d.ok === false) {
+      pintarMensajeChat('bot', d.error || 'No se pudo consultar al agente.', true);
+      return;
+    }
+    if (d.disponible === false) {
+      pintarMensajeChat('bot', d.motivo || 'El chat del agente no está disponible.', true);
+      return;
+    }
+
+    pintarMensajeChat('bot', d.respuesta || '(sin respuesta)');
+    CHAT_HISTORIAL.push({ role: 'user', content: mensaje });
+    CHAT_HISTORIAL.push({ role: 'assistant', content: d.respuesta || '' });
+    if (CHAT_HISTORIAL.length > 12) CHAT_HISTORIAL = CHAT_HISTORIAL.slice(-12);
+  } catch (e) {
+    pintarMensajeChat('bot', 'No se pudo conectar con el agente (timeout o red).', true);
+  } finally {
+    CHAT_ENVIANDO = false;
+    btn.disabled = false;
+  }
+}
+
 // ─── Mini bar ─────────────────────────────────────────────────────────────────
 function miniBar(valor, color, max = 100) {
   const pct = Math.min(100, Math.round((valor / max) * 100));
@@ -820,8 +922,17 @@ function renderPartidos() {
 }
 
 // ─── Render tabla senadores ────────────────────────────────────────────────────
+// TABLA_RENDERIZADA guarda la lista actualmente en pantalla para que el click
+// delegado (más abajo) pueda recuperar el objeto completo por índice, sin
+// tener que serializarlo dentro de un atributo HTML (eso rompía la fila:
+// JSON.stringify siempre usa comillas dobles, y el atributo onclick="..."
+// también estaba entre comillas dobles — cualquier comilla del JSON cerraba
+// el atributo antes de tiempo).
+let TABLA_RENDERIZADA = [];
+
 function renderTablaSenadores(lista) {
   const tbody = document.getElementById('tbody-senadores');
+  TABLA_RENDERIZADA = lista;
   if (!lista.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">Sin datos</td></tr>';
     return;
@@ -832,7 +943,7 @@ function renderTablaSenadores(lista) {
     const part  = s.participation_pct;
     const partColor = colorParticipacion(part);
 
-    return `<tr onclick="abrirModalSenador(${JSON.stringify(s).replace(/'/g,'&#39;')})" style="cursor:pointer;" title="Ver detalle">
+    return `<tr data-idx="${i}" style="cursor:pointer;" title="Ver detalle">
       <td style="color:#94a3b8; font-size:.75rem;">${i + 1}</td>
       <td style="font-weight:600;">${s.nombre}</td>
       <td style="color:#475569;">${s.provincia}</td>
@@ -991,11 +1102,22 @@ async function cargarDatos() {
 
   let apiOk = false;
 
+  // Las 3 llamadas van en paralelo (antes eran secuenciales: 3 timeouts de 6s
+  // uno atrás del otro, hasta 18s en el peor caso). Railway (plan gratuito)
+  // puede tardar varios segundos en "despertar" la primera request de un
+  // rato — con 3 fetches en paralelo y 12s de margen cada uno, alcanza para
+  // ese cold-start sin dejar la pantalla colgada en "Cargando..." más de lo
+  // necesario, y si igual falla alguna, las otras dos no se ven afectadas.
+  const TIMEOUT_MS = 12000;
+  const [rSen, rPart, rProv] = await Promise.allSettled([
+    fetch(`${API_URL}/senado/senadores`,          { signal: AbortSignal.timeout(TIMEOUT_MS) }),
+    fetch(`${API_URL}/senado/reporte-partido`,    { signal: AbortSignal.timeout(TIMEOUT_MS) }),
+    fetch(`${API_URL}/senado/reporte-provincial`, { signal: AbortSignal.timeout(TIMEOUT_MS) }),
+  ]);
+
   try {
-    // 1. Senadores
-    const rSen = await fetch(`${API_URL}/senado/senadores`, { signal: AbortSignal.timeout(6000) });
-    if (rSen.ok) {
-      const d = await rSen.json();
+    if (rSen.status === 'fulfilled' && rSen.value.ok) {
+      const d = await rSen.value.json();
       if (d.ok && d.senadores.length) {
         SENADORES_DATA = d.senadores.sort((a, b) => (b.participation_pct || 0) - (a.participation_pct || 0));
         apiOk = true;
@@ -1004,19 +1126,15 @@ async function cargarDatos() {
   } catch { /* fallback */ }
 
   try {
-    // 2. Partidos
-    const rPart = await fetch(`${API_URL}/senado/reporte-partido`, { signal: AbortSignal.timeout(6000) });
-    if (rPart.ok) {
-      const d = await rPart.json();
+    if (rPart.status === 'fulfilled' && rPart.value.ok) {
+      const d = await rPart.value.json();
       if (d.ok) PARTIDOS_DATA = d.partidos;
     }
   } catch { /* fallback */ }
 
   try {
-    // 3. Provincial
-    const rProv = await fetch(`${API_URL}/senado/reporte-provincial`, { signal: AbortSignal.timeout(6000) });
-    if (rProv.ok) {
-      const d = await rProv.json();
+    if (rProv.status === 'fulfilled' && rProv.value.ok) {
+      const d = await rProv.value.json();
       if (d.ok) PROVINCIAL_DATA = d.provincias;
     }
   } catch { /* fallback */ }
@@ -1176,6 +1294,14 @@ async function recargarTodo() {
     cargarAgente();
   }
 }
+
+// ─── Click delegado en la tabla de senadores (ver TABLA_RENDERIZADA arriba) ───
+document.getElementById('tbody-senadores').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-idx]');
+  if (!tr) return;
+  const s = TABLA_RENDERIZADA[Number(tr.dataset.idx)];
+  if (s) abrirModalSenador(s);
+});
 
 // ─── Inicio ───────────────────────────────────────────────────────────────────
 cargarDatos();

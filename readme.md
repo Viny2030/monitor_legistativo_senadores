@@ -148,6 +148,39 @@ El pipeline corre cada día a las **08:00 hora Argentina** y pushea los nuevos C
 
 ---
 
+## 🤖 Agente IA
+
+El módulo `agentic_ai.py` (junto con `scripts/agente_monitor.py`, que corre en
+el pipeline diario) implementa dos capas de IA sobre los mismos datos que ya
+calcula el resto del sistema:
+
+- **Detección autónoma de anomalías** — reglas estadísticas (sin costo, sin
+  depender de Claude): participación crítica, composición incompleta, datos
+  desactualizados, outliers (IQR) y demoras en el recibo oficial de dieta.
+  Corre solo, después de cada actualización diaria, y dispara un mail de
+  alerta si encuentra algo grave (`GET /ia/anomalias`, `GET /ia/resumen`).
+- **Explicaciones y chat en lenguaje natural** — opcional, requiere
+  `ANTHROPIC_API_KEY`: explica el perfil de un senador/partido/provincia
+  (`POST /ia/explicar`) y responde preguntas puntuales con tool-calling sobre
+  los datos reales (`POST /ia/chat`, widget "🤖 Agente" en `senado.html`).
+
+### Variables de entorno
+
+Ver `.env.example`. Las relevantes para el agente:
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | *(vacío)* | Sin ella, todo lo demás sigue funcionando — solo se pierde la redacción narrativa y el chat. |
+| `ANTHROPIC_MODEL` | `claude-sonnet-4-5` | Modelo usado para explicaciones, resúmenes y el chat. |
+| `CHAT_RATE_LIMIT_DIARIO` | `30` | Tope de consultas al chat por IP y por día (protege el costo en un endpoint público). |
+
+En Railway, configurar `ANTHROPIC_API_KEY` como variable del servicio. En
+GitHub Actions, configurarla como secret (`Settings → Secrets and variables →
+Actions`) para que `scripts/agente_monitor.py` pueda redactar el resumen
+narrativo del mail de alerta.
+
+---
+
 ## 📦 Dependencias
 
 ```txt
