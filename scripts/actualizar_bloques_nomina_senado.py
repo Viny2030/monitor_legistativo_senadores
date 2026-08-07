@@ -2,11 +2,13 @@
 scripts/actualizar_bloques_nomina_senado.py
 ============================================
 Actualiza el array SENADORES hardcodeado en:
-  - dashboard/indicadores_bloques_senadores.html
-  - dashboard/nomina_detalle_senadores.html
+  - dashboard/indicadores_bloques_senadores.html  (usa solo nombre/provincia/bloque)
+  - dashboard/nomina_detalle_senadores.html        (usa además id/mandato/rol/
+    participation_pct/votos_total/votos_afirmativos/votos_negativos/ausencias
+    para las cards — sin estos campos, esa página muestra "undefined"/"NaN%")
 
-Estos archivos usan solo: nombre, provincia, bloque
-(sin genero ni mandato — se calculan en JS en tiempo real)
+Ambos targets comparten el mismo array — los campos de más que no usa
+indicadores_bloques_senadores.html no rompen nada (JS ignora props no usadas).
 
 REGLA: no modifica NINGUNA otra parte del HTML.
 Reemplaza solo entre marcadores:
@@ -17,6 +19,7 @@ Uso:
   python scripts/actualizar_bloques_nomina_senado.py
 """
 
+import ast
 import os
 import glob
 import json
@@ -86,18 +89,70 @@ def _format(v):
     return json.dumps(str(v), ensure_ascii=False)
 
 
+def _int(v):
+    """Entero JS o 'null' — nunca NaN (dashboard/nomina_detalle_senadores.html
+    hace aritmética directa con estos campos)."""
+    try:
+        if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip() == "":
+            return "null"
+        return str(int(float(v)))
+    except (TypeError, ValueError):
+        return "null"
+
+
+def _float(v):
+    try:
+        if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip() == "":
+            return "null"
+        return str(round(float(v), 2))
+    except (TypeError, ValueError):
+        return "null"
+
+
+def _mandato(periodo_legal):
+    """periodoLegal viene del CSV como repr de dict Python:
+    "{'inicio': '2023-12-10', 'fin': '2029-12-09'}" (o fin=None si sigue vigente).
+    Devuelve "2023-2029" / "2023-en curso" / None."""
+    try:
+        d = ast.literal_eval(str(periodo_legal))
+        inicio = str(d.get("inicio") or "")[:4]
+        fin_raw = d.get("fin")
+        fin = str(fin_raw)[:4] if fin_raw else None
+        if inicio and fin:
+            return f"{inicio}-{fin}"
+        if inicio:
+            return f"{inicio}-en curso"
+        return None
+    except (ValueError, SyntaxError, AttributeError):
+        return None
+
+
 def construir_array(df, fecha):
-    """Genera: const SENADORES=[{nombre,provincia,bloque},...];"""
+    """Genera: const SENADORES=[{nombre,provincia,bloque,id,mandato,rol,
+    participation_pct,votos_total,votos_afirmativos,votos_negativos,ausencias},...];"""
     df = df.copy()
     df["_sort"] = df["nombre"].str.split(",").str[0].str.strip().str.upper()
     df = df.sort_values("_sort").reset_index(drop=True)
 
     lineas = []
     for _, row in df.iterrows():
-        nombre   = _format(str(row.get("nombre", "")).strip())
+        nombre    = _format(str(row.get("nombre", "")).strip())
         provincia = _format(_provincia(row.get("provincia", "")))
-        bloque   = _format(_bloque(row.get("partido_normalizado", row.get("partido", ""))))
-        lineas.append(f"  {{nombre:{nombre},provincia:{provincia},bloque:{bloque}}}")
+        bloque    = _format(_bloque(row.get("partido_normalizado", row.get("partido", ""))))
+        id_val    = _int(row.get("id"))
+        mandato   = _format(_mandato(row.get("periodoLegal")))
+        rol       = _format(str(row.get("rol_provincial", "")).strip())
+        part_pct  = _float(row.get("participation_pct"))
+        votos_tot = _int(row.get("votos_total"))
+        votos_af  = _int(row.get("votos_afirmativos"))
+        votos_neg = _int(row.get("votos_negativos"))
+        ausencias = _int(row.get("ausencias"))
+        lineas.append(
+            f"  {{nombre:{nombre},provincia:{provincia},bloque:{bloque},id:{id_val},"
+            f"mandato:{mandato},rol:{rol},participation_pct:{part_pct},"
+            f"votos_total:{votos_tot},votos_afirmativos:{votos_af},"
+            f"votos_negativos:{votos_neg},ausencias:{ausencias}}}"
+        )
 
     array_js = "const SENADORES=[\n" + ",\n".join(lineas) + "\n];"
     return array_js
