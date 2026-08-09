@@ -1,8 +1,8 @@
 {
-  "generado_en": "2026-08-08T11:20:35.975119+00:00",
+  "generado_en": "2026-08-09T11:23:00.550547+00:00",
   "total_senadores": 72,
   "analisis": {
-    "generado_en": "2026-08-08T11:20:35.975119+00:00",
+    "generado_en": "2026-08-09T11:23:00.550547+00:00",
     "total_hallazgos": 21,
     "por_severidad": {
       "alta": 10,
@@ -73,66 +73,66 @@
       {
         "tipo": "recibo_oficial_desactualizado",
         "severidad": "media",
-        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (219 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
+        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (220 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Corpacci, Lucía Benigna: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Corpacci, Lucía Benigna: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Corpacci, Lucía Benigna"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Alvarez Rivero, Carmen: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Alvarez Rivero, Carmen: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Alvarez Rivero, Carmen"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Moises, María Carolina: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Moises, María Carolina: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Moises, María Carolina"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Huala, María Victoria: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Huala, María Victoria: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Huala, María Victoria"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Cornejo, Alfredo Victor: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Cornejo, Alfredo Victor: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Cornejo, Alfredo Victor"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Márquez, Nadia Judith: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Márquez, Nadia Judith: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Márquez, Nadia Judith"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Soria, Martin Ignacio: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Soria, Martin Ignacio: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Soria, Martin Ignacio"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Royon, Flavia Gabriela: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Royon, Flavia Gabriela: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Royon, Flavia Gabriela"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Moreno, Elia Esther del Carmen: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Moreno, Elia Esther del Carmen: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Moreno, Elia Esther del Carmen"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Coto, Agustín Pedro: participación 0.0%, por debajo del piso estadístico (39.65%) del resto del cuerpo.",
+        "detalle": "Coto, Agustín Pedro: participación 0.0%, por debajo del piso estadístico (39.99%) del resto del cuerpo.",
         "senador": "Coto, Agustín Pedro"
       }
     ]
