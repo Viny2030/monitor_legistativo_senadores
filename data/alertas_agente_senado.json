@@ -1,8 +1,8 @@
 {
-  "generado_en": "2026-08-11T11:28:19.502429+00:00",
+  "generado_en": "2026-08-12T11:28:22.354644+00:00",
   "total_senadores": 72,
   "analisis": {
-    "generado_en": "2026-08-11T11:28:19.502429+00:00",
+    "generado_en": "2026-08-12T11:28:22.354644+00:00",
     "total_hallazgos": 21,
     "por_severidad": {
       "alta": 10,
@@ -73,7 +73,7 @@
       {
         "tipo": "recibo_oficial_desactualizado",
         "severidad": "media",
-        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (222 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
+        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (223 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
       },
       {
         "tipo": "outlier_estadistico_participacion",
