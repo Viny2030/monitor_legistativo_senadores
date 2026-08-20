@@ -1159,7 +1159,7 @@ async function cargarDatos() {
 // ─── Fallback con datos del CSV del 26/03/2026 ───────────────────────────────
 function usarFallback() {
 // FALLBACK:START
-  // Datos generados automáticamente el 2026-08-19 — no editar a mano
+  // Datos generados automáticamente el 2026-08-20 — no editar a mano
   PARTIDOS_DATA =   [
     { partido:"Unión por la Patria", bancas:22, participation_pct:47.8, 'Mayoría':12, 'Primera Minoría':10, votos_afirmativos:640, votos_negativos:1235, abstenciones:17 },
     { partido:"La Libertad Avanza", bancas:18, participation_pct:44.8, 'Mayoría':14, 'Primera Minoría':4, votos_afirmativos:1363, votos_negativos:72, abstenciones:16 },
@@ -1167,10 +1167,10 @@ function usarFallback() {
     { partido:"Fuerza Patria", bancas:4, participation_pct:38.9, 'Mayoría':2, 'Primera Minoría':2, votos_afirmativos:74, votos_negativos:203, abstenciones:3 },
     { partido:"Alianza por Santa Cruz", bancas:2, participation_pct:51.1, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:92, votos_negativos:90, abstenciones:2 },
     { partido:"Eco + Vamos Corrientes", bancas:2, participation_pct:53.9, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:186, votos_negativos:8, abstenciones:0 },
-    { partido:"Frente Cambia Mendoza", bancas:2, participation_pct:26.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:91, votos_negativos:4, abstenciones:0 },
-    { partido:"Frente Cívico por Santiago", bancas:2, participation_pct:25.6, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:26, votos_negativos:65, abstenciones:1 },
-    { partido:"Frente Renovador de la Concordia-Innovación Federal", bancas:2, participation_pct:53.9, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:188, votos_negativos:6, abstenciones:0 },
     { partido:"Partido Renovador Federal", bancas:2, participation_pct:53.9, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:182, votos_negativos:10, abstenciones:2 },
+    { partido:"Frente Renovador de la Concordia-Innovación Federal", bancas:2, participation_pct:53.9, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:188, votos_negativos:6, abstenciones:0 },
+    { partido:"Frente Cívico por Santiago", bancas:2, participation_pct:25.6, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:26, votos_negativos:65, abstenciones:1 },
+    { partido:"Frente Cambia Mendoza", bancas:2, participation_pct:26.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:91, votos_negativos:4, abstenciones:0 },
     { partido:"Fuerza Entre Ríos", bancas:1, participation_pct:49.4, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:22, votos_negativos:65, abstenciones:2 },
     { partido:"Hacemos por Córdoba", bancas:1, participation_pct:45.6, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:47, votos_negativos:19, abstenciones:16 },
     { partido:"Primero Los Salteños", bancas:1, participation_pct:0.0, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:0, votos_negativos:0, abstenciones:0 },
@@ -1184,18 +1184,18 @@ function usarFallback() {
     { provincia:"San Luis", senadores:3, participation_pct:53.5, votos_total:291, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"San Juan", senadores:3, participation_pct:53.5, votos_total:291, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Corrientes", senadores:3, participation_pct:52.8, votos_total:291, partidos:"Eco + Vamos Corrientes / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
-    { provincia:"Santa Fe", senadores:3, participation_pct:52.4, votos_total:291, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Entre Ríos", senadores:3, participation_pct:52.4, votos_total:291, partidos:"Fuerza Entre Ríos / La Libertad Avanza", 'Mayoría':2, 'Primera Minoría':1 },
+    { provincia:"Santa Fe", senadores:3, participation_pct:52.4, votos_total:291, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Buenos Aires", senadores:3, participation_pct:52.0, votos_total:291, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
-    { provincia:"Ciudad Autónoma de Buenos Aires", senadores:3, participation_pct:52.0, votos_total:291, partidos:"Fuerza Patria / La Libertad Avanza", 'Mayoría':2, 'Primera Minoría':1 },
-    { provincia:"La Rioja", senadores:3, participation_pct:52.0, votos_total:291, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Santa Cruz", senadores:3, participation_pct:52.0, votos_total:291, partidos:"Alianza por Santa Cruz / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
+    { provincia:"La Rioja", senadores:3, participation_pct:52.0, votos_total:291, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
+    { provincia:"Ciudad Autónoma de Buenos Aires", senadores:3, participation_pct:52.0, votos_total:291, partidos:"Fuerza Patria / La Libertad Avanza", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Chubut", senadores:3, participation_pct:45.2, votos_total:291, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Jujuy", senadores:3, participation_pct:35.9, votos_total:194, partidos:"Partido Renovador Federal / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"La Pampa", senadores:3, participation_pct:35.9, votos_total:194, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Salta", senadores:3, participation_pct:35.7, votos_total:193, partidos:"La Libertad Avanza / Primero Los Salteños", 'Mayoría':2, 'Primera Minoría':1 },
-    { provincia:"Tucumán", senadores:3, participation_pct:35.7, votos_total:194, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Río Negro", senadores:3, participation_pct:35.7, votos_total:193, partidos:"Fuerza Patria / La Libertad Avanza", 'Mayoría':2, 'Primera Minoría':1 },
+    { provincia:"Tucumán", senadores:3, participation_pct:35.7, votos_total:194, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Santiago del Estero", senadores:3, participation_pct:34.8, votos_total:194, partidos:"Frente Cívico por Santiago / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Neuquén", senadores:3, participation_pct:34.1, votos_total:194, partidos:"La Libertad Avanza / la Neuquinidad", 'Mayoría':2, 'Primera Minoría':1 },
     { provincia:"Catamarca", senadores:3, participation_pct:33.5, votos_total:194, partidos:"Unión Cívica Radical / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 },
@@ -1204,7 +1204,7 @@ function usarFallback() {
     { provincia:"Tierra del Fuego, Antártida e Islas del Atlántico Sur", senadores:3, participation_pct:18.0, votos_total:97, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 }
   ];
 
-  // FALLBACK: 72 senadores reales (CSV 2026-08-19) — usado cuando la API no responde
+  // FALLBACK: 72 senadores reales (CSV 2026-08-20) — usado cuando la API no responde
   SENADORES_DATA =   [
     { id:546, nombre:"Abad, Maximiliano", provincia:"Buenos Aires", partido:"Unión Cívica Radical", rol_provincial:"Primera Minoría", participation_pct:49.44, votos_afirmativos:75, votos_negativos:14, ausencias:8, abstenciones:0, votos_total:97, foto:"https://api.argentinadatos.com/static/senado/senadores/546.gif", email:"maximiliano.abad@senado.gob.ar", telefono:"(+54 11) 28223000", fuente:'fallback' },
     { id:545, nombre:"De Pedro, Eduardo Enrique", provincia:"Buenos Aires", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:53.89, votos_afirmativos:25, votos_negativos:71, ausencias:0, abstenciones:1, votos_total:97, foto:"https://api.argentinadatos.com/static/senado/senadores/545.gif", email:"eduardo.depedro@senado.gob.ar", telefono:"(+54 11) 28223000", fuente:'fallback' },
