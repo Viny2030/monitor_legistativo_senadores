@@ -1159,7 +1159,7 @@ async function cargarDatos() {
 // ─── Fallback con datos del CSV del 26/03/2026 ───────────────────────────────
 function usarFallback() {
 // FALLBACK:START
-  // Datos generados automáticamente el 2026-10-08 — no editar a mano
+  // Datos generados automáticamente el 2026-10-09 — no editar a mano
   PARTIDOS_DATA =   [
     { partido:"Unión por la Patria", bancas:22, participation_pct:54.4, 'Mayoría':12, 'Primera Minoría':10, votos_afirmativos:966, votos_negativos:1729, abstenciones:21 },
     { partido:"La Libertad Avanza", bancas:18, participation_pct:51.7, 'Mayoría':14, 'Primera Minoría':4, votos_afirmativos:1996, votos_negativos:98, abstenciones:17 },
@@ -1167,10 +1167,10 @@ function usarFallback() {
     { partido:"Fuerza Patria", bancas:4, participation_pct:45.4, 'Mayoría':2, 'Primera Minoría':2, votos_afirmativos:105, votos_negativos:304, abstenciones:3 },
     { partido:"Alianza por Santa Cruz", bancas:2, participation_pct:61.2, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:162, votos_negativos:114, abstenciones:2 },
     { partido:"Eco + Vamos Corrientes", bancas:2, participation_pct:62.6, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:274, votos_negativos:10, abstenciones:0 },
-    { partido:"Frente Cambia Mendoza", bancas:2, participation_pct:27.5, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:120, votos_negativos:5, abstenciones:0 },
-    { partido:"Frente Cívico por Santiago", bancas:2, participation_pct:30.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:47, votos_negativos:90, abstenciones:1 },
-    { partido:"Frente Renovador de la Concordia-Innovación Federal", bancas:2, participation_pct:63.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:280, votos_negativos:8, abstenciones:0 },
     { partido:"Partido Renovador Federal", bancas:2, participation_pct:63.2, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:271, votos_negativos:14, abstenciones:2 },
+    { partido:"Frente Renovador de la Concordia-Innovación Federal", bancas:2, participation_pct:63.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:280, votos_negativos:8, abstenciones:0 },
+    { partido:"Frente Cívico por Santiago", bancas:2, participation_pct:30.4, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:47, votos_negativos:90, abstenciones:1 },
+    { partido:"Frente Cambia Mendoza", bancas:2, participation_pct:27.5, 'Mayoría':2, 'Primera Minoría':0, votos_afirmativos:120, votos_negativos:5, abstenciones:0 },
     { partido:"Fuerza Entre Ríos", bancas:1, participation_pct:59.0, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:34, votos_negativos:98, abstenciones:2 },
     { partido:"Hacemos por Córdoba", bancas:1, participation_pct:45.4, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:67, votos_negativos:20, abstenciones:16 },
     { partido:"Primero Los Salteños", bancas:1, participation_pct:0.0, 'Mayoría':0, 'Primera Minoría':1, votos_afirmativos:0, votos_negativos:0, abstenciones:0 },
@@ -1204,7 +1204,7 @@ function usarFallback() {
     { provincia:"Tierra del Fuego, Antártida e Islas del Atlántico Sur", senadores:3, participation_pct:20.4, votos_total:144, partidos:"La Libertad Avanza / Unión por la Patria", 'Mayoría':2, 'Primera Minoría':1 }
   ];
 
-  // FALLBACK: 72 senadores reales (CSV 2026-10-08) — usado cuando la API no responde
+  // FALLBACK: 72 senadores reales (CSV 2026-10-09) — usado cuando la API no responde
   SENADORES_DATA =   [
     { id:546, nombre:"Abad, Maximiliano", provincia:"Buenos Aires", partido:"Unión Cívica Radical", rol_provincial:"Primera Minoría", participation_pct:57.71, votos_afirmativos:106, votos_negativos:25, ausencias:13, abstenciones:0, votos_total:144, foto:"https://api.argentinadatos.com/static/senado/senadores/546.gif", email:null, telefono:null, fuente:'fallback' },
     { id:545, nombre:"De Pedro, Eduardo Enrique", provincia:"Buenos Aires", partido:"Unión por la Patria", rol_provincial:"Mayoría", participation_pct:63.0, votos_afirmativos:37, votos_negativos:105, ausencias:1, abstenciones:1, votos_total:144, foto:"https://api.argentinadatos.com/static/senado/senadores/545.gif", email:null, telefono:null, fuente:'fallback' },
