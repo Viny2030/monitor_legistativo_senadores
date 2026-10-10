@@ -1026,10 +1026,11 @@ function renderRenovaciones() {
   });
 
   // Si no hay datos de períodos, mostrar info estática conocida
+  // Próximas renovaciones por tercios (mandatos de 6 años). Cada tercio = 8 provincias = 24 bancas.
   const renovacionesEstaticas = [
-    { anio: '2027', n: 24, label: 'senadores', provs: 'Buenos Aires, CABA, Catamarca, Chaco, Chubut, Córdoba, Corrientes, Entre Ríos, Formosa, Jujuy, La Pampa, La Rioja, Mendoza, Misiones, Neuquén, Río Negro, Salta, San Juan, San Luis, Santa Cruz, Santa Fe, Santiago del Estero, Tierra del Fuego, Tucumán' },
-    { anio: '2025', n: 24, label: 'senadores', provs: 'Renovación del segundo tercio — mandatos iniciados en 2019' },
-    { anio: '2023', n: 24, label: 'senadores', provs: 'Renovación del primer tercio — mandatos iniciados en 2017' },
+    { anio: '2027', n: 24, label: 'senadores', provs: 'Catamarca, Chubut, Córdoba, Corrientes, La Pampa, Mendoza, Santa Fe, Tucumán (mandatos 2021–2027)' },
+    { anio: '2029', n: 24, label: 'senadores', provs: 'Buenos Aires, Formosa, Jujuy, La Rioja, Misiones, San Juan, San Luis, Santa Cruz (mandatos 2023–2029)' },
+    { anio: '2031', n: 24, label: 'senadores', provs: 'CABA, Chaco, Entre Ríos, Neuquén, Río Negro, Salta, Santiago del Estero, Tierra del Fuego (mandatos 2025–2031)' },
   ];
 
   const datos = Object.keys(porAnio).length

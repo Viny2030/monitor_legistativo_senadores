@@ -69,6 +69,9 @@ def generar_kpi_comparativa(datos: dict) -> str:
     # si está disponible; si no, un texto genérico que no queda desactualizado.
     periodo = datos.get("periodo", "")
     subtitulo_dieta = f"promedio {periodo}" if periodo else "último recibo disponible"
+    # Si el Senado no publicó recibos nuevos, se aclara que es el último publicado.
+    if datos.get("dieta_desactualizada") and periodo:
+        subtitulo_dieta = f"recibo {periodo} (último publicado) ⚠️"
 
     return f"""<div class="kpi-bar">
   <div class="kpi-card"><div class="kv">{presupuesto}</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
@@ -163,7 +166,7 @@ def generar_dietas_usd(datos: dict) -> str:
         </tr>
       </tbody>
     </table>
-    <p class="nota-fuente">Fuente: {fuente}. TC {tc}. <span title="Sin fuente pública parseable">*</span> = referencia manual, no automatizada.</p>
+    <p class="nota-fuente">Fuente: {fuente}. TC {tc}. <span title="Sin fuente pública parseable">*</span> = referencia manual, no automatizada.</p>{datos.get('aviso_html', '')}
   </div>"""
 
 
@@ -352,6 +355,54 @@ def _fmt_ars(v) -> str:
 def _fmt_usd(v) -> str:
     return f"USD {v:,.0f}".replace(",", ".")
 
+
+# ── Aviso de recibo oficial atrasado ───────────────────────────────────────
+# El Senado a veces deja de publicar el recibo mensual (en 2026 quedó en
+# "Enero 2026" aunque hubo aumentos). En ese caso NO se inventa un dato
+# oficial: se muestra un aviso con la referencia periodística guardada a mano
+# en dieta_referencia_prensa.json (fecha + fuente + % de la paritaria).
+_MESES = {"enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+          "julio": 7, "agosto": 8, "septiembre": 9, "setiembre": 9, "octubre": 10,
+          "noviembre": 11, "diciembre": 12}
+_MESES_NOM = {v: k for k, v in _MESES.items() if k != "setiembre"}
+MESES_ATRASO_AVISO = 2
+
+def _meses_atraso(periodo: str, hoy=None):
+    hoy = hoy or datetime.now()
+    m = re.match(r"([A-Za-zÁÉÍÓÚáéíóú]+)\s+(\d{4})", (periodo or "").strip())
+    if not m or m.group(1).lower() not in _MESES:
+        return None
+    return (hoy.year - int(m.group(2))) * 12 + hoy.month - _MESES[m.group(1).lower()]
+
+def _aviso_dieta(dieta: dict, hoy=None):
+    """Devuelve (desactualizada: bool, aviso_html: str)."""
+    hoy = hoy or datetime.now()
+    atraso = _meses_atraso(dieta.get("periodo", ""), hoy)
+    if atraso is None or atraso < MESES_ATRASO_AVISO:
+        return False, ""
+    estimado = ""
+    try:
+        import json
+        ref = json.loads((BASE_DIR / "dieta_referencia_prensa.json").read_text(encoding="utf-8"))
+        anio_b, mes_b = map(int, ref["mes_base"].split("-"))
+        monto = float(ref["dieta_bruta_total_mes_base"])
+        ultimo = ref["mes_base"]
+        for clave in sorted(ref.get("aumentos_pct", {})):
+            a, m = map(int, clave.split("-"))
+            if (a, m) <= (hoy.year, hoy.month):
+                monto *= 1 + float(ref["aumentos_pct"][clave]) / 100
+                ultimo = clave
+        a_u, m_u = map(int, ultimo.split("-"))
+        estimado = (f" Según {ref['fuente']}, la dieta bruta total ronda "
+                    f"<strong>~{_fmt_ars(round(monto, -3))}</strong> en {_MESES_NOM[m_u]} {a_u} "
+                    f"(estimación con los % de la paritaria; <a href=\"{ref['url']}\" target=\"_blank\">ver nota</a>).")
+    except Exception as e:
+        print(f"[WARN] Sin referencia de prensa para la dieta ({e})")
+    aviso = (f"\n    <p class=\"nota-fuente\" style=\"color:#b45309;font-weight:600\">⚠️ El último recibo oficial "
+             f"publicado por el Senado es de {dieta.get('periodo')} ({atraso} meses de atraso): los montos "
+             f"de esta tabla no incluyen los aumentos posteriores.{estimado}</p>")
+    return True, aviso
+
 if __name__ == "__main__":
     # Tipo de cambio real — cascada dolarapi → bluelytics → argentinadatos
     # → BCRA API v4 → último tc.json guardado → hardcoded (ver actualizar_tc.py).
@@ -391,6 +442,7 @@ if __name__ == "__main__":
     desarraigo_usd   = round(desarraigo_bruto / tc_actual) if desarraigo_bruto else None
 
     dieta_usd_fmt = _fmt_usd(usd_con)
+    dieta_desactualizada, aviso_dieta_html = _aviso_dieta(dieta)
 
     datos_kpi_ejemplo = {
         "presupuesto_usd": "USD 94M",        # sin scraper propio aún — referencia manual
@@ -401,6 +453,7 @@ if __name__ == "__main__":
         "leyes_2025":      13,               # sin scraper de leyes sancionadas aún — referencia manual
         "subtitulo_leyes": "mínimo histórico",
         "periodo":         dieta.get("periodo", ""),  # ← período real del recibo (evita etiqueta desactualizada)
+        "dieta_desactualizada": dieta_desactualizada,
     }
     datos_dietas_ejemplo = {
         "dieta_bruta_con": _fmt_ars(bruto_con),
@@ -419,6 +472,7 @@ if __name__ == "__main__":
         "tc":              tc_fmt,
         "fuente":          f"{dieta.get('fuente', 'referencia')} (ARS) + TC en vivo (BCRA/dolarapi)",
         "periodo":         dieta.get("periodo", ""),
+        "aviso_html":      aviso_dieta_html,
     }
     datos_leyes_ejemplo = {
         "leyes_2024_arg": "38",

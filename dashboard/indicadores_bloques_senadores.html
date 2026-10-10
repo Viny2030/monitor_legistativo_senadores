@@ -59,7 +59,7 @@ footer a{color:#1a0a2e;text-decoration:none;font-weight:600}
   <span class="escudo">🏛️</span>
   <div>
     <h1>Monitor Legislativo · Indicadores por Bloque — Senado</h1>
-    <p>Todos los indicadores calculados automáticamente para cada bloque · 28 de marzo de 2026</p>
+    <p>Todos los indicadores calculados automáticamente para cada bloque · datos al <span data-fecha-datos>28/03/2026</span></p>
   </div>
   <nav>
     <a href="indicadores_senadores.html">🏛️ Nómina</a>
@@ -369,6 +369,19 @@ document.getElementById('rank-pi2').innerHTML=rankHtml([...BLOQUES].sort((a,b)=>
 document.getElementById('rank-pct').innerHTML=rankHtml([...BLOQUES].sort((a,b)=>b.pct-a.pct),'pct',v=>v.toFixed(1)+'%');
 
 renderTabla();
+</script>
+<script>
+// Fecha de los datos: se toma del bloque que el bot regenera cada día
+// ("...automáticamente el AAAA-MM-DD"), así el encabezado nunca queda viejo.
+(function () {
+  var m = null;
+  for (var i = 0; i < document.scripts.length && !m; i++) {
+    m = document.scripts[i].textContent.match(/automáticamente el (\d{4})-(\d{2})-(\d{2})/);
+  }
+  if (!m) return;
+  var txt = m[3] + '/' + m[2] + '/' + m[1];
+  document.querySelectorAll('[data-fecha-datos]').forEach(function (e) { e.textContent = txt; });
+})();
 </script>
 </body>
 </html>

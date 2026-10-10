@@ -103,7 +103,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 <div class="kpi-bar">
   <div class="kpi-card"><div class="kv">USD 94M</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
   <div class="kpi-card"><div class="kv">USD 2,0</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
-  <div class="kpi-card"><div class="kv">USD 5.307</div><div class="kl">Dieta neta senador</div><div class="ks">promedio Enero 2026</div></div>
+  <div class="kpi-card"><div class="kv">USD 5.307</div><div class="kl">Dieta neta senador</div><div class="ks">recibo Enero 2026 (último publicado) ⚠️</div></div>
   <div class="kpi-card"><div class="kv">72</div><div class="kl">Bancas</div><div class="ks">3 por provincia</div></div>
   <div class="kpi-card"><div class="kv">5,06</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
   <div class="kpi-card"><div class="kv">13</div><div class="kl">Leyes 2025</div><div class="ks">mínimo histórico</div></div>
@@ -117,7 +117,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
     <h3>Tipos de cambio utilizados</h3>
     <div class="tc-box">
       <div class="tc-item"><span class="tc-label">TC oficial promedio 2025</span><span class="tc-val">~$1.000 ARS/USD</span></div>
-      <div class="tc-item"><span class="tc-label">TC para salarios (jul.2025)</span><span class="tc-val">~$1.450 ARS/USD</span></div>
+      <div class="tc-item"><span class="tc-label">TC para salarios (en vivo)</span><span class="tc-val" id="tc-salarios">ver tabla de dietas</span></div>
       <div class="tc-item"><span class="tc-label">Presupuesto Senado ARS</span><span class="tc-val">~$135.800 MM</span></div>
       <div class="tc-item"><span class="tc-label">Presupuesto Senado USD</span><span class="tc-val">~USD 93,7 MM</span></div>
     </div>
@@ -191,6 +191,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
       </tbody>
     </table>
     <p class="nota-fuente">Fuente: senado.gob.ar (recibo oficial PDF) (ARS) + TC en vivo (BCRA/dolarapi). TC $1.535 ARS/USD. <span title="Sin fuente pública parseable">*</span> = referencia manual, no automatizada.</p>
+    <p class="nota-fuente" style="color:#b45309;font-weight:600">⚠️ El último recibo oficial publicado por el Senado es de Enero 2026 (9 meses de atraso): los montos de esta tabla no incluyen los aumentos posteriores. Según La Nación, 31/08/2026 — cierre de la paritaria legislativa, la dieta bruta total ronda <strong>~$12.718.000</strong> en octubre 2026 (estimación con los % de la paritaria; <a href="https://www.lanacion.com.ar/politica/los-senadores-cobraran-13-millones-de-dieta-a-fin-de-ano-tras-el-cierre-de-la-paritaria-legislativa-nid31082026/" target="_blank">ver nota</a>).</p>
   </div>
 <!-- DIETAS_USD:END -->
 </div>
@@ -470,7 +471,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
   <div class="panel">
     <h3>Remuneración mensual neta en USD (2025)</h3>
     <div id="bar-dietas"></div>
-    <p class="nota-fuente">Argentina: dieta neta jul.2025 (iProfesional). Chile: dieta senador CLP ~4.500.000 ≈ USD 4.900. Uruguay: USD ~4.500. Brasil: dieta bruta R$44.008 ≈ USD 8.000. México: MXN ~174.000 ≈ USD 8.700. España: EUR ~3.700 ≈ USD 4.000. EEUU: USD 14.500 (referencia).</p>
+    <p class="nota-fuente">Argentina: dieta neta del último recibo oficial publicado por el Senado, convertida con TC en vivo (ver tabla de dietas). Chile: dieta senador CLP ~4.500.000 ≈ USD 4.900. Uruguay: USD ~4.500. Brasil: dieta bruta R$44.008 ≈ USD 8.000. México: MXN ~174.000 ≈ USD 8.700. España: EUR ~3.700 ≈ USD 4.000. EEUU: USD 14.500 (referencia).</p>
   </div>
 
   <div class="panel">
@@ -678,6 +679,15 @@ buildBars('bar-dietas', dietaData, 15000,
 
 // Footer fecha
 document.getElementById('footer-fecha').textContent = new Date().toLocaleDateString('es-AR');
+</script>
+<script>
+// TC para salarios: se toma del mismo TC en vivo que usa la tabla de dietas
+// (bloque DIETAS_USD, regenerado a diario por scripts/actualizar_comparativa_senado.py).
+(function () {
+  var el = document.getElementById('tc-salarios');
+  var m = document.body.innerText.match(/TC (\$[\d.]+) ARS\/USD/);
+  if (el && m) el.textContent = m[1] + ' ARS/USD';
+})();
 </script>
 </body>
 </html>

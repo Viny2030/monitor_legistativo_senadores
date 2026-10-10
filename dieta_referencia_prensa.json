@@ -1,0 +1,15 @@
+{
+  "_nota": "Referencia periodística, NO oficial. Solo se usa para avisar en el dashboard cuando el recibo oficial (dieta.json) quedó atrasado. Actualizar a mano cuando se cierre una nueva paritaria legislativa.",
+  "fecha_publicacion": "2026-08-31",
+  "fuente": "La Nación, 31/08/2026 — cierre de la paritaria legislativa",
+  "url": "https://www.lanacion.com.ar/politica/los-senadores-cobraran-13-millones-de-dieta-a-fin-de-ano-tras-el-cierre-de-la-paritaria-legislativa-nid31082026/",
+  "mes_base": "2026-08",
+  "dieta_bruta_total_mes_base": 12260000,
+  "aumentos_pct": {
+    "2026-09": 1.9,
+    "2026-10": 1.8,
+    "2026-11": 1.6,
+    "2026-12": 1.5
+  },
+  "valor_modulo_diciembre_2026": 3278.94
+}

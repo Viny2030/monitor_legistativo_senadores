@@ -120,7 +120,7 @@ footer a { color: #6b0f1a; text-decoration: none; font-weight: 600; }
   <span class="escudo">🏛️</span>
   <div class="hw">
     <h1>Monitor Legislativo · Nómina Detallada — Senado Nacional</h1>
-    <p id="header-sub">72 senadores en ejercicio · indicadores de participación · datos al 2026-05-03</p>
+    <p id="header-sub">72 senadores en ejercicio · indicadores de participación · datos al <span data-fecha-datos>03/05/2026</span></p>
   </div>
   <nav>
     <a href="https://monitorlegistativo-production.up.railway.app/dashboard/" target="_blank">🏠 Diputados ↗</a>
@@ -540,6 +540,19 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarDonacion(
 // ── Init ──────────────────────────────────────────────────────────────────────
 poblarFiltros();
 filtrar();
+</script>
+<script>
+// Fecha de los datos: se toma del bloque que el bot regenera cada día
+// ("...automáticamente el AAAA-MM-DD"), así el encabezado nunca queda viejo.
+(function () {
+  var m = null;
+  for (var i = 0; i < document.scripts.length && !m; i++) {
+    m = document.scripts[i].textContent.match(/automáticamente el (\d{4})-(\d{2})-(\d{2})/);
+  }
+  if (!m) return;
+  var txt = m[3] + '/' + m[2] + '/' + m[1];
+  document.querySelectorAll('[data-fecha-datos]').forEach(function (e) { e.textContent = txt; });
+})();
 </script>
 </body>
 </html>

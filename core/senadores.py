@@ -12,6 +12,8 @@ Funciones principales:
   - resumen_camara(df, df_partido)      → métricas globales de la cámara
 """
 
+import re
+import unicodedata
 import pandas as pd
 from datetime import datetime
 
@@ -20,6 +22,61 @@ HOY_ISO = HOY.strftime("%Y-%m-%d")
 
 BANCAS_SENADO    = 72
 PROVINCIAS_TOTAL = 24   # 23 provincias + CABA
+
+
+# ── Cruce de nombres actas ↔ nómina ──────────────────────────────────────────
+# Las actas y la nómina escriben distinto al mismo senador ("Moises" / "Moisés",
+# "Coto, Agustín Pedro" / "Coto, Agustín"). Con un merge exacto quedaban en 0
+# votos. Se compara sin tildes y, si no coincide, por apellido + algún nombre.
+def _norm_nombre(s) -> str:
+    s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _partes_nombre(s):
+    apellido, _, nombres = _norm_nombre(s).partition(",")
+    return apellido.strip(), set(nombres.split())
+
+
+def mapear_nombres(nombres_actas, nombres_nomina) -> dict:
+    """Devuelve {nombre_en_acta: nombre_en_nomina} para los que se pueden cruzar."""
+    exacto = {_norm_nombre(n): n for n in nombres_nomina}
+    por_apellido = {}
+    for n in nombres_nomina:
+        por_apellido.setdefault(_partes_nombre(n)[0], []).append(n)
+    mapa = {}
+    for a in nombres_actas:
+        if _norm_nombre(a) in exacto:
+            mapa[a] = exacto[_norm_nombre(a)]
+            continue
+        apellido, nombres = _partes_nombre(a)
+        cand = [n for n in por_apellido.get(apellido, []) if nombres & _partes_nombre(n)[1]]
+        if len(cand) == 1:
+            mapa[a] = cand[0]
+    return mapa
+
+
+def filtrar_actas_validas(df_actas: pd.DataFrame) -> pd.DataFrame:
+    """
+    La API devuelve en /actas/{anio} actas vacías (sin votos ni fecha) y actas
+    históricas mal clasificadas (2005, 2009, 2013...). Contarlas en el
+    denominador bajaba la participación de todos. Se conservan solo las actas
+    con votos y fecha del último año con datos o el anterior (sesiones de dic.).
+    """
+    if df_actas.empty or "votos" not in df_actas.columns or "fecha" not in df_actas.columns:
+        return df_actas
+    # Registro vacío de la API: sin votos y sin fecha (no es una sesión real).
+    vacia = (df_actas["votos"].apply(lambda v: not (isinstance(v, list) and len(v) > 0))
+             & df_actas["fecha"].fillna("").astype(str).str.strip().eq(""))
+    df = df_actas[~vacia]
+    if len(df):
+        anios = pd.to_numeric(df["fecha"].astype(str).str[:4], errors="coerce")
+        if anios.notna().any():
+            df = df[anios >= anios.max() - 1]
+    descartadas = len(df_actas) - len(df)
+    if descartadas:
+        print(f"  ℹ️  Actas descartadas (vacías o de otros años): {descartadas} de {len(df_actas)}")
+    return df
 
 
 # ── KPIs de participación ─────────────────────────────────────────────────────
@@ -42,6 +99,8 @@ def calcular_kpis(df_nomina: pd.DataFrame,
             df[c] = 0 if c != "participation_pct" else 0.0
         return df
 
+    df_actas = filtrar_actas_validas(df_actas)
+
     # Expandir lista de votos en filas individuales
     filas = []
     for _, acta in df_actas.iterrows():
@@ -51,6 +110,13 @@ def calcular_kpis(df_nomina: pd.DataFrame,
                 "voto":   str(voto.get("voto", "")).lower().strip(),
             })
     df_votos = pd.DataFrame(filas)
+
+    if not df_votos.empty and "nombre" in df_nomina.columns:
+        mapa = mapear_nombres(df_votos["nombre"].unique(), df_nomina["nombre"].tolist())
+        sin_cruce = sorted(set(df_votos["nombre"]) - set(mapa))
+        if sin_cruce:
+            print(f"  ⚠️  Votantes en actas que no están en la nómina: {', '.join(sin_cruce)}")
+        df_votos["nombre"] = df_votos["nombre"].map(mapa).fillna(df_votos["nombre"])
 
     if df_votos.empty:
         df = df_nomina.copy()
