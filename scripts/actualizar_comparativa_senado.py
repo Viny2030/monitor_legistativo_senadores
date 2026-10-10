@@ -74,7 +74,7 @@ def generar_kpi_comparativa(datos: dict) -> str:
         subtitulo_dieta = f"recibo {periodo} (último publicado) ⚠️"
 
     return f"""<div class="kpi-bar">
-  <div class="kpi-card"><div class="kv">{presupuesto}</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
+  <div class="kpi-card"><div class="kv">{presupuesto}</div><div class="kl">Presupuesto Senado</div><div class="ks">crédito vigente 2026 (TC en vivo)</div></div>
   <div class="kpi-card"><div class="kv">{crc}</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
   <div class="kpi-card"><div class="kv">{dieta}</div><div class="kl">Dieta neta senador</div><div class="ks">{subtitulo_dieta}</div></div>
   <div class="kpi-card"><div class="kv">{bancas}</div><div class="kl">Bancas</div><div class="ks">3 por provincia</div></div>
@@ -346,6 +346,11 @@ def actualizar_comparativa(datos_kpi: dict = None,
 # dos casos puntuales -- quedan como referencia manual (ver aviso "*" en la
 # tabla generada). Todo lo demás en esta tabla sale del recibo oficial real
 # (scripts/monitorear_dieta.py, PDF de senado.gob.ar) + TC real (BCRA/dolarapi).
+# Presupuesto del Senado: crédito vigente 2026 (servicio 312 HSN) según Presupuesto
+# Abierto / MECON (dataset credito-anual-2026, act. 07/10/2026). Actualizar a mano.
+PRESUPUESTO_SENADO_MM = 267_406
+POBLACION_ARG = 47_000_000
+
 DIETA_SIN_AUMENTO_BRUTO = 9_500_000
 DIETA_SIN_AUMENTO_NETO  = 7_800_000
 
@@ -443,10 +448,12 @@ if __name__ == "__main__":
 
     dieta_usd_fmt = _fmt_usd(usd_con)
     dieta_desactualizada, aviso_dieta_html = _aviso_dieta(dieta)
+    ppto_usd_m = PRESUPUESTO_SENADO_MM / tc_actual          # millones de USD
+    crc_usd    = PRESUPUESTO_SENADO_MM * 1e6 / POBLACION_ARG / tc_actual
 
     datos_kpi_ejemplo = {
-        "presupuesto_usd": "USD 94M",        # sin scraper propio aún — referencia manual
-        "crc_usd":         "USD 2,0",        # requiere dato de población — referencia manual
+        "presupuesto_usd": f"USD {ppto_usd_m:,.0f}M".replace(",", "."),  # crédito vigente 2026 + TC real
+        "crc_usd":         f"USD {crc_usd:.1f}".replace(".", ","),      # por habitante, TC real
         "dieta_usd":       dieta_usd_fmt,    # ← módulo real (PDF) + TC real
         "bancas":          72,
         "nep":             "5,06",
@@ -482,7 +489,7 @@ if __name__ == "__main__":
     datos_paises_ejemplo = {
         "arg_hab_sen":   652000,
         "arg_nep":       5.06,
-        "arg_costo_hab": 1.99,
+        "arg_costo_hab": round(crc_usd, 2),
         "arg_dieta_mes": usd_con,   # ← también calculado con dieta y TC reales
     }
 

@@ -96,13 +96,13 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 </div>
 
 <div class="disclaimer">
-  ⚠️ <strong>Nota metodológica:</strong> Las comparaciones internacionales deben interpretarse con cautela — cada parlamento tiene atribuciones, escalas y contextos distintos. Los costos en USD usan tipo de cambio oficial promedio 2025 (~$1.000 ARS/USD para presupuesto; ~$1.450 ARS/USD para salarios desde jul.2025). Fuentes: OPC Argentina, OCDE, IPU Parline, fuentes oficiales de cada país.
+  ⚠️ <strong>Nota metodológica:</strong> Las comparaciones internacionales deben interpretarse con cautela — cada parlamento tiene atribuciones, escalas y contextos distintos. Los costos en USD usan el tipo de cambio oficial en vivo (dolarapi/BCRA), tanto para el presupuesto como para los salarios. Fuentes: OPC Argentina, OCDE, IPU Parline, fuentes oficiales de cada país.
 </div>
 
 <!-- KPI_COMPARATIVA:START -->
 <div class="kpi-bar">
-  <div class="kpi-card"><div class="kv">USD 94M</div><div class="kl">Presupuesto Senado</div><div class="ks">estimado 2025 (TC oficial)</div></div>
-  <div class="kpi-card"><div class="kv">USD 2,0</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
+  <div class="kpi-card"><div class="kv">USD 174M</div><div class="kl">Presupuesto Senado</div><div class="ks">crédito vigente 2026 (TC en vivo)</div></div>
+  <div class="kpi-card"><div class="kv">USD 3,7</div><div class="kl">CRC en dólares</div><div class="ks">por habitante / año</div></div>
   <div class="kpi-card"><div class="kv">USD 5.307</div><div class="kl">Dieta neta senador</div><div class="ks">recibo Enero 2026 (último publicado) ⚠️</div></div>
   <div class="kpi-card"><div class="kv">72</div><div class="kl">Bancas</div><div class="ks">3 por provincia</div></div>
   <div class="kpi-card"><div class="kv">5,06</div><div class="kl">NEP</div><div class="ks">Laakso-Taagepera</div></div>
@@ -116,20 +116,20 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
   <div class="panel">
     <h3>Tipos de cambio utilizados</h3>
     <div class="tc-box">
-      <div class="tc-item"><span class="tc-label">TC oficial promedio 2025</span><span class="tc-val">~$1.000 ARS/USD</span></div>
+      <div class="tc-item"><span class="tc-label">TC oficial (en vivo)</span><span class="tc-val" id="tc-oficial">ver tabla de dietas</span></div>
       <div class="tc-item"><span class="tc-label">TC para salarios (en vivo)</span><span class="tc-val" id="tc-salarios">ver tabla de dietas</span></div>
-      <div class="tc-item"><span class="tc-label">Presupuesto Senado ARS</span><span class="tc-val">~$135.800 MM</span></div>
-      <div class="tc-item"><span class="tc-label">Presupuesto Senado USD</span><span class="tc-val">~USD 93,7 MM</span></div>
+      <div class="tc-item"><span class="tc-label">Presupuesto Senado ARS</span><span class="tc-val">$267.406 MM</span></div>
+      <div class="tc-item"><span class="tc-label">Presupuesto Senado USD</span><span class="tc-val" id="ppto-usd-1">—</span></div>
     </div>
     <div class="grid-3" style="margin-top:.75rem">
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
         <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">Presupuesto total USD</div>
-        <div style="font-size:1.6rem;font-weight:900;color:#15803d">~USD 93,7 MM</div>
-        <div style="font-size:.7rem;color:#166534">TC oficial promedio ~$1.000</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#15803d" id="ppto-usd-2">—</div>
+        <div style="font-size:.7rem;color:#166534">crédito vigente 2026 · TC oficial en vivo</div>
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
         <div style="font-size:.7rem;color:#15803d;font-weight:700;text-transform:uppercase">CRC en dólares</div>
-        <div style="font-size:1.6rem;font-weight:900;color:#15803d">USD 1,99</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#15803d" id="crc-usd">—</div>
         <div style="font-size:.7rem;color:#166534">por habitante / año</div>
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.9rem 1rem">
@@ -138,7 +138,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
         <div style="font-size:.7rem;color:#166534">12 sesiones en 2025</div>
       </div>
     </div>
-    <p class="nota-fuente">Fuentes: Presupuesto Senado estimado ~$135.800MM ARS (proporción histórica HSN/HCDN). TC oficial: BCRA. Costo sesión: iProfesional oct.2025.</p>
+    <p class="nota-fuente">Fuentes: Presupuesto Senado $267.406MM ARS = crédito vigente 2026, Presupuesto Abierto (MECON), act. 07/10/2026. TC oficial: dolarapi/BCRA. Costo sesión: iProfesional oct.2025.</p>
   </div>
 
   <!-- DIETAS_USD:START -->
@@ -627,7 +627,7 @@ footer a { color:#1a0a2e; text-decoration:none; font-weight:600; }
 // ── Datos para gráficos ──
 // PAISES_DATA:START
 var PAISES = [
-  {nombre:'🇦🇷 Argentina', hab_sen:652000, nep:5.06, costo_hab:1.99, dieta_mes:5307, color:'#C9A84C', highlight:true},
+  {nombre:'🇦🇷 Argentina', hab_sen:652000, nep:5.06, costo_hab:3.71, dieta_mes:5307, color:'#C9A84C', highlight:true},
   {nombre:'🇧🇷 Brasil',    hab_sen:2630000, nep:3.8, costo_hab:2.80, dieta_mes:8000, color:'#16a34a'},
   {nombre:'🇨🇱 Chile',     hab_sen:390000,  nep:4.2, costo_hab:3.10, dieta_mes:4900, color:'#dc2626'},
   {nombre:'🇺🇾 Uruguay',   hab_sen:117000,  nep:3.5, costo_hab:4.50, dieta_mes:4500, color:'#2563eb'},
@@ -687,6 +687,15 @@ document.getElementById('footer-fecha').textContent = new Date().toLocaleDateStr
   var el = document.getElementById('tc-salarios');
   var m = document.body.innerText.match(/TC (\$[\d.]+) ARS\/USD/);
   if (el && m) el.textContent = m[1] + ' ARS/USD';
+  // Presupuesto en USD con el mismo TC (crédito vigente 2026: $267.406 MM; 47 M hab.)
+  if (!m) return;
+  var tc = parseFloat(m[1].replace('$', '').replace(/\./g, ''));
+  var fmt = function (v, d) { return v.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d }); };
+  var set = function (id, t) { var e = document.getElementById(id); if (e) e.textContent = t; };
+  set('tc-oficial', m[1] + ' ARS/USD');
+  set('ppto-usd-1', '~USD ' + fmt(267406 / tc, 1) + ' MM');
+  set('ppto-usd-2', '~USD ' + fmt(267406 / tc, 1) + ' MM');
+  set('crc-usd', 'USD ' + fmt(267406e6 / 47e6 / tc, 2));
 })();
 </script>
 </body>
