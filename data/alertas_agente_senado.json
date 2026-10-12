@@ -1,11 +1,11 @@
 {
-  "generado_en": "2026-10-11T11:22:29.369747+00:00",
+  "generado_en": "2026-10-12T11:27:33.407721+00:00",
   "total_senadores": 72,
   "analisis": {
-    "generado_en": "2026-10-11T11:22:29.369747+00:00",
-    "total_hallazgos": 11,
+    "generado_en": "2026-10-12T11:27:33.407721+00:00",
+    "total_hallazgos": 10,
     "por_severidad": {
-      "alta": 2,
+      "alta": 1,
       "media": 1,
       "baja": 8
     },
@@ -17,14 +17,9 @@
         "senador": "Cornejo, Alfredo Victor"
       },
       {
-        "tipo": "delta_participacion_global",
-        "severidad": "alta",
-        "detalle": "Participación promedio global subió 43.6 puntos vs. la corrida anterior (50.3% → 93.8%)."
-      },
-      {
         "tipo": "recibo_oficial_desactualizado",
         "severidad": "media",
-        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (283 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
+        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (284 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
       },
       {
         "tipo": "outlier_estadistico_participacion",
@@ -81,14 +76,8 @@
     "motivo": "Hallazgos estructurados generados sin problema (no requieren IA); la redacción narrativa está deshabilitada porque no hay ANTHROPIC_API_KEY."
   },
   "alerta": {
-    "requiere_alerta": true,
+    "requiere_alerta": false,
     "criterio": "siempre para eventos puntuales; solo si es nuevo para estados por senador/provincia",
-    "hallazgos_relevantes": [
-      {
-        "tipo": "delta_participacion_global",
-        "severidad": "alta",
-        "detalle": "Participación promedio global subió 43.6 puntos vs. la corrida anterior (50.3% → 93.8%)."
-      }
-    ]
+    "hallazgos_relevantes": []
   }
 }
