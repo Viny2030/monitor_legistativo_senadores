@@ -534,7 +534,7 @@ def ia_chat(req: ChatIn, request: Request):
 
 # ── Raíz y salud ──────────────────────────────────────────────────────────────
 _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
-_BASE = f"https://{_BASE}" if _BASE else "https://monitorlegistativosenadores-production.up.railway.app"
+_BASE = f"https://{_BASE}" if _BASE else "https://senadores.ecosistematransparencia.com.ar"
 
 
 @app.get("/")
