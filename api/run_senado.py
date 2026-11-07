@@ -537,6 +537,69 @@ _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 _BASE = f"https://{_BASE}" if _BASE else "https://senadores.ecosistematransparencia.com.ar"
 
 
+@app.get("/api/frescura")
+def frescura():
+    """Ficha de frescura (formato común del ecosistema, ver frescura.py): de
+    dónde sale cada dato, qué período cubre, cuándo se cargó y si está atrasado
+    por una falla técnica o porque la fuente no publicó nada nuevo."""
+    import csv as _csv
+    import json as _json
+    import re as _re
+    from frescura import evaluar, fecha_es
+
+    def _fecha_archivo(patron):
+        f = _latest_csv(patron)
+        m = _re.search(r"(\d{4}-\d{2}-\d{2})", f.name) if f else None
+        return (m.group(1) if m else None), f
+
+    nomina_f, _ = _fecha_archivo("senadores_20*.csv")
+    partido_f, _ = _fecha_archivo("reporte_partido_senado_20*.csv")
+    comis_f, _ = _fecha_archivo("comisiones_20*.csv")
+    vt_f, vt_file = _fecha_archivo("versiones_taq_20*.csv")
+    ultima_sesion = None
+    if vt_file:
+        try:
+            with open(vt_file, encoding="utf-8-sig", newline="") as fh:
+                fechas = [fecha_es(r.get("fecha", "").replace("-", "/")) for r in _csv.DictReader(fh)]
+            fechas = [f for f in fechas if f]
+            ultima_sesion = max(fechas).isoformat() if fechas else None
+        except Exception:
+            ultima_sesion = None
+
+    dieta = {}
+    ruta_dieta = Path(__file__).parent.parent / "dieta.json"
+    if ruta_dieta.exists():
+        try:
+            dieta = _json.loads(ruta_dieta.read_text(encoding="utf-8"))
+        except Exception:
+            dieta = {}
+
+    items = [
+        {"id": "nomina", "dato": "Nómina, bloques y provincias", "fuente": "senado.gob.ar",
+         "periodo": "composición vigente", "periodo_fin": nomina_f, "ultima_carga": nomina_f,
+         "frecuencia": "diaria", "max_dias_carga": 3, "max_dias_periodo": 3},
+        {"id": "reportes", "dato": "Reportes por partido y provincia", "fuente": "senado.gob.ar",
+         "periodo": "composición vigente", "ultima_carga": partido_f, "frecuencia": "diaria", "max_dias_carga": 3},
+        {"id": "comisiones", "dato": "Comisiones", "fuente": "senado.gob.ar", "periodo": "integración vigente",
+         "ultima_carga": comis_f, "frecuencia": "diaria", "max_dias_carga": 3},
+        {"id": "versiones_taquigraficas", "dato": "Versiones taquigráficas de las sesiones", "fuente": "senado.gob.ar",
+         "periodo": f"última sesión publicada: {ultima_sesion}" if ultima_sesion else None,
+         "periodo_fin": ultima_sesion, "ultima_carga": vt_f, "frecuencia": "diaria (hay sesiones de marzo a noviembre)",
+         "max_dias_carga": 3, "max_dias_periodo": 75},
+        {"id": "dieta", "dato": "Dieta de los senadores (recibo oficial)", "fuente": dieta.get("fuente", "senado.gob.ar (recibo oficial PDF)"),
+         "fuente_url": "https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta",
+         "periodo": f"recibo de {dieta.get('periodo')}" if dieta.get("periodo") else None,
+         "periodo_fin": dieta.get("periodo"), "ultima_carga": dieta.get("fecha_actualizacion"),
+         "frecuencia": "diaria (el Senado publica un recibo por mes)", "max_dias_carga": 3, "max_dias_periodo": 60,
+         "nota": "El monitor revisa el recibo todos los días; si el período no avanza, el Senado no publicó uno nuevo."},
+        {"id": "presupuesto", "dato": "Presupuesto del Senado (crédito vigente)", "fuente": "Presupuesto Abierto — SAF 312",
+         "periodo": "crédito vigente 2026 al 07/10/2026", "periodo_fin": "2026-10-07", "ultima_carga": None,
+         "frecuencia": "manual (valor escrito en las páginas)", "max_dias_periodo": 60,
+         "nota": "Valor fijo en el HTML: se actualiza a mano con el último corte de Presupuesto Abierto."},
+    ]
+    return evaluar("senadores", items)
+
+
 @app.get("/")
 def raiz():
     """Redirige al dashboard principal."""
