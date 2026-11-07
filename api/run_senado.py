@@ -537,6 +537,51 @@ _BASE = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 _BASE = f"https://{_BASE}" if _BASE else "https://senadores.ecosistematransparencia.com.ar"
 
 
+# ── Red de coincidencia de votos (grafo de información) ──────────────────────
+_RED_CACHE = None
+
+
+def _actas_senado(anio: int) -> list:
+    import requests
+    r = requests.get(f"https://api.argentinadatos.com/v1/senado/actas/{anio}", timeout=60,
+                     headers={"User-Agent": "MonitorLegislativoSenadores/1.0 (github.com/Viny2030)",
+                              "Accept": "application/json"})
+    r.raise_for_status()
+    return [{v["nombre"]: v.get("voto") for v in a.get("votos") or [] if v.get("nombre")}
+            for a in r.json() if str(a.get("votacion", "")).upper() == "NOMINAL" and a.get("votos")]
+
+
+def _armar_red_senado(k: int) -> dict:
+    import csv
+    from red_votos import construir_red, normalizar_nombre
+    anio = datetime.date.today().year
+    votaciones, periodo = _actas_senado(anio), str(anio)
+    if len(votaciones) < 20:  # principio de año: se suma el anterior
+        votaciones, periodo = _actas_senado(anio - 1) + votaciones, f"{anio - 1}-{anio}"
+    bloques = {}
+    nomina = _latest_csv("senadores_*.csv")
+    if nomina:
+        with open(nomina, encoding="utf-8-sig") as f:
+            for fila in csv.DictReader(f):
+                bloques[normalizar_nombre(fila.get("nombre"))] = fila.get("partido_normalizado") or fila.get("partido") or ""
+    return construir_red(votaciones, bloques, k=k, periodo=periodo,
+                         fuente="ArgentinaDatos — actas nominales del Senado")
+
+
+@app.get("/senado/red-votos")
+def red_votos(k: int = 3):
+    """Red de coincidencia de votos entre senadores (dashboard/red_votos.html)."""
+    global _RED_CACHE
+    from red_votos import Cache
+    k = max(1, min(int(k), 8))
+    if _RED_CACHE is None:
+        _RED_CACHE = Cache()
+    try:
+        return _RED_CACHE.obtener((k, datetime.date.today()), lambda: _armar_red_senado(k))
+    except Exception as e:
+        return JSONResponse(status_code=503, content={"detail": f"No se pudieron leer las actas del Senado: {e}"})
+
+
 @app.get("/api/frescura")
 def frescura():
     """Ficha de frescura (formato común del ecosistema, ver frescura.py): de

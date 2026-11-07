@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red de coincidencia de votos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{--azul:#003f8a;--gris:#f4f6f9;--texto:#1a1a2e;--sub:#5b6474;--borde:#e2e6ee;--oro:#d97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:var(--texto)}
+header{background:linear-gradient(135deg,#003f8a,#005bb5);color:#fff;padding:1rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+header h1{font-size:1.2rem;flex:1;min-width:220px}
+header a,header button{color:#fff;background:transparent;border:1px solid rgba(255,255,255,.4);border-radius:14px;padding:.25rem .7rem;font-size:.8rem;text-decoration:none;cursor:pointer}
+header button.activo{background:#fff;color:#003f8a}
+.intro{max-width:1200px;margin:1rem auto 0;padding:0 16px;font-size:.88rem;color:var(--sub);line-height:1.55}
+.controles{max-width:1200px;margin:.8rem auto;padding:0 16px;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;font-size:.85rem}
+.controles select{padding:.3rem .5rem;border:1px solid var(--borde);border-radius:6px;background:#fff}
+.kpis{max-width:1200px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.kpi{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:.7rem .9rem}
+.kpi b{display:block;font-size:1.4rem;color:var(--azul)}
+.kpi span{font-size:.75rem;color:var(--sub)}
+.wrap{max-width:1200px;margin:.8rem auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1rem}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+#red{height:640px;background:#fff;border:1px solid var(--borde);border-radius:12px}
+@media(max-width:900px){#red{height:480px}}
+.panel{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:1rem;font-size:.84rem;line-height:1.55;margin-bottom:1rem}
+.panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);margin-bottom:.4rem}
+.panel h3{font-size:1rem;margin-bottom:.2rem}
+.panel ul{list-style:none}
+.panel li{padding:.3rem 0;border-bottom:1px solid var(--borde);cursor:pointer}
+.panel li:hover{color:var(--azul)}
+.leyenda{max-width:1200px;margin:.4rem auto 0;padding:0 16px;display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.75rem;color:var(--sub)}
+.leyenda i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.nota{max-width:1200px;margin:.6rem auto 1.5rem;padding:0 16px;font-size:.75rem;color:var(--sub);line-height:1.5}
+.error{padding:1.5rem;color:#b91c1c;font-size:.9rem}
+</style>
+</head>
+<body data-api="/senado/red-votos" data-camara="senado" data-volver="senado.html" data-manual="manual_senadores.html#red-votos|manual_senadores.html#red-votos-en">
+<header>
+  <h1 id="t-titulo"></h1>
+  <a id="t-volver" href="#"></a>
+  <a id="t-manual" href="#"></a>
+  <button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button>
+</header>
+<p class="intro" id="t-intro"></p>
+<div class="controles">
+  <label><span id="t-k"></span>
+    <select id="sel-k"><option value="2">2</option><option value="3" selected>3</option><option value="5">5</option></select>
+  </label>
+  <label><input type="checkbox" id="chk-entre"> <span id="t-entre"></span></label>
+</div>
+<div class="kpis" id="kpis"></div>
+<div class="leyenda" id="leyenda"></div>
+<div class="wrap">
+  <div id="red"></div>
+  <div>
+    <div class="panel"><h2 id="t-detalle"></h2><div id="detalle"></div></div>
+    <div class="panel"><h2 id="t-top"></h2><ul id="top"></ul></div>
+  </div>
+</div>
+<p class="nota" id="t-nota"></p>
+
+<script>
+const B = document.body.dataset;
+const SEN = B.camara === 'senado';
+let LANG = (() => {
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q === 'en' || q === 'es') return q;
+  try { return localStorage.getItem('red_lang') === 'en' ? 'en' : 'es'; } catch (e) { return 'es'; }
+})();
+const TX = {
+  es: {
+    titulo: SEN ? 'Red de coincidencia de votos · Senado' : 'Red de coincidencia de votos · Diputados',
+    volver: '← Volver al tablero', manual: '📖 Manual',
+    intro: (SEN ? 'Cada nodo es un senador o senadora' : 'Cada nodo es un diputado o diputada') + ', con su nombre y el color de su bloque. Cada línea lo une con los colegas con los que más veces votó igual en las votaciones nominales del año. Las líneas doradas cruzan bloques.',
+    k: 'Colegas más parecidos por legislador:', entre: 'Solo vínculos entre bloques',
+    leg: 'Legisladores', vot: 'Votaciones nominales', ari: 'Vínculos', eb: 'Vínculos entre bloques',
+    detalle: 'Detalle', top: 'Coincidencias más altas entre bloques',
+    ayuda: 'Hacé clic en un nodo para ver su bloque, cuánto vota con su bloque y con quién de otro bloque coincide más.',
+    bloque: 'Bloque', votos: 'Votos emitidos', cb: 'Coincidencia con su bloque', co: 'Coincidencia con otros bloques',
+    cerca: 'Más parecido de otro bloque', con: 'con', nada: 'Sin datos suficientes',
+    nota: 'Fuente: actas nominales de ArgentinaDatos. Coincidencia = votaciones en las que los dos votaron lo mismo (afirmativo, negativo o abstención) sobre las votaciones en las que votaron los dos; las ausencias no cuentan y se exige un mínimo de 20 votaciones en común. "Fuera de la nómina actual" son quienes votaron este año pero ya no integran la cámara. Votar igual es un dato descriptivo: no implica un acuerdo formal ni nada irregular.',
+    error: 'No se pudo armar la red: ', otros: 'Otros bloques',
+  },
+  en: {
+    titulo: SEN ? 'Vote-agreement network · Senate' : 'Vote-agreement network · Chamber of Deputies',
+    volver: '← Back to dashboard', manual: '📖 Manual',
+    intro: 'Each node is a ' + (SEN ? 'senator' : 'deputy') + ', shown with their name and the colour of their bloc. Each line joins them with the colleagues they voted the same way as most often in this year\'s roll-call votes. Gold lines cross bloc boundaries.',
+    k: 'Most similar colleagues per legislator:', entre: 'Cross-bloc links only',
+    leg: 'Legislators', vot: 'Roll-call votes', ari: 'Links', eb: 'Cross-bloc links',
+    detalle: 'Detail', top: 'Highest cross-bloc agreement',
+    ayuda: 'Click a node to see their bloc, how often they vote with their bloc and which member of another bloc they agree with most.',
+    bloque: 'Bloc', votos: 'Votes cast', cb: 'Agreement with own bloc', co: 'Agreement with other blocs',
+    cerca: 'Closest member of another bloc', con: 'with', nada: 'Not enough data',
+    nota: 'Source: ArgentinaDatos roll-call records. Agreement = votes in which both cast the same vote (yes, no or abstention) divided by the votes in which both voted; absences do not count and at least 20 shared votes are required. "Fuera de la nómina actual" (no longer in the chamber) are members who voted this year but have since left. Voting the same way is descriptive: it implies neither a formal agreement nor anything improper.',
+    error: 'The network could not be built: ', otros: 'Other blocs',
+  },
+};
+const t = k => TX[LANG][k];
+const PALETA = ['#2563eb', '#7c3aed', '#059669', '#db2777', '#0891b2', '#65a30d', '#ea580c', '#4f46e5', '#0d9488', '#9333ea'];
+let DATOS = null, RED = null, COLOR = {}, POR_ID = {};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function textos() {
+  document.documentElement.lang = LANG;
+  document.title = t('titulo');
+  for (const k of ['titulo', 'volver', 'manual', 'intro', 'k', 'entre', 'detalle', 'top', 'nota']) document.getElementById('t-' + k).textContent = t(k);
+  document.getElementById('t-volver').href = B.volver;
+  document.getElementById('t-manual').href = LANG === 'en' && B.manual.includes('|') ? B.manual.split('|')[1] : B.manual.split('|')[0];
+  document.querySelectorAll('header button').forEach(b => b.classList.toggle('activo', b.dataset.lang === LANG));
+}
+document.querySelectorAll('header button').forEach(b => b.addEventListener('click', () => {
+  LANG = b.dataset.lang;
+  try { localStorage.setItem('red_lang', LANG); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
+  textos(); if (DATOS) pintar();
+}));
+
+async function cargar() {
+  document.getElementById('red').innerHTML = '';
+  try {
+    const r = await fetch(`${B.api}?k=${document.getElementById('sel-k').value}`);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || ('HTTP ' + r.status));
+    DATOS = d; pintar();
+  } catch (e) {
+    document.getElementById('red').innerHTML = `<div class="error">${esc(t('error') + e.message)}</div>`;
+  }
+}
+
+function pintar() {
+  const r = DATOS.resumen;
+  COLOR = {};
+  r.bloques.forEach((b, i) => { COLOR[b.bloque] = b.bloque === 'Fuera de la nómina actual' ? '#94a3b8' : (i < PALETA.length ? PALETA[i] : '#64748b'); });
+  document.getElementById('kpis').innerHTML = [[r.legisladores, t('leg')], [r.votaciones, t('vot')], [r.aristas, t('ari')], [r.entre_bloques, t('eb')]]
+    .map(([n, l]) => `<div class="kpi"><b>${n}</b><span>${l}</span></div>`).join('');
+  const principales = r.bloques.filter((b, i) => i < PALETA.length || b.bloque === 'Fuera de la nómina actual');
+  const resto = r.bloques.length - principales.length;
+  document.getElementById('leyenda').innerHTML = principales.map(b => `<span><i style="background:${COLOR[b.bloque]}"></i>${esc(b.bloque)} (${b.legisladores})</span>`).join('')
+    + (resto > 0 ? `<span><i style="background:#64748b"></i>${t('otros')} (${resto})</span>` : '')
+    + `<span><i style="background:var(--oro);border-radius:2px;height:3px;vertical-align:3px"></i>${t('eb')}</span>`;
+
+  const soloEntre = document.getElementById('chk-entre').checked;
+  const aristas = DATOS.aristas.filter(a => !soloEntre || a.entre_bloques);
+  const usados = new Set(aristas.flatMap(a => [a.from, a.to]));
+  POR_ID = {};
+  const nodos = DATOS.nodos.filter(n => !soloEntre || usados.has(n.id)).map(n => {
+    POR_ID[n.id] = n;
+    return {id: n.id, label: n.label, shape: 'dot', size: 9, color: {background: COLOR[n.bloque], border: COLOR[n.bloque]},
+            font: {size: 11, color: '#1a1a2e'}, title: `${n.label} — ${n.bloque}`};
+  });
+  const ed = aristas.map(a => ({from: a.from, to: a.to, width: a.entre_bloques ? 2.2 : 1,
+    color: {color: a.entre_bloques ? '#d97706' : '#cbd5e1', opacity: a.entre_bloques ? .95 : .7},
+    title: `${a.coincidencia} % (${a.comunes})`}));
+  if (RED) RED.destroy();
+  RED = new vis.Network(document.getElementById('red'), {nodes: new vis.DataSet(nodos), edges: new vis.DataSet(ed)}, {
+    physics: {solver: 'forceAtlas2Based', stabilization: {iterations: 300}}, interaction: {hover: true}, edges: {smooth: false}});
+  RED.once('stabilizationIterationsDone', () => { RED.setOptions({physics: false}); RED.fit(); });
+  RED.on('click', e => { if (e.nodes.length) detalle(e.nodes[0]); });
+
+  const top = DATOS.aristas.filter(a => a.entre_bloques).sort((x, y) => y.coincidencia - x.coincidencia).slice(0, 10);
+  const ul = document.getElementById('top');
+  ul.innerHTML = top.map(a => `<li data-id="${esc(a.from)}">${esc(a.from)} — ${esc(a.to)} <b>${a.coincidencia} %</b></li>`).join('') || `<li>${t('nada')}</li>`;
+  ul.querySelectorAll('li[data-id]').forEach(li => li.addEventListener('click', () => { RED.selectNodes([li.dataset.id]); RED.focus(li.dataset.id, {scale: 1.3, animation: true}); detalle(li.dataset.id); }));
+  document.getElementById('detalle').textContent = t('ayuda');
+}
+
+function detalle(id) {
+  const n = POR_ID[id]; if (!n) return;
+  const pct = v => v == null ? '—' : v + ' %';
+  const c = n.mas_cercano_otro_bloque;
+  document.getElementById('detalle').innerHTML = `<h3>${esc(n.label)}</h3>
+    ${t('bloque')}: <b>${esc(n.bloque)}</b><br>${t('votos')}: <b>${n.votos}</b><br>
+    ${t('cb')}: <b>${pct(n.coincidencia_bloque)}</b><br>${t('co')}: <b>${pct(n.coincidencia_otros)}</b><br>
+    ${t('cerca')}: ${c ? `<b>${esc(c.nombre)}</b> (${esc(c.bloque)}), ${c.coincidencia} %` : t('nada')}`;
+}
+
+document.getElementById('sel-k').addEventListener('change', cargar);
+document.getElementById('chk-entre').addEventListener('change', () => DATOS && pintar());
+textos(); cargar();
+</script>
+</body>
+</html>
