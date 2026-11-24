@@ -1,5 +1,5 @@
 {
-  "_nota": "Referencia periodística, NO oficial. Solo se usa para avisar en el dashboard cuando el recibo oficial (dieta.json) quedó atrasado. Actualizar a mano cuando se cierre una nueva paritaria legislativa.",
+  "_nota": "Referencia periodística, NO oficial. Solo se usa para avisar en el dashboard cuando el recibo oficial (dieta.json) quedó atrasado. Actualizar a mano cuando se cierre una nueva paritaria legislativa. Cuando se conozca el % real de la paritaria de enero 2027, agregar la clave \"2027-01\" en aumentos_pct (usar fuentes_secundarias.chequeado como referencia de sanity-check: el objetivo reportado es ~$13.000.000 brutos).",
   "fecha_publicacion": "2026-08-31",
   "fuente": "La Nación, 31/08/2026 — cierre de la paritaria legislativa",
   "url": "https://www.lanacion.com.ar/politica/los-senadores-cobraran-13-millones-de-dieta-a-fin-de-ano-tras-el-cierre-de-la-paritaria-legislativa-nid31082026/",
@@ -11,5 +11,15 @@
     "2026-11": 1.6,
     "2026-12": 1.5
   },
-  "valor_modulo_diciembre_2026": 3278.94
+  "valor_modulo_diciembre_2026": 3278.94,
+  "fuentes_secundarias": {
+    "chequeado": {
+      "fecha_publicacion": "2026-09-02",
+      "fuente": "Chequeado, 2/09/2026 — \"Aumento salarial en el Senado: las dietas equivalen a casi 8 sueldos privados y 25 jubilaciones, pero no son las más altas de la región\"",
+      "dieta_bruta_actual_mes_publicacion": 12262304,
+      "dieta_bruta_proyectada_enero_2027": 13000000,
+      "mecanismo": "Desde abril de 2024 la dieta está atada a la paritaria de empleados legislativos (se actualiza sola, sin votación). Desde el Decreto 344/2025 conviven dos escalas: senadores que aceptaron el aumento ($12,2M brutos) y los que lo rechazaron ($10,2M brutos aprox., según cálculo por módulos).",
+      "nota": "Confirma de forma independiente la trayectoria de La Nación: sirve como segunda fuente y como ancla para validar la estimación cuando se actualicen los % de aumentos_pct más allá de diciembre 2026."
+    }
+  }
 }
