@@ -1,8 +1,8 @@
 {
-  "generado_en": "2026-11-26T11:16:07.992373+00:00",
+  "generado_en": "2026-11-27T11:15:51.243184+00:00",
   "total_senadores": 72,
   "analisis": {
-    "generado_en": "2026-11-26T11:16:07.992373+00:00",
+    "generado_en": "2026-11-27T11:15:51.243184+00:00",
     "total_hallazgos": 8,
     "por_severidad": {
       "alta": 1,
@@ -19,42 +19,42 @@
       {
         "tipo": "recibo_oficial_desactualizado",
         "severidad": "media",
-        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (329 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
+        "detalle": "El último recibo oficial leído corresponde a \"Enero 2026\" (330 días atrás). Si hubo un aumento de dieta anunciado por prensa después de ese período, todavía no está reflejado en dieta.json — conviene verificar manualmente contra https://www.senado.gob.ar/prensa/adjunto/descargarArchivo/tipo/Dieta."
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Vigo, Alejandra María: participación 60.54%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Vigo, Alejandra María: participación 62.76%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Vigo, Alejandra María"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Pagotto, Juan Carlos: participación 64.86%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Pagotto, Juan Carlos: participación 61.22%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Pagotto, Juan Carlos"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Cornejo, Alfredo Victor: participación 0.0%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Cornejo, Alfredo Victor: participación 0.0%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Cornejo, Alfredo Victor"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Fernández Sagasti, Anabel: participación 45.95%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Fernández Sagasti, Anabel: participación 48.98%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Fernández Sagasti, Anabel"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Lewandowski, Marcelo Néstor: participación 71.35%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Lewandowski, Marcelo Néstor: participación 72.96%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Lewandowski, Marcelo Néstor"
       },
       {
         "tipo": "outlier_estadistico_participacion",
         "severidad": "baja",
-        "detalle": "Moreno, Elia Esther del Carmen: participación 75.14%, por debajo del piso estadístico (76.62%) del resto del cuerpo.",
+        "detalle": "Moreno, Elia Esther del Carmen: participación 76.53%, por debajo del piso estadístico (77.94%) del resto del cuerpo.",
         "senador": "Moreno, Elia Esther del Carmen"
       }
     ]
